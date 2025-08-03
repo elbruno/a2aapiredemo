@@ -1,268 +1,180 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](/LICENSE)
+dotnet user-secrets set "ConnectionStrings:openai" "Endpoint=https://<endpoint>.openai.azure.com/;Key=<key>;"
 
-## Description
+# A2A eShopLite Demo – Agent-to-Agent Orchestration with the Official Microsoft A2A .NET SDK
 
-**eShopLite - Semantic Search** is a reference .NET application implementing an eCommerce site with Search features using Keyword Search and Semantic Search.
+## Overview
 
-- [Features](#features)
-- [Architecture diagram](#architecture-diagram)
-- [Getting started](#getting-started)
-- [Deploying to Azure](#deploying)
-- Run solution
-  - [Run locally](#run-locally)
-  - [Run the solution](#run-the-solution)
-  - [.NET Aspire Azure Resources creation](#net-aspire-azure-resources-creation)
-  - [Local dev using an existing model](#local-development-using-an-existing-gpt-41-mini-and-ada-002-model)
-  - [Telemetry with .NET Aspire and Azure Application Insights](#telemetry-with-net-aspire-and-azure-application-insights)
-- [Resources](#resources)
-- [Video Recordings](#video-recordings)
-- [Guidance](#guidance)
-  - [Costs](#costs)
-  - [Security Guidelines](#security-guidelines)
-- [Resources](#resources)
+This project demonstrates a practical Agent2Agent (A2A) scenario using the eShopLite sample as a foundation. The implementation showcases how multiple autonomous agents (microservices) can collaborate to fulfill complex business requests through the official Microsoft [A2A .NET SDK](https://github.com/a2aproject/a2a-dotnet).
 
-## Features
+---
 
-**GitHub CodeSpaces:** This project is designed to be opened in GitHub Codespaces as an easy way for anyone to deploy the solution entirely in the browser.
+## Key Features
 
-This is the eShopLite Aplication running, performing a **Keyword Search**:
+- **A2A .NET SDK Integration:** Leverages the [A2A NuGet package](https://www.nuget.org/packages/A2A/) for agent-to-agent communication.
+- **Three Autonomous Agents:** Inventory, Promotions, and Researcher agents, each with dedicated APIs and A2A message handlers.
+- **Orchestration Service:** The Products API orchestrates agent calls in parallel, aggregates results, and returns enriched product data.
+- **Blazor Frontend:** Store application with a search page supporting A2A search and enhanced results display.
+- **Aspire Integration:** Uses .NET Aspire for service orchestration and deployment.
+- **Comprehensive Unit Tests:** Validates A2A orchestration and agent interactions.
 
-![eShopLite Aplication running doing search using keyworkd search](./images/05eShopLite-SearchKeyWord.gif)
+---
 
-This is the eShopLite Aplication running, performing a **Semantic Search**:
+## Architecture
 
-![eShopLite Aplication running doing search using keyworkd search](./images/06eShopLite-SearchSemantic.gif)
+### High-Level Components
 
-The Aspire Dashboard to check the running services:
+1. **Store (Frontend):** Blazor web application providing the user interface.
+2. **Products API:** Main backend API that orchestrates agent communication using the A2A .NET SDK.
+3. **Three Autonomous Agents:**
+   - **Inventory Agent:** Provides real-time stock levels.
+   - **Promotions Agent:** Supplies active promotions and discounts.
+   - **Researcher Agent:** Delivers product insights and reviews.
 
-![Aspire Dashboard to check the running services](./images/10AzureResources.png)
+### Architectural Diagram
 
-The Azure Resource Group with all the deployed services:
+```text
+┌────────────┐      ┌──────────────┐      ┌────────────────────┐
+│  Store UI  │─────▶│ Products API │─────▶│  A2A Orchestration │
+└────────────┘      └──────────────┘      └─────────┬──────────┘
+                                                    │
+        ┌───────────────────────────────┬───────────┴───────────────┐
+        │                               │                           │
+┌───────────────┐              ┌────────────────┐         ┌──────────────────┐
+│ Inventory     │              │ Promotions     │         │ Researcher       │
+│ Agent         │              │ Agent          │         │ Agent            │
+└───────────────┘              └────────────────┘         └──────────────────┘
+```
 
-![Azure Resource Group with all the deployed services](./images/15AspireDashboard.png)
+---
 
-## Architecture diagram
+## A2A Orchestration Flow
 
-![Architecture diagram](./images/30Diagram.png)
+### Sequence Diagram
+
+```text
+User
+ │
+ │ 1. Search (A2A)
+ ▼
+Store (UI)
+ │
+ │ 2. /api/a2asearch/{search}
+ ▼
+Products API
+ │
+ │ 3. Find products
+ │
+ │ 4. For each product:
+ │     ├─▶ InventoryAgent.HandleInventoryCheckAsync
+ │     ├─▶ PromotionsAgent.HandlePromotionsAsync
+ │     └─▶ ResearcherAgent.HandleInsightsAsync
+ │
+ │ 5. Aggregate responses
+ ▼
+Store (UI)
+ │
+ │ 6. Display enriched results
+```
+
+---
+
+## Implementation Details
+
+- **A2A .NET SDK:** [GitHub](https://github.com/a2aproject/a2a-dotnet) | [NuGet](https://www.nuget.org/packages/A2A/) | [Overview Blog](https://devblogs.microsoft.com/foundry/building-ai-agents-a2a-dotnet-sdk/)
+- **Agent Skills:** Each agent defines its capabilities using `AgentSkill`.
+- **Message Handling:** Agents implement message handlers (e.g., `HandleInventoryCheckAsync`) to process A2A messages.
+- **Parallel Calls:** The Products API orchestrates parallel calls to all agents and aggregates their responses.
+- **Service Registration:** Agents and orchestration services are registered in the DI container.
+
+---
 
 ## Getting Started
 
-The solution is in the `./src` folder, the main solution is **[eShopLite-Aspire.slnx](./src/eShopLite-Aspire.slnx)**.
-
-## Deploying
-
-Once you've opened the project in [Codespaces](#github-codespaces), or [locally](#run-locally), you can deploy it to Azure.
-
-From a Terminal window, open the folder with the clone of this repo and run the following commands.
-
-1. Login to Azure:
-
-    ```shell
-    azd auth login
-    ```
-
-1. Provision and deploy all the resources:
-
-    ```shell
-    azd up
-    ```
-
-    It will prompt you to provide an `azd` environment name (like "eShopLite"), select a subscription from your Azure account, and select a [location where OpenAI the models gpt-4.1-mini and ADA-002 are available](https://azure.microsoft.com/explore/global-infrastructure/products-by-region/?products=cognitive-services&regions=all) (like "eastus2").
-
-1. When `azd` has finished deploying, you'll see the list of resources created in Azure and a set of URIs in the command output.
-
-1. Visit the **store** URI, and you should see the **eShop Lite app**! 🎉
-
-1. This is an example of the command output:
-
-![Deploy Azure Complete](./images/20AzdUpConsoleComplete.png)
-
-1. **Coming Soon!** You can check this video with a 5 minutes overview of the deploy process from codespaces: [Deploy Your **eShopLite - Semantic Search** to Azure in Minutes!]().
-
-***Note:** The deploy files are located in the `./src/eShopAppHost/infra/` folder. They are generated by the `Aspire AppHost` project.*
-
-### GitHub CodeSpaces
-
-- Create a new  Codespace using the `Code` button at the top of the repository.
-
-![create Codespace](./images/25CreateCodeSpaces.png)
-
-- The Codespace creation process can take a couple of minutes.
-
-- Once the Codespace is loaded, it should have all the necessary requirements to deploy the solution.
-
-### Run Locally
-
-To run the project locally, you'll need to make sure the following tools are installed:
+### Prerequisites
 
 - [.NET 9](https://dotnet.microsoft.com/downloads/)
 - [Git](https://git-scm.com/downloads)
 - [Azure Developer CLI (azd)](https://aka.ms/install-azd)
 - [Visual Studio Code](https://code.visualstudio.com/Download) or [Visual Studio](https://visualstudio.microsoft.com/downloads/)
   - If using Visual Studio Code, install the [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
-- .NET Aspire workload:
-    Installed with the [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire) or the [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire).
-- An OCI compliant container runtime, such as:
-  - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/).
+- .NET Aspire workload ([setup guide](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire))
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/)
 
-### Run the solution
+### Running Locally
 
-Follow these steps to run the project, locally or in CodeSpaces:
+1. Navigate to the AppHost project:
 
-- Navigate to the Aspire Host folder project using the command:
+   ```shell
+   cd ./src/eShopAppHost/
+   ```
 
-  ```bash
-  cd ./src/eShopAppHost/
-  ```
+2. (Codespaces only) Trust HTTPS dev certs:
 
-- If you are running the project in Codespaces, you need to run this command:
+   ```shell
+   dotnet dev-certs https --trust
+   ```
 
-  ```bash
-  dotnet dev-certs https --trust
-  ```
+3. Run the solution:
 
-- By default the AppHost project creates the necessary resources on Azure. Check the **[.NET Aspire Azure Resources creation](#net-aspire-azure-resources-creation)** section to learn how to configure the project to create Azure resources.
+   ```shell
+   dotnet run
+   ```
 
-- Run the project:
+4. Open the Store app in your browser, go to the Search page, select "A2A Search (Agent-to-Agent)", and search for products.
 
-  ```bash
-  dotnet run
-  ````
+### Deploying to Azure
 
-Check the [Video Resources](#resources) for a step-by-step on how to run this project.
+1. Login to Azure:
 
-> **Note:** Working with .NET Aspire in GitHub Codespaces is not fully supported yet. As a developer you need to perform a lot of manual steps to access the .NET Aspire portal, like changing ports to public, copy the access token and more. The .NET Aspire version 9.1 will improve the whole developer experience. We will update these steps when the version 9.1 is released.
+   ```shell
+   azd auth login
+   ```
 
-## .NET Aspire Azure Resources creation
+2. Provision and deploy resources:
 
-When utilizing Azure resources in your local development environment, you need to:
+   ```shell
+   azd up
+   ```
 
-- Authenticate to the Azure Tenant where the resources will be created. Run the following command to connect with your Azure tenant:
+3. Follow the prompts for environment name, subscription, and region.
+4. When deployment completes, visit the Store URI to use the app.
 
-  ```bash
-  az login 
-  ```
-- Provide the necessary Configuration values are specified under the Azure section in the `eShopAppHost` project:
+---
 
-  - CredentialSource: Delegates to the [AzureCliCredential](https://learn.microsoft.com/dotnet/api/azure.identity.azureclicredential).
-  - SubscriptionId: The Azure subscription ID.
-  - AllowResourceGroupCreation: A boolean value that indicates whether to create a new resource group.
-  - ResourceGroup: The name of the resource group to use.
-  - Location: The Azure region to use.
-
-Consider the following example for the *appsettings.json* file in the eShopAppHost project configuration:
+## Data Model Example
 
 ```json
 {
-  "Azure": {
-    "CredentialSource": "AzureCli",
-    "SubscriptionId": "<Your subscription id>",
-    "AllowResourceGroupCreation": true,
-    "ResourceGroup": "<Valid resource group name>",
-    "Location": "<Valid Azure location>"
-  }
+  "response": "Found X products enriched with inventory, promotions, and insights data.",
+  "products": [
+    {
+      "productId": "1",
+      "name": "Product Name",
+      "description": "Product Description",
+      "price": 99.99,
+      "imageUrl": "image.jpg",
+      "stock": 42,
+      "promotions": [
+        { "title": "Special Offer", "discount": 15 }
+      ],
+      "insights": [
+        { "review": "Great product!", "rating": 4.5 }
+      ]
+    }
+  ]
 }
 ```
 
-Check [.NET Aspire Azure hosting integrations](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#net-aspire-azure-hosting-integrations) for more information on how .NET Aspire create the necessary cloud resources for local development.
+---
 
-### Local development using an existing gpt-4.1-mini and ada-002 model
+## References & Resources
 
-In order to use existing models: gpt-4.1-mini and text-embedding-ada-002, you need to define the specific connection string in the `Products` project.
-
-Add a user secret with the configuration:
-
-```bash
-cd src/Products
-
-dotnet user-secrets set "ConnectionStrings:openaidev" "Endpoint=https://<endpoint>.openai.azure.com/;Key=<key>;"
-```
-
-This Azure OpenAI service must contain:
-
-- a `gpt-4.1-mini` model named **gpt-4.1-mini**
-- a `text-embedding-ada-002` model named **text-embedding-ada-002**
-
-To use these services, edit the `program.cs`, and change this:
-
-```csharp
-// in dev scenarios rename this to "openaidev", and check the documentation to reuse existing AOAI resources
-var azureOpenAiClientName = "openai";
-builder.AddAzureOpenAIClient(azureOpenAiClientName);
-```
-
-to this:
-
-```csharp
-// in dev scenarios rename this to "openaidev", and check the documentation to reuse existing AOAI resources
-var azureOpenAiClientName = "openaidev";
-builder.AddAzureOpenAIClient(azureOpenAiClientName);
-```
-
-### Telemetry with .NET Aspire and Azure Application Insights
-
-The eShopLite solution leverages the Aspire Dashboard and Azure Application Insights to provide comprehensive telemetry and monitoring capabilities
-
-The **.NET Aspire Dashboard** offers a centralized view of the application's performance, health, and usage metrics. It integrates seamlessly with the Azure OpenAI services, allowing developers to monitor the performance of the `gpt-4.1-mini` and `text-embedding-ada-002` models. The dashboard provides real-time insights into the application's behavior, helping to identify and resolve issues quickly.
-
-![Aspire Dashboard](./images/40AspireDashboard.png)
-
-**Azure Application Insights** complements the Aspire Dashboard by offering deep diagnostic capabilities and advanced analytics. It collects detailed telemetry data, including request rates, response times, and failure rates, enabling developers to understand how the application is performing under different conditions. Application Insights also provides powerful querying and visualization tools, making it easier to analyze trends and detect anomalies. 
-
-![Azure Application Insights](./images/45AppInsightsDashboard.png)
-
-By combining the Aspire Dashboard with Azure Application Insights, the eShopLite solution ensures robust monitoring and diagnostics, enhancing the overall reliability and performance of the application.
-
-## Guidance
-
-### Costs
-
-For **Azure OpenAI Services**, pricing varies per region and usage, so it isn't possible to predict exact costs for your usage.
-The majority of the Azure resources used in this infrastructure are on usage-based pricing tiers.
-However, Azure Container Registry has a fixed cost per registry per day.
-
-You can try the [Azure pricing calculator](https://azure.com/e/2176802ea14941e4959eae8ad335aeb5) for the resources:
-
-- Azure OpenAI Service: S0 tier, gpt-4.1-mini and text-embedding-ada-002 models. Pricing is based on token count. [Pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/)
-- Azure Container App: Consumption tier with 0.5 CPU, 1GiB memory/storage. Pricing is based on resource allocation, and each month allows for a certain amount of free usage. [Pricing](https://azure.microsoft.com/pricing/details/container-apps/)
-- Azure Container Registry: Basic tier. [Pricing](https://azure.microsoft.com/pricing/details/container-registry/)
-- Log analytics: Pay-as-you-go tier. Costs based on data ingested. [Pricing](https://azure.microsoft.com/pricing/details/monitor/)
-- Azure Application Insights pricing is based on a Pay-As-You-Go model. [Pricing](https://learn.microsoft.com/azure/azure-monitor/logs/cost-logs).
-
-⚠️ To avoid unnecessary costs, remember to take down your app if it's no longer in use, either by deleting the resource group in the Portal or running `azd down`.
-
-### Security Guidelines
-
-Samples in this templates uses Azure OpenAI Services with ApiKey and [Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
-
-The Main Sample uses Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
-
-Additionally, we have added a [GitHub Action](https://github.com/microsoft/security-devops-action) that scans the infrastructure-as-code files and generates a report containing any detected issues. To ensure continued best practices in your own repository, we recommend that anyone creating solutions based on our templates ensure that the [Github secret scanning](https://docs.github.com/code-security/secret-scanning/about-secret-scanning) setting is enabled.
-
-You may want to consider additional security measures, such as:
-
-- Protecting the Azure Container Apps instance with a [firewall](https://learn.microsoft.com/azure/container-apps/waf-app-gateway) and/or [Virtual Network](https://learn.microsoft.com/azure/container-apps/networking?tabs=workload-profiles-env%2Cazure-cli).
-
-## Want to know more?
-
-For detailed technical documentation about the components and features of this scenario, including implementation details, architecture patterns, and configuration guides, see the comprehensive documentation:
-
-**[📚 View Complete Technical Documentation](./docs/README.md)**
-
-The documentation includes:
-- Service architecture and .NET Aspire orchestration
-- Azure OpenAI integration patterns
-- Semantic search implementation details  
-- Memory context and vector operations
-- API endpoints and data models
-- Configuration and deployment guides
-
-## Resources
-
+- [A2A .NET SDK GitHub](https://github.com/a2aproject/a2a-dotnet)
+- [A2A .NET SDK NuGet](https://www.nuget.org/packages/A2A/)
+- [A2A .NET SDK Overview Blog](https://devblogs.microsoft.com/foundry/building-ai-agents-a2a-dotnet-sdk/)
+- [eShopLite Main Repository](../..)
 - [Deploy a .NET Aspire project to Azure Container Apps using the Azure Developer CLI (in-depth guide)](https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth)
 
-- [Aspiring .NET Applications with Azure OpenAI](https://learn.microsoft.com/shows/azure-developers-dotnet-aspire-day-2024/aspiring-dotnet-applications-with-azure-openai)
+---
 
-### Video Recordings
-
-[![Run eShopLite Semantic Search in Minutes with .NET Aspire & GitHub Codespaces 🚀](./images/90ytrunfromcodespaces.png)](https://youtu.be/T9HwjVIDPAE)
+*This scenario is part of the eShopLite sample, demonstrating advanced agent orchestration patterns for .NET developers using the official A2A .NET SDK.*
