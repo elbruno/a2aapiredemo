@@ -17,5 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Products\Products.csproj" />
     <ProjectReference Include="..\Store\Store.csproj" />
+    <ProjectReference Include="..\InventoryAgent\InventoryAgent.csproj" />
+    <ProjectReference Include="..\PromotionsAgent\PromotionsAgent.csproj" />
+    <ProjectReference Include="..\ResearcherAgent\ResearcherAgent.csproj" />
   </ItemGroup>
 </Project>

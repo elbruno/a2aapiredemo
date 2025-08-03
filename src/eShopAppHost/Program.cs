@@ -6,8 +6,16 @@ var sqldb = builder.AddSqlServer("sql")
     .WithDataVolume()
     .AddDatabase("sqldb");
 
+// Add the three agent services
+var inventoryAgent = builder.AddProject<Projects.InventoryAgent>("inventory-agent");
+var promotionsAgent = builder.AddProject<Projects.PromotionsAgent>("promotions-agent");  
+var researcherAgent = builder.AddProject<Projects.ResearcherAgent>("researcher-agent");
+
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(sqldb)
+    .WithReference(inventoryAgent)
+    .WithReference(promotionsAgent)
+    .WithReference(researcherAgent)
     .WaitFor(sqldb);
 
 var store = builder.AddProject<Projects.Store>("store")
