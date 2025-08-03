@@ -30,7 +30,7 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - Solution Path: `src\eShopLite-A2A.slnx`
 - **Frontend store project:** `src\Store` (this is the main web UI for users to perform product searches)
 - **Products main backend API:** `src\Products` (this is the main backend API for product-related operations and agent orchestration)
-- All agents must be added to Aspire orchestration and communicate using the A2A SDK.
+- All agents must be added to Aspire orchestration and communicate using the A2A SDK. *Aspire is a .NET application composition and orchestration framework for cloud-native apps. See: <https://devblogs.microsoft.com/dotnet/introducing-dotnet-aspire/>*
 - The solution must include the Store project as the FrontEnd, which allows users to perform product searches.
 
 #### 3.2 Agents (Web Projects)
@@ -38,15 +38,23 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - **Inventory Agent**
   - Provides real-time stock levels for products.
   - API: `/api/inventory/check` — Accepts a product ID, returns current stock quantity.
+    - Example request: `{ "productId": "string" }`
+    - Example response: `{ "productId": "string", "stock": 42 }`
 - **Promotions Agent**
   - Supplies active promotions or discounts for products.
   - API: `/api/promotions/active` — Accepts a product ID, returns current promotions.
+    - Example request: `{ "productId": "string" }`
+    - Example response: `{ "productId": "string", "promotions": [ { "title": "string", "discount": 10 } ] }`
 - **Researcher Agent**
   - Delivers product insights, reviews, or ratings.
   - API: `/api/researcher/insights` — Accepts a product ID, returns aggregated insights.
+    - Example request: `{ "productId": "string" }`
+    - Example response: `{ "productId": "string", "insights": [ { "review": "string", "rating": 4.5 } ] }`
 - **Products Agent**
   - Orchestrates the search process and aggregates responses from all agents.
   - API: `A2ASearch` endpoint — Accepts a search query, coordinates with other agents, and returns a comprehensive result.
+    - Example request: `{ "query": "string" }`
+    - Example response: `{ "products": [ { "productId": "string", "name": "string", "stock": 42, "promotions": [ ... ], "insights": [ ... ] } ] }`
   - Also exposes endpoints for standard and semantic search as in the base scenario.
 
 #### 3.3 Orchestration Flow
@@ -67,6 +75,7 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
   - Semantic Search → semantic search endpoint
   - A2A Search → `A2ASearch` endpoint
 - The UI must display the enriched results returned by the A2A Search, including product details, stock status, promotions, and insights.
+- The UI must be accessible (WCAG 2.1 AA compliant) and responsive for desktop and mobile devices.
 
 ---
 
@@ -77,6 +86,9 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - The architecture and orchestration flow must be documented.
 - The user experience in the FrontEnd must be intuitive, with clear feedback for each search type and error handling for failed agent calls.
 - All APIs must return consistent, well-structured JSON responses.
+- The system must gracefully handle agent failures (e.g., if Promotions agent is unavailable, return results with a warning and partial data).
+- The A2A Search endpoint should respond within 2 seconds for typical queries (performance target).
+- Unit and integration tests must be provided for each agent and the frontend, in addition to Playwright E2E tests.
 
 ---
 
@@ -92,6 +104,15 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - [ ] Ensure the solution builds and runs successfully end-to-end.
 - [ ] Document the architecture, agent responsibilities, orchestration flow, and any implementation details or challenges.
 - [ ] Use Playwright MCP Tools to automate navigation and testing of the site, and to take screenshots. Navigation must start from the AppHost Aspire project, then launch the store from there.
+- [ ] Implement unit and integration tests for all agents and the frontend.
+
+---
+
+### 9. Glossary
+
+- **A2A**: Agent-to-Agent, a pattern and SDK for enabling autonomous agents to communicate and collaborate.
+- **Aspire**: .NET application composition and orchestration framework for cloud-native apps.
+- **MCP**: Model Context Protocol, used for Playwright MCP Tools in automated testing.
 
 ---
 
