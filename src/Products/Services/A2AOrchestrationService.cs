@@ -1,6 +1,8 @@
 using DataEntities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 using Products.Models;
+using Products.Services.Agents;
 using SearchEntities;
 using System.Text.Json;
 
@@ -9,16 +11,22 @@ namespace Products.Services;
 public class A2AOrchestrationService : IA2AOrchestrationService
 {
     private readonly Context _db;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly InventoryAgent _inventoryAgent;
+    private readonly PromotionsAgent _promotionsAgent;
+    private readonly ResearcherAgent _researcherAgent;
     private readonly ILogger<A2AOrchestrationService> _logger;
 
     public A2AOrchestrationService(
         Context db,
-        IHttpClientFactory httpClientFactory,
+        InventoryAgent inventoryAgent,
+        PromotionsAgent promotionsAgent,
+        ResearcherAgent researcherAgent,
         ILogger<A2AOrchestrationService> logger)
     {
         _db = db;
-        _httpClientFactory = httpClientFactory;
+        _inventoryAgent = inventoryAgent;
+        _promotionsAgent = promotionsAgent;
+        _researcherAgent = researcherAgent;
         _logger = logger;
     }
 
@@ -46,14 +54,14 @@ public class A2AOrchestrationService : IA2AOrchestrationService
                     ImageUrl = product.ImageUrl
                 };
 
-                // Step 3: Call Inventory Agent
-                var inventoryTask = GetInventoryAsync(product.Id.ToString());
+                // Step 3: Call agents using Semantic Kernel Agents framework
+                var inventoryTask = _inventoryAgent.CheckInventoryAsync(product.Id.ToString());
                 
                 // Step 4: Call Promotions Agent  
-                var promotionsTask = GetPromotionsAsync(product.Id.ToString());
+                var promotionsTask = _promotionsAgent.GetPromotionsAsync(product.Id.ToString());
                 
                 // Step 5: Call Researcher Agent
-                var insightsTask = GetInsightsAsync(product.Id.ToString());
+                var insightsTask = _researcherAgent.GetInsightsAsync(product.Id.ToString());
 
                 // Wait for all agent calls to complete
                 await Task.WhenAll(inventoryTask, promotionsTask, insightsTask);
@@ -86,80 +94,4 @@ public class A2AOrchestrationService : IA2AOrchestrationService
             };
         }
     }
-
-    private async Task<InventoryResponse?> GetInventoryAsync(string productId)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient("InventoryAgent");
-            var request = new InventoryRequest(productId);
-            
-            var response = await client.PostAsJsonAsync("/api/inventory/check", request);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<InventoryResponse>();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to get inventory for product {productId}", productId);
-        }
-        
-        return null;
-    }
-
-    private async Task<PromotionsResponse?> GetPromotionsAsync(string productId)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient("PromotionsAgent");
-            var request = new PromotionsRequest(productId);
-            
-            var response = await client.PostAsJsonAsync("/api/promotions/active", request);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<PromotionsResponse>();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to get promotions for product {productId}", productId);
-        }
-        
-        return null;
-    }
-
-    private async Task<ResearchResponse?> GetInsightsAsync(string productId)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient("ResearcherAgent");
-            var request = new ResearchRequest(productId);
-            
-            var response = await client.PostAsJsonAsync("/api/researcher/insights", request);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<ResearchResponse>();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to get insights for product {productId}", productId);
-        }
-        
-        return null;
-    }
 }
-
-// Agent request/response models
-public record InventoryRequest(string ProductId);
-public record InventoryResponse(string ProductId, int Stock);
-
-public record PromotionsRequest(string ProductId);
-public record PromotionsResponse(string ProductId, List<A2APromotion> Promotions);
-
-public record ResearchRequest(string ProductId);
-public record ResearchResponse(string ProductId, List<A2AInsight> Insights);

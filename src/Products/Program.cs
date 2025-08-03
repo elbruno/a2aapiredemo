@@ -5,6 +5,7 @@ using Products.Endpoints;
 using Products.Memory;
 using Products.Models;
 using Products.Services;
+using Products.Services.Agents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,7 +74,7 @@ builder.Services.AddSingleton(sp =>
     return new MemoryContext(logger, sp.GetService<ChatClient>(), sp.GetService<EmbeddingClient>());
 });
 
-// Configure HttpClients for agents
+// Configure HttpClients for agents (still needed for agent implementations)
 builder.Services.AddHttpClient("InventoryAgent", client =>
 {
     client.BaseAddress = new Uri("http://inventory-agent");
@@ -88,6 +89,11 @@ builder.Services.AddHttpClient("ResearcherAgent", client =>
 {
     client.BaseAddress = new Uri("http://researcher-agent");
 });
+
+// Add A2A Agents using Semantic Kernel framework
+builder.Services.AddScoped<InventoryAgent>();
+builder.Services.AddScoped<PromotionsAgent>();
+builder.Services.AddScoped<ResearcherAgent>();
 
 // Add A2A Orchestration Service
 builder.Services.AddScoped<IA2AOrchestrationService, A2AOrchestrationService>();
