@@ -195,4 +195,5 @@ public interface IProductService
 {
     Task<List<Product>> GetProducts();
     Task<SearchResponse?> Search(string searchTerm, bool semanticSearch = false);
+    Task<SearchResponse?> SearchWithType(string searchTerm, SearchType searchType);
 }
