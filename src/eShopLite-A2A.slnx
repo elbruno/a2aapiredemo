@@ -7,12 +7,17 @@
     <Project Path="Products/Products.csproj" />
     <Project Path="Store/Store.csproj" />
   </Folder>
-  <Folder Name="/3 Models/">
+  <Folder Name="/3 Agents/">
+    <Project Path="InventoryAgent/InventoryAgent.csproj" />
+    <Project Path="PromotionsAgent/PromotionsAgent.csproj" />
+    <Project Path="ResearcherAgent/ResearcherAgent.csproj" />
+  </Folder>
+  <Folder Name="/4 Models/">
     <Project Path="DataEntities/DataEntities.csproj" />
     <Project Path="SearchEntities/SearchEntities.csproj" />
     <Project Path="VectorEntities/VectorEntities.csproj" />
   </Folder>
-  <Folder Name="/4 Tests/">
+  <Folder Name="/5 Tests/">
     <Project Path="Products.Tests/Products.Tests.csproj" />
   </Folder>
   <Project Path="CartEntities/CartEntities.csproj" />

@@ -1,5 +1,6 @@
 ﻿@page "/search"
 @using Store.Services
+@using SearchEntities
 
 @inject IProductService ProductService
 @inject IConfiguration Configuration
@@ -18,10 +19,16 @@
         <input type="text" id="search" class="form-control" @bind="searchTerm" placeholder="Enter search term..." />
         <button id="btnSearch" class="btn btn-primary" @onclick="DoSearch" type="submit">Search</button>
     </div>
-    <div class="form-check form-switch mb-3">
-        <InputCheckbox id="smartSearch2" @bind-Value="smartSearch" />
-        <label class="form-check-label" for="smartSearch">Use Semantic Search</label>
+    
+    <div class="mb-3">
+        <label for="searchType" class="form-label">Search Type:</label>
+        <select id="searchType" class="form-select" @bind="selectedSearchType">
+            <option value="@SearchType.Standard">Standard Search</option>
+            <option value="@SearchType.Semantic">Semantic Search</option>
+            <option value="@SearchType.A2A">A2A Search (Agent-to-Agent)</option>
+        </select>
     </div>
+    
     <hr />
     <p class="quote">@aiResponse</p>
 </div>
@@ -61,13 +68,13 @@ else
     private string searchTerm = "";
     private List<DataEntities.Product>? products;
     private string aiResponse = "";
-    private bool smartSearch = false;
+    private SearchType selectedSearchType = SearchType.Standard;
 
     private async Task DoSearch(MouseEventArgs e)
     {
         await Task.Delay(500);
-        var response = await ProductService.Search(searchTerm, smartSearch);
-        aiResponse = response.Response;
-        products = response.Products;
+        var response = await ProductService.SearchWithType(searchTerm, selectedSearchType);
+        aiResponse = response?.Response ?? "No response";
+        products = response?.Products ?? new List<DataEntities.Product>();
     }
 }

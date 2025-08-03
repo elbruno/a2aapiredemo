@@ -84,5 +84,12 @@ public static class ProductEndpoints
             .Produces<SearchResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
         #endregion
+
+        #region A2A Search Endpoint
+        routes.MapGet("/api/a2asearch/{search}", A2AActions.A2ASearch)
+            .WithName("A2ASearch")
+            .Produces<A2ASearchResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+        #endregion
     }
 }

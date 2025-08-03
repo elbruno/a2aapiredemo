@@ -4,6 +4,8 @@ using OpenAI.Embeddings;
 using Products.Endpoints;
 using Products.Memory;
 using Products.Models;
+using Products.Services;
+using Products.Services.Agents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +73,30 @@ builder.Services.AddSingleton(sp =>
     logger.LogInformation("Creating memory context");
     return new MemoryContext(logger, sp.GetService<ChatClient>(), sp.GetService<EmbeddingClient>());
 });
+
+// Configure HttpClients for agents
+builder.Services.AddHttpClient("InventoryAgent", client =>
+{
+    client.BaseAddress = new Uri("http://inventory-agent");
+});
+
+builder.Services.AddHttpClient("PromotionsAgent", client =>
+{
+    client.BaseAddress = new Uri("http://promotions-agent");
+});
+
+builder.Services.AddHttpClient("ResearcherAgent", client =>
+{
+    client.BaseAddress = new Uri("http://researcher-agent");
+});
+
+// Add A2A Agents using A2A .NET SDK
+builder.Services.AddScoped<InventoryAgent>();
+builder.Services.AddScoped<PromotionsAgent>();
+builder.Services.AddScoped<ResearcherAgent>();
+
+// Add A2A Orchestration Service
+builder.Services.AddScoped<IA2AOrchestrationService, A2AOrchestrationService>();
 
 // Add services to the container.
 var app = builder.Build();
