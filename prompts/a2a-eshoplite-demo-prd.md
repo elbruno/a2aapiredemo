@@ -28,7 +28,10 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 #### 3.1 Solution Structure
 
 - Solution Path: `src\eShopLite-A2A.slnx`
+- **Frontend store project:** `src\Store` (this is the main web UI for users to perform product searches)
+- **Products main backend API:** `src\Products` (this is the main backend API for product-related operations and agent orchestration)
 - All agents must be added to Aspire orchestration and communicate using the A2A SDK.
+- The solution must include the Store project as the FrontEnd, which allows users to perform product searches.
 
 #### 3.2 Agents (Web Projects)
 
@@ -44,6 +47,7 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - **Products Agent**
   - Orchestrates the search process and aggregates responses from all agents.
   - API: `A2ASearch` endpoint — Accepts a search query, coordinates with other agents, and returns a comprehensive result.
+  - Also exposes endpoints for standard and semantic search as in the base scenario.
 
 #### 3.3 Orchestration Flow
 
@@ -55,6 +59,15 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
       - Queries Researcher Agent for product insights or reviews.
   3. Products Agent aggregates all responses and returns a unified result, including product details, stock status, promotions, and insights.
 
+#### 3.4 FrontEnd Requirements
+
+- The search page in the Store project (`src\Store`) must include a combo box (dropdown) that allows the user to select the search type: Standard Search, Semantic Search, or A2A Search.
+- Based on the selected search type, the frontend must call the appropriate endpoint in the Products API (`src\Products`):
+  - Standard Search → standard search endpoint
+  - Semantic Search → semantic search endpoint
+  - A2A Search → `A2ASearch` endpoint
+- The UI must display the enriched results returned by the A2A Search, including product details, stock status, promotions, and insights.
+
 ---
 
 ### 4. Non-Functional Requirements
@@ -62,6 +75,8 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - The solution must build and run successfully end-to-end.
 - Code should be clean, maintainable, and well-documented.
 - The architecture and orchestration flow must be documented.
+- The user experience in the FrontEnd must be intuitive, with clear feedback for each search type and error handling for failed agent calls.
+- All APIs must return consistent, well-structured JSON responses.
 
 ---
 
@@ -70,8 +85,13 @@ This project demonstrates a practical Agent2Agent (A2A) scenario using the eShop
 - [ ] Add and implement the three new web projects (Inventory, Promotions, Researcher) as described above.
 - [ ] Integrate all agents into Aspire orchestration.
 - [ ] Implement the `A2ASearch` endpoint in the Products agent to coordinate the multi-agent workflow.
+- [ ] Update the FrontEnd project:
+  - [ ] Add a combo box to the search page for selecting search type (Standard, Semantic, A2A).
+  - [ ] Implement logic to call the correct Products endpoint based on the selected search type.
+  - [ ] Display all relevant data in the UI, including enriched results from A2A Search.
 - [ ] Ensure the solution builds and runs successfully end-to-end.
 - [ ] Document the architecture, agent responsibilities, orchestration flow, and any implementation details or challenges.
+- [ ] Use Playwright MCP Tools to automate navigation and testing of the site, and to take screenshots. Navigation must start from the AppHost Aspire project, then launch the store from there.
 
 ---
 
