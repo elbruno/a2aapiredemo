@@ -74,7 +74,7 @@ builder.Services.AddSingleton(sp =>
     return new MemoryContext(logger, sp.GetService<ChatClient>(), sp.GetService<EmbeddingClient>());
 });
 
-// Configure HttpClients for agents (still needed for agent implementations)
+// Configure HttpClients for agents
 builder.Services.AddHttpClient("InventoryAgent", client =>
 {
     client.BaseAddress = new Uri("http://inventory-agent");
@@ -90,7 +90,7 @@ builder.Services.AddHttpClient("ResearcherAgent", client =>
     client.BaseAddress = new Uri("http://researcher-agent");
 });
 
-// Add A2A Agents using Semantic Kernel framework
+// Add A2A Agents using A2A .NET SDK
 builder.Services.AddScoped<InventoryAgent>();
 builder.Services.AddScoped<PromotionsAgent>();
 builder.Services.AddScoped<ResearcherAgent>();
