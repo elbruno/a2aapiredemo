@@ -1,7 +1,8 @@
 ﻿@page "/search"
 @using Store.Services
+@using SearchEntities
 
-@inject IProductService ProductService
+@inject ISearchService SearchService
 @inject IConfiguration Configuration
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
@@ -10,7 +11,7 @@
 
 <h1>Search Products</h1>
 
-<p>Search our amazing outdoor products that you can purchase.</p>
+<p>Search our amazing outdoor products and content using natural language.</p>
 
 <div class="form-group">
     <label for="search" class="form-label">Type your question:</label>
@@ -18,56 +19,93 @@
         <input type="text" id="search" class="form-control" @bind="searchTerm" placeholder="Enter search term..." />
         <button id="btnSearch" class="btn btn-primary" @onclick="DoSearch" type="submit">Search</button>
     </div>
-    <div class="form-check form-switch mb-3">
-        <InputCheckbox id="smartSearch2" @bind-Value="smartSearch" />
-        <label class="form-check-label" for="smartSearch">Use Semantic Search</label>
-    </div>
     <hr />
     <p class="quote">@aiResponse</p>
 </div>
 
-
-@if (products == null)
+@if (isLoading)
 {
     <p><em>Loading...</em></p>
 }
-else
+else if (searchResults != null && searchResults.Any())
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var product in products)
-            {
-                <tr>
-                    <!-- Simulating images being hosted on a CDN -->
-                    <td><img height="80" width="80" src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" /></td>
-                    <td>@product.Name</td>
-                    <td>@product.Description</td>
-                    <td>@product.Price</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="search-results">
+        <p><strong>Found @searchResponse?.Count results for "@searchResponse?.Query"</strong></p>
+        
+        @foreach (var result in searchResults)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="@result.Url" class="text-decoration-none">@result.Title</a>
+                    </h5>
+                    <p class="card-text">@result.Snippet</p>
+                    <small class="text-muted">
+                        Score: @result.Score.ToString("F2")
+                        @if (result.Metadata.Any())
+                        {
+                            <span> | </span>
+                            @foreach (var meta in result.Metadata.Take(2))
+                            {
+                                <span class="badge bg-secondary me-1">@meta.Key: @meta.Value</span>
+                            }
+                        }
+                    </small>
+                </div>
+            </div>
+        }
+    </div>
+}
+else if (hasSearched)
+{
+    <div class="alert alert-info">
+        <h4>No results found</h4>
+        <p>Try different keywords or check your spelling.</p>
+    </div>
 }
 
 @code {
     private string searchTerm = "";
-    private List<DataEntities.Product>? products;
+    private List<SearchResult>? searchResults;
+    private SearchResponse? searchResponse;
     private string aiResponse = "";
-    private bool smartSearch = false;
+    private bool isLoading = false;
+    private bool hasSearched = false;
 
     private async Task DoSearch(MouseEventArgs e)
     {
-        await Task.Delay(500);
-        var response = await ProductService.Search(searchTerm, smartSearch);
-        aiResponse = response.Response;
-        products = response.Products;
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return;
+        }
+
+        isLoading = true;
+        hasSearched = false;
+        searchResults = null;
+        aiResponse = "";
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(100); // Small delay to show loading state
+            searchResponse = await SearchService.SearchAsync(searchTerm);
+            
+            if (searchResponse != null)
+            {
+                searchResults = searchResponse.Results;
+                aiResponse = searchResponse.Response ?? $"Found {searchResponse.Count} results";
+            }
+        }
+        catch (Exception ex)
+        {
+            aiResponse = "Search failed. Please try again.";
+            searchResults = new List<SearchResult>();
+        }
+        finally
+        {
+            isLoading = false;
+            hasSearched = true;
+            StateHasChanged();
+        }
     }
 }

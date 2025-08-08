@@ -10,9 +10,14 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(sqldb)
     .WaitFor(sqldb);
 
+var search = builder.AddProject<Projects.Search>("search")
+    .WithExternalHttpEndpoints();
+
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
+    .WithReference(search)
     .WaitFor(products)
+    .WaitFor(search)
     .WithExternalHttpEndpoints();
 
 if (builder.ExecutionContext.IsPublishMode)
@@ -38,6 +43,8 @@ if (builder.ExecutionContext.IsPublishMode)
         .WithReference(aoai)
         .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
         .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+    search.WithReference(appInsights);
 
     store.WithReference(appInsights)
         .WithExternalHttpEndpoints();
