@@ -10,12 +10,16 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IChatClientService, ChatClientService>();
 
 builder.Services.AddHttpClient<IProductService, ProductService>(
     static client => client.BaseAddress = new("https+http://products"));
 
 builder.Services.AddHttpClient<ISearchService, SearchService>(
     static client => client.BaseAddress = new("https+http://search"));
+
+builder.Services.AddHttpClient<IChatClientService, ChatClientService>(
+    static client => client.BaseAddress = new("https+http://chat"));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

@@ -1,4 +1,5 @@
 ﻿@using Store.Components.Cart
+@using Store.Components.Chat
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -18,6 +19,9 @@
 </div>
 
 <CartOffcanvas IsVisible="isCartVisible" IsVisibleChanged="OnCartVisibilityChanged" OnCartUpdated="OnCartUpdated" />
+
+<!-- Chat Widget -->
+<ChatWidget @rendermode="InteractiveServer" />
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
