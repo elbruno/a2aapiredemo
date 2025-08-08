@@ -2,12 +2,18 @@ using Azure.Provisioning.CognitiveServices;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sqldb = builder.AddSqlServer("sql")
+var sql = builder.AddSqlServer("sql")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithImageTag("2025-latest")
+    .WithEnvironment("ACCEPT_EULA", "Y");
+
+var productsDb = sql
     .WithDataVolume()
-    .AddDatabase("sqldb");
+    .AddDatabase("productsDb");
 
 // Add NLWeb Docker container with proper configuration
-var nlweb = builder.AddContainer("nlweb", "nlweb/nlweb")
+var nlweb = builder.AddDockerfile(
+    "nlweb", "src/eShopAppHost", "NLWeb.Dockerfile")
     .WithHttpEndpoint(port: 8000, targetPort: 8000, name: "http")
     .WithEnvironment("NLWEB_PORT", "8000")
     .WithEnvironment("NLWEB_HOST", "0.0.0.0")
@@ -18,8 +24,8 @@ var nlweb = builder.AddContainer("nlweb", "nlweb/nlweb")
     .WithLifetime(ContainerLifetime.Persistent);
 
 var products = builder.AddProject<Projects.Products>("products")
-    .WithReference(sqldb)
-    .WaitFor(sqldb)
+    .WithReference(productsDb)
+    .WaitFor(productsDb)
     .WithExternalHttpEndpoints();
 
 var search = builder.AddProject<Projects.Search>("search")
@@ -45,15 +51,15 @@ if (builder.ExecutionContext.IsPublishMode)
 {
     // production code uses Azure services, so we need to add them here
     var appInsights = builder.AddAzureApplicationInsights("appInsights");
-    var chatDeploymentName = "gpt-41-mini";
+    var chatDeploymentName = "gpt-5-mini";
     var embeddingsDeploymentName = "text-embedding-ada-002";
     var aoai = builder.AddAzureOpenAI("openai");
 
-    var gpt41mini = aoai.AddDeployment(name: chatDeploymentName,
-            modelName: "gpt-4.1-mini",
-            modelVersion: "2025-04-14");
-    gpt41mini.Resource.SkuCapacity = 10;
-    gpt41mini.Resource.SkuName = "GlobalStandard";
+    var gpt5mini = aoai.AddDeployment(name: chatDeploymentName,
+            modelName: "gpt-5-mini",
+            modelVersion: "2025-08-07");
+    gpt5mini.Resource.SkuCapacity = 10;
+    //gpt5mini.Resource.SkuName = "GlobalStandard";
 
     var embeddingsDeployment = aoai.AddDeployment(name: embeddingsDeploymentName,
         modelName: "text-embedding-ada-002",
@@ -66,7 +72,7 @@ if (builder.ExecutionContext.IsPublishMode)
         .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
     search.WithReference(appInsights);
-    
+
     chat.WithReference(appInsights);
 
     store.WithReference(appInsights)
