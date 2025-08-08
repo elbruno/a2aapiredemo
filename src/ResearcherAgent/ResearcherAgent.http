@@ -1,6 +1,0 @@
-@ResearcherAgent_HostAddress = http://localhost:5105
-
-GET {{ResearcherAgent_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
