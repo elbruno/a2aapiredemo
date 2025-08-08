@@ -9,8 +9,15 @@ Authoring source: `prompts/nlweb-eshoplite-demo.md`
 
 ## 1. Overview
 
-Build a new eShopLite search experience in C# that uses NLWeb to search across the website’s rendered content (product pages, categories, FAQs/marketing pages). Do not use the existing eShopLite Semantic Search scenario (no embeddings/vector DB from the legacy path). The deliverable is a production-quality demo slice with clear contracts, tests, and telemetry.
+Build a new eShopLite search experience in C# that uses NLWeb to search across the website’s rendered content (product pages, categories, FAQs/marketing pages). The Search API **must be implemented using the official NLWebNet library** (<https://github.com/nlweb-ai/nlweb-net>), the .NET 9 implementation of the NLWeb protocol. Do not use the existing eShopLite Semantic Search scenario (no embeddings/vector DB from the legacy path). The deliverable is a production-quality demo slice with clear contracts, tests, and telemetry.
 
+References:
+
+- NLWebNet (.NET 9 implementation): <https://github.com/nlweb-ai/nlweb-net>
+- NLWebNet NuGet: <https://www.nuget.org/packages/NLWebNet/>
+- NLWeb blog: <https://news.microsoft.com/source/features/company-news/introducing-nlweb-bringing-conversational-interfaces-directly-to-the-web>
+- NLWeb repo: <https://github.com/nlweb-ai/NLWeb>
+- eShopLite sample: <https://github.com/Azure-Samples/eShopLite>
 References:
 
 - NLWeb blog: <https://news.microsoft.com/source/features/company-news/introducing-nlweb-bringing-conversational-interfaces-directly-to-the-web>
@@ -60,10 +67,12 @@ Non‑Goals:
 Components (under `src/`):
 
 - Search API (new) — `Search/`
-  - Role: Own the search contract; call NLWeb.
+  - Role: Own the search contract; call NLWeb using the NLWebNet library.
   - Endpoints: `GET /api/v1/search`, `POST /api/v1/search/reindex` (protected)
-  - Tech: ASP.NET Core Minimal API (or MVC) on .NET 9; typed HttpClient
+  - Tech: ASP.NET Core Minimal API (or MVC) on .NET 9; integrate NLWebNet endpoints and services
+  - Implementation: Use NLWebNet NuGet package for protocol compliance and MCP integration
   - Observability: structured logs, OTEL traces/metrics via Aspire service defaults
+  - Reference: See NLWebNet documentation and sample applications for integration patterns
 - Store (existing) — `Store/`
   - Add search box and `/search` page
   - Calls Search API; renders titles/snippets/links
@@ -218,14 +227,37 @@ Use `src\eShopLite-NLWeb.slnx` and enroll all services into Aspire 9.4.
 
 Step-by-step tasks:
 
+Use `src\eShopLite-NLWeb.slnx` and enroll all services into Aspire 9.4.
+
+Step-by-step tasks:
+
 1. Create `Search/` project (.NET 9). Reference `eShopServiceDefaults`. Add `builder.AddServiceDefaults()` and `app.MapDefaultEndpoints()`.
-2. Implement `GET /api/v1/search`: validate inputs, call `INlWebClient.QueryAsync`, map results, add telemetry.
-3. Implement `POST /api/v1/search/reindex`: protected route; call `INlWebClient.ReindexAsync`.
-4. Add typed `HttpClient` with resilience/timeouts; wire OpenTelemetry via Aspire defaults.
+2. Implement `GET /api/v1/search`: validate inputs, call NLWebNet endpoint (`/ask`) using NLWebNet library, map results, add telemetry.
+3. Implement `POST /api/v1/search/reindex`: protected route; call NLWebNet reindex logic as per protocol.
+4. Integrate NLWebNet NuGet package and configure endpoints/services according to documentation and sample code.
 5. Store: add search box and `/search` page; call `/api/v1/search` using service discovery (no hard-coded URL).
-6. Tests: unit tests for validators/mappers/handlers; integration test with fake NLWeb client.
+6. Tests: unit tests for validators/mappers/handlers; integration test with NLWebNet mock/fake client.
 7. Aspire: update `eShopAppHost` to add the Search project and service wiring; enable service discovery and telemetry.
 
+**Reference Implementation Details:**
+
+- NLWebNet provides minimal API endpoints (`/ask`, `/mcp`) for natural language queries and MCP integration.
+- Add NLWebNet to your ASP.NET Core project:
+
+  ```csharp
+  using NLWebNet;
+  builder.Services.AddNLWebNet(options =>
+  {
+      options.DefaultMode = NLWebNet.Models.QueryMode.List;
+      options.EnableStreaming = true;
+  });
+  app.MapNLWebNet();
+  ```
+
+- Configure AI/data backends and secrets as per NLWebNet documentation.
+- See <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md> for step-by-step setup.
+
+**Note:** NLWebNet is alpha-quality and intended for prototyping and evaluation. Production use is not recommended at this time.
 Edge cases to cover:
 
 - Empty/overly long `q`; `top` out of range; large `skip`
@@ -237,3 +269,16 @@ Edge cases to cover:
 - NLWeb: natural language web interaction/search framework
 - Aspire: .NET application composition and orchestration with service discovery and OTEL
 - PRD: Product Requirements Document
+
+## 21. NLWeb Implementation Document Requirement
+
+A separate document must be created to describe the specific implementation of NLWeb in this sample scenario. This document should include:
+
+- Integration steps for NLWebNet in the Search API
+- Configuration details (appsettings, secrets, environment variables)
+- Endpoint mapping and usage patterns
+- Data backend and AI service setup
+- Security, observability, and deployment notes
+- References to sample code and documentation
+
+See NLWebNet [demo-setup-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md) and [manual-testing-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/manual-testing-guide.md) for examples.
