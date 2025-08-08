@@ -1,0 +1,28 @@
+{
+  "vector_db": {
+    "type": "in_memory",
+    "config": {}
+  },
+  "ai_backend": {
+    "type": "openai",
+    "model": "gpt-3.5-turbo",
+    "embedding_model": "text-embedding-ada-002"
+  },
+  "crawling": {
+    "max_depth": 3,
+    "max_pages": 100,
+    "respect_robots_txt": true,
+    "delay_between_requests": 1
+  },
+  "indexing": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "enable_semantic_chunking": true
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "cors_origins": ["*"],
+    "enable_admin_endpoints": true
+  }
+}

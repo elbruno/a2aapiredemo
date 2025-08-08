@@ -6,15 +6,30 @@ var sqldb = builder.AddSqlServer("sql")
     .WithDataVolume()
     .AddDatabase("sqldb");
 
+// Add NLWeb Docker container with proper configuration
+var nlweb = builder.AddContainer("nlweb", "nlweb/nlweb")
+    .WithHttpEndpoint(port: 8000, targetPort: 8000, name: "http")
+    .WithEnvironment("NLWEB_PORT", "8000")
+    .WithEnvironment("NLWEB_HOST", "0.0.0.0")
+    .WithEnvironment("NLWEB_LOG_LEVEL", "INFO")
+    .WithEnvironment("NLWEB_VECTOR_DB", "in_memory") // Use in-memory for demo
+    .WithBindMount("./nlweb-data", "/app/data") // Persistent data storage
+    .WithBindMount("./nlweb-config", "/app/config", isReadOnly: true) // Configuration
+    .WithLifetime(ContainerLifetime.Persistent);
+
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(sqldb)
     .WaitFor(sqldb)
     .WithExternalHttpEndpoints();
 
 var search = builder.AddProject<Projects.Search>("search")
+    .WithEnvironment("ConnectionStrings__nlweb", nlweb.GetEndpoint("http"))
+    .WaitFor(nlweb)
     .WithExternalHttpEndpoints();
 
 var chat = builder.AddProject<Projects.Chat>("chat")
+    .WithEnvironment("ConnectionStrings__nlweb", nlweb.GetEndpoint("http"))
+    .WaitFor(nlweb)
     .WithExternalHttpEndpoints();
 
 var store = builder.AddProject<Projects.Store>("store")
