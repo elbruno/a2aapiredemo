@@ -1,0 +1,6 @@
+# Minimal config_llm.yaml for NLWeb
+llm:
+  provider: "openai"
+  model: "gpt-3.5-turbo"
+  api_key: "YOUR_API_KEY"
+  endpoint: "https://api.openai.com/v1/chat/completions"

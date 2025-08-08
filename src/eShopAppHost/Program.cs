@@ -13,7 +13,7 @@ var productsDb = sql
 
 // Add NLWeb Docker container with proper configuration
 var nlweb = builder.AddDockerfile(
-    "nlweb", "src/eShopAppHost", "NLWeb.Dockerfile")
+    "nlweb", ".", "NLWeb.Dockerfile")
     .WithHttpEndpoint(port: 8000, targetPort: 8000, name: "http")
     .WithEnvironment("NLWEB_PORT", "8000")
     .WithEnvironment("NLWEB_HOST", "0.0.0.0")

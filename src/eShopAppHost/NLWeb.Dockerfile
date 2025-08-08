@@ -7,8 +7,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-# Copy requirements file
-COPY code/python/requirements.txt .
+COPY code/code/python/requirements.txt .
 # Install Python packages
 RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2: Runtime stage
@@ -25,8 +24,7 @@ RUN groupadd -r nlweb && \
     useradd -r -g nlweb -d /app -s /bin/bash nlweb && \
     chown -R nlweb:nlweb /app
 USER nlweb
-# Copy application code
-COPY code/ /app/
+COPY code/code/python/ /app/
 COPY static/ /app/static/
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
@@ -39,4 +37,4 @@ ENV PYTHONPATH=/app
 ENV PORT=8000
 ENV NLWEB_CONFIG_DIR=/app/config
 # Command to run the application
-CMD ["python", "python/app-file.py"]
+CMD ["python", "app-file.py"]
