@@ -2,6 +2,14 @@ using Azure.Provisioning.CognitiveServices;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Interactive parameters for NLWeb Azure OpenAI integration
+var nlwebApiKey = builder.AddParameter("nlweb-openai-apikey", secret: true)
+    .WithDescription("Azure OpenAI API key for NLWeb integration. This will be stored securely.");
+var nlwebModel = builder.AddParameter("nlweb-openai-model", "gpt-5-mini")
+    .WithDescription("Azure OpenAI model deployment name for NLWeb integration.");
+var nlwebEndpoint = builder.AddParameter("nlweb-openai-endpoint", "https://jg-dev-resource.openai.azure.com/")
+    .WithDescription("Azure OpenAI endpoint for NLWeb integration.");
+
 var sql = builder.AddSqlServer("sql")
     .WithLifetime(ContainerLifetime.Persistent)
     .WithImageTag("2025-latest")
@@ -19,6 +27,9 @@ var nlweb = builder.AddDockerfile(
     .WithEnvironment("NLWEB_HOST", "0.0.0.0")
     .WithEnvironment("NLWEB_LOG_LEVEL", "INFO")
     .WithEnvironment("NLWEB_VECTOR_DB", "in_memory") // Use in-memory for demo
+    .WithEnvironment("NLWEB_OPENAI_API_KEY", nlwebApiKey)
+    .WithEnvironment("NLWEB_OPENAI_MODEL", nlwebModel)
+    .WithEnvironment("NLWEB_OPENAI_ENDPOINT", nlwebEndpoint)
     .WithBindMount("./nlweb-data", "/app/data") // Persistent data storage
     .WithBindMount("./nlweb-config", "/app/config", isReadOnly: true) // Configuration
     .WithLifetime(ContainerLifetime.Persistent);
