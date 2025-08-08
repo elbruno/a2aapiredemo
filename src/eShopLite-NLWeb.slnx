@@ -20,4 +20,7 @@
     <Project Path="Store.Tests/Store.Tests.csproj" />
     <Project Path="Search.Tests/Search.Tests.csproj" />
   </Folder>
+  <Folder Name="/5 Tools/">
+    <Project Path="ScreenshotService/ScreenshotService.csproj" />
+  </Folder>
 </Solution>
