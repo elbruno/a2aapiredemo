@@ -11,6 +11,9 @@ Authoring source: `prompts/nlweb-eshoplite-demo.md`
 
 Build a new eShopLite search experience in C# that uses NLWeb to search across the website’s rendered content (product pages, categories, FAQs/marketing pages). The Search API **must be implemented using the official NLWebNet library** (<https://github.com/nlweb-ai/nlweb-net>), the .NET 9 implementation of the NLWeb protocol. Do not use the existing eShopLite Semantic Search scenario (no embeddings/vector DB from the legacy path). The deliverable is a production-quality demo slice with clear contracts, tests, and telemetry.
 
+**Chat Implementation Note:**
+The chat experience must use standard HTTP calls for all interactions. Do **not** use SignalR or any real-time websocket technology. All chat and search requests should be handled via RESTful HTTP endpoints.
+
 References:
 
 - NLWebNet (.NET 9 implementation): <https://github.com/nlweb-ai/nlweb-net>
@@ -76,10 +79,15 @@ Components (under `src/`):
 - Store (existing) — `Store/`
   - Add search box and `/search` page
   - Calls Search API; renders titles/snippets/links
+  - Add static "About Us" page with sample information about Contoso (see below)
+  - Add static "Careers" page with sample job offerings for Contoso (see below)
 - App Host (existing) — `eShopAppHost/`
   - Orchestrate services with Aspire 9.4; use service discovery
 - Service Defaults — `eShopServiceDefaults/`
   - Shared Aspire configuration: service discovery, resiliency, health checks, OTEL
+
+**Service Defaults:**
+All HTTP calls, timeouts, service discovery, and resiliency options must use .NET Aspire service defaults. Do not hard-code values; always use Aspire configuration and extension methods for best practices.
 
 Aspire requirements:
 
@@ -218,6 +226,8 @@ Phases (from prompt):
 
 - `Search/` service with endpoints/config/tests (C#/.NET 9)
 - Store UI: search box and `/search` page
+- Store UI: static `/about-us` page with sample Contoso company information
+- Store UI: static `/careers` page with sample job offerings for Contoso
 - Aspire AppHost updates for orchestration and service discovery
 - Documentation: run/config steps (README), metrics/logging notes
 
@@ -280,5 +290,30 @@ A separate document must be created to describe the specific implementation of N
 - Data backend and AI service setup
 - Security, observability, and deployment notes
 - References to sample code and documentation
+
+## 22. Static Content Requirements
+
+The following static pages must be added to the Store front-end. Their content will be indexed by NLWeb and used to answer user questions in chat and search:
+
+### About Us Page (`/about-us`)
+
+Create a static page with sample information about the Contoso company. Example content:
+
+> **About Contoso**
+> Contoso is a leading retailer of electronics, apparel, and home goods. Founded in 1985, Contoso is committed to providing quality products and exceptional customer service. Our mission is to make shopping easy and enjoyable for everyone. With over 200 stores worldwide and a robust online presence, Contoso continues to innovate in the retail space.
+
+### Careers Page (`/careers`)
+
+Create a static page with sample job offerings at Contoso. Example content:
+
+> **Careers at Contoso**
+> Join our team and help shape the future of retail! Current openings:
+>
+> - Software Engineer (Remote)
+> - Store Manager (New York)
+> - Marketing Specialist (London)
+> - Customer Support Representative (Remote)
+> - Warehouse Associate (Berlin)
+> We offer competitive salaries, flexible work arrangements, and opportunities for growth. Apply today to become part of the Contoso family.
 
 See NLWebNet [demo-setup-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md) and [manual-testing-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/manual-testing-guide.md) for examples.
