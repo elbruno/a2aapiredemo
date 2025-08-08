@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Newtonsoft.Json;
-using OpenAI.Chat;
+using Microsoft.Extensions.AI;
 using OpenAI.Embeddings;
 using Products.Models;
 using SearchEntities;
@@ -17,13 +17,13 @@ namespace Products.Memory;
 public class MemoryContext
 {
     private ILogger _logger;
-    public ChatClient? _chatClient;
+    public IChatClient? _chatClient;
     public EmbeddingClient? _embeddingClient;
-    public VectorStoreCollection<int, ProductVector> _productsCollection;
+    public VectorStoreCollection<int, ProductVector>? _productsCollection;
     private string _systemPrompt = "";
     private bool _isMemoryCollectionInitialized = false;
 
-    public MemoryContext(ILogger logger, ChatClient? chatClient, EmbeddingClient? embeddingClient)
+    public MemoryContext(ILogger logger, IChatClient? chatClient, EmbeddingClient? embeddingClient)
     {
         _logger = logger;
         _chatClient = chatClient;
@@ -131,16 +131,17 @@ Include products details.
     - Found Products: 
 {sbFoundProducts}";
 
-            var messages = new List<ChatMessage>
-    {
-        new SystemChatMessage(_systemPrompt),
-        new UserChatMessage(prompt)
-    };
+
+            var messages = new List<Microsoft.Extensions.AI.ChatMessage>
+            {
+                new Microsoft.Extensions.AI.ChatMessage(Microsoft.Extensions.AI.ChatRole.System, _systemPrompt),
+                new Microsoft.Extensions.AI.ChatMessage(Microsoft.Extensions.AI.ChatRole.User, prompt)
+            };
 
             _logger.LogInformation("{ChatHistory}", JsonConvert.SerializeObject(messages));
 
-            var resultPrompt = await _chatClient.CompleteChatAsync(messages);
-            response.Response = resultPrompt.Value.Content[0].Text!;
+            var chatResponse = await _chatClient.GetResponseAsync(messages);
+            response.Response = chatResponse.Text;
 
         }
         catch (Exception ex)

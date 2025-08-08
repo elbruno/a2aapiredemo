@@ -1,6 +1,7 @@
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using Microsoft.Extensions.AI;
 using Products.Endpoints;
 using Products.Memory;
 using Products.Models;
@@ -23,20 +24,21 @@ var chatDeploymentName = "gpt-5-mini";
 var embeddingsDeploymentName = "text-embedding-ada-002";
 builder.AddAzureOpenAIClient(azureOpenAiClientName);
 
-// get azure openai client and create Chat client from aspire hosting configuration
-builder.Services.AddSingleton<ChatClient>(serviceProvider =>
+
+// Register IChatClient using Microsoft.Extensions.AI
+builder.Services.AddSingleton<IChatClient>(serviceProvider =>
 {
     var logger = serviceProvider.GetService<ILogger<Program>>()!;
-    logger.LogInformation($"Chat client configuration, modelId: {chatDeploymentName}");
-    ChatClient chatClient = null;
+    logger.LogInformation($"IChatClient configuration, modelId: {chatDeploymentName}");
+    IChatClient chatClient = null;
     try
     {
         OpenAIClient client = serviceProvider.GetRequiredService<OpenAIClient>();
-        chatClient = client.GetChatClient(chatDeploymentName);
+        chatClient = client.GetChatClient(chatDeploymentName).AsIChatClient();
     }
     catch (Exception exc)
     {
-        logger.LogError(exc, "Error creating chat client");
+        logger.LogError(exc, "Error creating IChatClient");
     }
     return chatClient;
 });
@@ -69,7 +71,7 @@ builder.Services.AddSingleton(sp =>
 {
     var logger = sp.GetService<ILogger<Program>>();
     logger.LogInformation("Creating memory context");
-    return new MemoryContext(logger, sp.GetService<ChatClient>(), sp.GetService<EmbeddingClient>());
+    return new MemoryContext(logger, sp.GetService<IChatClient>(), sp.GetService<EmbeddingClient>());
 });
 
 // Add services to the container.

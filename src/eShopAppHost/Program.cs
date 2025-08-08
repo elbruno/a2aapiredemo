@@ -8,7 +8,8 @@ var sqldb = builder.AddSqlServer("sql")
 
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(sqldb)
-    .WaitFor(sqldb);
+    .WaitFor(sqldb)
+    .WithExternalHttpEndpoints();
 
 var search = builder.AddProject<Projects.Search>("search")
     .WithExternalHttpEndpoints();
