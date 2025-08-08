@@ -1,16 +1,19 @@
 # Chat API Reference
 
-The eShopLite Chat API provides real-time conversational capabilities powered by NLWeb integration. This API supports both RESTful endpoints and SignalR real-time communication.
+The eShopLite Chat API provides conversational capabilities powered by NLWeb integration over standard HTTP. This API exposes:
+
+- REST endpoints under `/api/v1/chat` for the Store app contract (backward compatible)
+- NLWeb protocol endpoints at the service root (`/ask` and `/mcp`)
 
 ## Base URL
 
-```
-https://your-domain.com/api/v1/chat
+```text
+https://your-domain.com
 ```
 
 ## Authentication
 
-Currently, the Chat API operates without authentication for demonstration purposes. In production deployments, implement appropriate authentication mechanisms.
+Currently, the Chat API operates without authentication for demonstration purposes. In production deployments, implement appropriate authentication and authorization (for example, JWT bearer tokens, service-to-service auth, or reverse proxy auth).
 
 ## Rate Limiting
 
@@ -22,7 +25,7 @@ Currently, the Chat API operates without authentication for demonstration purpos
 
 ## Content Type
 
-All API endpoints accept and return `application/json` unless otherwise specified.
+All API endpoints accept and return `application/json` unless otherwise specified. The NLWeb `/ask` endpoint also supports server-sent events (SSE) when streaming is enabled.
 
 ## Error Handling
 
@@ -48,13 +51,13 @@ All errors follow a consistent format:
 | `NLWEB_TIMEOUT` | 502 | NLWeb service timeout |
 | `INTERNAL_ERROR` | 500 | Unexpected server error |
 
-## REST API Endpoints
+## REST API Endpoints (Backward-Compatible)
 
 ### Send Chat Message
 
 Send a message to the chat assistant and receive an AI-generated response.
 
-#### Request
+#### Request (Send Chat Message)
 
 ```http
 POST /api/v1/chat/message
@@ -75,7 +78,7 @@ Content-Type: application/json
 }
 ```
 
-#### Parameters
+#### Parameters (Send Chat Message)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -85,7 +88,7 @@ Content-Type: application/json
 | `context.currentPage` | string | No | Current page URL |
 | `context.userPreferences` | object | No | User preferences and filters |
 
-#### Response
+#### Response (Send Chat Message)
 
 ```http
 HTTP/1.1 200 OK
@@ -175,160 +178,64 @@ Content-Type: application/json
 }
 ```
 
-## SignalR Real-Time API
+## NLWeb Protocol Endpoints
 
-The Chat API supports real-time communication via SignalR for instant messaging experiences.
+The service also exposes the NLWeb protocol endpoints that power the chat experience. These can be used directly for broader NLWeb-compatible integrations.
 
-### Hub Connection
+### `/ask` — Primary NLWeb Endpoint
 
-#### Connection URL
-```
-wss://your-domain.com/chat-hub
-```
+Natural language query interface supporting all NLWeb protocol features.
 
-#### Connection Setup (JavaScript)
+Supported HTTP methods: GET and POST.
 
-```javascript
-import { HubConnectionBuilder } from '@microsoft/signalr';
+Parameters:
 
-const connection = new HubConnectionBuilder()
-    .withUrl('/chat-hub')
-    .withAutomaticReconnect()
-    .build();
+- `query` (required): Natural language query string
+- `site` (optional): Target site/domain subset
+- `prev` (optional): Comma-separated previous queries for context
+- `decontextualized_query` (optional): Pre-processed query (skips decontextualization)
+- `streaming` (optional): Enable streaming responses (default: true)
+- `query_id` (optional): Custom query identifier (auto-generated if not provided)
+- `mode` (optional): Query mode: `list` (default), `summarize`, or `generate`
 
-// Start connection
-await connection.start();
-```
+Examples:
 
-### Hub Methods
-
-#### Join Session
-
-Join a chat session to receive real-time updates.
-
-```javascript
-await connection.invoke('JoinSession', sessionId);
+```http
+GET /ask?query=find+recent+updates&mode=list
 ```
 
-**Parameters:**
-- `sessionId` (string): Session identifier
+```http
+POST /ask
+Content-Type: application/json
 
-#### Leave Session
-
-Leave a chat session.
-
-```javascript
-await connection.invoke('LeaveSession', sessionId);
+{
+    "query": "what are the main features?",
+    "mode": "summarize",
+    "streaming": true
+}
 ```
 
-**Parameters:**
-- `sessionId` (string): Session identifier
+Streaming responses use Server-Sent Events (SSE) when `streaming` is true.
 
-#### Send Message
+### `/mcp` — Model Context Protocol Endpoint
 
-Send a message through the real-time connection.
+MCP-compatible interface with methods like:
 
-```javascript
-await connection.invoke('SendMessage', sessionId, message);
-```
-
-**Parameters:**
-- `sessionId` (string): Session identifier
-- `message` (string): Message content
-
-#### Typing Indicator
-
-Send typing status to other clients in the session.
-
-```javascript
-await connection.invoke('TypingIndicator', sessionId, isTyping);
-```
-
-**Parameters:**
-- `sessionId` (string): Session identifier
-- `isTyping` (boolean): Whether user is currently typing
-
-### Hub Events
-
-#### Receive Message
-
-Fired when a new message is received in the session.
-
-```javascript
-connection.on('ReceiveMessage', (response) => {
-    console.log('New message:', response);
-    // response follows the same format as REST API response
-});
-```
-
-#### Message Received
-
-Fired when a message is acknowledged by the hub.
-
-```javascript
-connection.on('MessageReceived', (connectionId, message) => {
-    console.log('Message acknowledged:', message);
-});
-```
-
-#### Typing Indicator
-
-Fired when someone in the session starts/stops typing.
-
-```javascript
-connection.on('TypingIndicator', (connectionId, isTyping) => {
-    console.log('Typing status:', isTyping);
-});
-```
-
-#### User Joined/Left
-
-Fired when users join or leave the session.
-
-```javascript
-connection.on('UserJoined', (connectionId) => {
-    console.log('User joined:', connectionId);
-});
-
-connection.on('UserLeft', (connectionId) => {
-    console.log('User left:', connectionId);
-});
-```
+- `list_tools` — Available tools
+- `list_prompts` — Available prompts
+- `call_tool` — Execute tools
+- `get_prompt` — Retrieve prompt templates
 
 ## Code Examples
 
-### JavaScript/TypeScript Client
+### JavaScript/TypeScript Client (HTTP-only Example)
 
 ```typescript
-import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
-
 class ChatClient {
-    private connection: HubConnection;
     private sessionId: string;
 
     constructor(private baseUrl: string) {
         this.sessionId = this.generateSessionId();
-        this.connection = new HubConnectionBuilder()
-            .withUrl(`${baseUrl}/chat-hub`)
-            .withAutomaticReconnect()
-            .build();
-        
-        this.setupEventHandlers();
-    }
-
-    private setupEventHandlers(): void {
-        this.connection.on('ReceiveMessage', (response) => {
-            this.onMessageReceived(response);
-        });
-
-        this.connection.on('TypingIndicator', (connectionId, isTyping) => {
-            this.onTypingIndicator(connectionId, isTyping);
-        });
-    }
-
-    async connect(): Promise<void> {
-        await this.connection.start();
-        await this.connection.invoke('JoinSession', this.sessionId);
     }
 
     async sendMessage(message: string, context?: any): Promise<any> {
@@ -351,20 +258,6 @@ class ChatClient {
         return await response.json();
     }
 
-    async setTyping(isTyping: boolean): Promise<void> {
-        await this.connection.invoke('TypingIndicator', this.sessionId, isTyping);
-    }
-
-    private onMessageReceived(response: any): void {
-        // Handle received message
-        console.log('Received:', response);
-    }
-
-    private onTypingIndicator(connectionId: string, isTyping: boolean): void {
-        // Handle typing indicator
-        console.log(`${connectionId} is ${isTyping ? 'typing' : 'not typing'}`);
-    }
-
     private generateSessionId(): string {
         return 'session-' + Math.random().toString(36).substr(2, 9);
     }
@@ -372,8 +265,6 @@ class ChatClient {
 
 // Usage
 const chatClient = new ChatClient('https://api.eshoplite.com');
-await chatClient.connect();
-
 const response = await chatClient.sendMessage('What running shoes do you recommend?', {
     currentPage: '/products',
     userPreferences: { activity: 'running', budget: 'under-100' }
@@ -382,41 +273,20 @@ const response = await chatClient.sendMessage('What running shoes do you recomme
 console.log(response);
 ```
 
-### C# Client
+### C# Client (HTTP-only Example)
 
 ```csharp
-using Microsoft.AspNetCore.SignalR.Client;
 using System.Text.Json;
 
 public class ChatClient : IAsyncDisposable
 {
     private readonly HttpClient _httpClient;
-    private readonly HubConnection _hubConnection;
     private readonly string _sessionId;
 
     public ChatClient(string baseUrl)
     {
         _httpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
         _sessionId = GenerateSessionId();
-        
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{baseUrl}/chat-hub")
-            .WithAutomaticReconnect()
-            .Build();
-            
-        SetupEventHandlers();
-    }
-
-    private void SetupEventHandlers()
-    {
-        _hubConnection.On<ChatResponse>("ReceiveMessage", OnMessageReceived);
-        _hubConnection.On<string, bool>("TypingIndicator", OnTypingIndicator);
-    }
-
-    public async Task ConnectAsync()
-    {
-        await _hubConnection.StartAsync();
-        await _hubConnection.InvokeAsync("JoinSession", _sessionId);
     }
 
     public async Task<ChatResponse> SendMessageAsync(string message, object? context = null)
@@ -438,21 +308,6 @@ public class ChatClient : IAsyncDisposable
         return JsonSerializer.Deserialize<ChatResponse>(responseJson);
     }
 
-    public async Task SetTypingAsync(bool isTyping)
-    {
-        await _hubConnection.InvokeAsync("TypingIndicator", _sessionId, isTyping);
-    }
-
-    private void OnMessageReceived(ChatResponse response)
-    {
-        Console.WriteLine($"Received: {response.Response}");
-    }
-
-    private void OnTypingIndicator(string connectionId, bool isTyping)
-    {
-        Console.WriteLine($"{connectionId} is {(isTyping ? "typing" : "not typing")}");
-    }
-
     private string GenerateSessionId()
     {
         return $"session-{Guid.NewGuid():N}";
@@ -467,7 +322,6 @@ public class ChatClient : IAsyncDisposable
 
 // Usage
 var chatClient = new ChatClient("https://api.eshoplite.com");
-await chatClient.ConnectAsync();
 
 var response = await chatClient.SendMessageAsync("What running shoes do you recommend?", new
 {
@@ -481,16 +335,19 @@ Console.WriteLine(response.Response);
 ## Performance Considerations
 
 ### Response Times
+
 - **Target P50:** < 1 second
 - **Target P95:** < 3 seconds
 - **Timeout:** 30 seconds
 
 ### Concurrency
+
 - **Max concurrent connections:** 1000 per instance
 - **Max messages per session:** No limit
 - **Session timeout:** 30 minutes of inactivity
 
 ### Caching
+
 - Session data cached for 30 minutes
 - Conversation context maintained during session
 - Frequently requested responses may be cached
@@ -508,26 +365,29 @@ Returns service health status and dependencies.
 ### Metrics
 
 The Chat API exposes metrics for monitoring:
+
 - Message throughput (messages/second)
 - Response time percentiles
 - Error rates
 - Active session count
-- SignalR connection count
 
 ## Security
 
 ### Input Validation
+
 - Message length limited to 5000 characters
 - HTML content is sanitized
 - SQL injection protection
 - XSS prevention
 
-### Rate Limiting
+### Rate Limiting (Service Limits)
+
 - 100 requests per minute per client IP
 - Configurable limits per environment
 - Temporary bans for abuse
 
 ### CORS Policy
+
 - Restricted to allowed origins
 - Credentials support for authenticated requests
 - Preflight request handling

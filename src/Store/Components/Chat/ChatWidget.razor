@@ -17,14 +17,7 @@
             }
         </div>
         <div class="chat-status">
-            @if (ChatService.IsConnected)
-            {
-                <span class="status-indicator connected" title="Connected">●</span>
-            }
-            else
-            {
-                <span class="status-indicator disconnected" title="Disconnected">●</span>
-            }
+            <span class="status-indicator connected" title="Online">●</span>
         </div>
     </div>
 
@@ -39,18 +32,21 @@
                             <div class="message-avatar">🤖</div>
                             <div class="message-content">
                                 <div class="message-text">
-                                    Welcome to eShopLite! I'm here to help you find the perfect outdoor gear. 
+                                    Welcome to eShopLite! I'm here to help you find the perfect outdoor gear.
                                     Ask me about products, pricing, or our policies!
                                 </div>
                                 <div class="message-time">@DateTime.Now.ToString("HH:mm")</div>
                                 <div class="suggested-actions">
-                                    <button class="suggestion-btn" @onclick="@(() => SendSuggestedMessage("What running shoes do you recommend?"))">
+                                    <button class="suggestion-btn"
+                                        @onclick="@(() => SendSuggestedMessage("What running shoes do you recommend?"))">
                                         Running Shoes
                                     </button>
-                                    <button class="suggestion-btn" @onclick="@(() => SendSuggestedMessage("Show me hiking gear"))">
+                                    <button class="suggestion-btn"
+                                        @onclick="@(() => SendSuggestedMessage("Show me hiking gear"))">
                                         Hiking Gear
                                     </button>
-                                    <button class="suggestion-btn" @onclick="@(() => SendSuggestedMessage("What's your return policy?"))">
+                                    <button class="suggestion-btn"
+                                        @onclick="@(() => SendSuggestedMessage("What's your return policy?"))">
                                         Return Policy
                                     </button>
                                 </div>
@@ -98,15 +94,10 @@
 
             <div class="chat-input">
                 <div class="input-container">
-                    <input @bind="_currentMessage" 
-                           @onkeypress="HandleKeyPress" 
-                           @oninput="HandleInputChange"
-                           placeholder="Type your message..." 
-                           disabled="@_isSending" 
-                           maxlength="5000" />
-                    <button @onclick="SendMessage" 
-                            disabled="@(string.IsNullOrWhiteSpace(_currentMessage) || _isSending)"
-                            class="send-btn">
+                    <input @bind="_currentMessage" @onkeypress="HandleKeyPress" @oninput="HandleInputChange"
+                        placeholder="Type your message..." disabled="@_isSending" maxlength="5000" />
+                    <button @onclick="SendMessage" disabled="@(string.IsNullOrWhiteSpace(_currentMessage) || _isSending)"
+                        class="send-btn">
                         @if (_isSending)
                         {
                             <span class="loading-spinner"></span>
@@ -141,74 +132,19 @@
     private ElementReference messagesContainer;
     private int _unreadCount = 0;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        ChatService.MessageReceived += OnMessageReceived;
-        ChatService.ConnectionStateChanged += OnConnectionStateChanged;
-        
-        try
-        {
-            await ChatService.StartConnectionAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to start chat connection");
-            _errorMessage = "Failed to connect to chat service. Some features may not work.";
-        }
+        // No connection or event subscriptions needed for HTTP chat
+        return Task.CompletedTask;
     }
 
-    private async void OnMessageReceived(ChatResponse response)
-    {
-        await InvokeAsync(async () =>
-        {
-            _isTyping = false;
-            
-            var message = new ChatMessageDisplay
-            {
-                Text = response.Response,
-                IsUser = false,
-                Timestamp = DateTime.Now,
-                SuggestedActions = response.SuggestedActions ?? new List<SuggestedAction>()
-            };
-
-            _messages.Add(message);
-
-            if (!IsExpanded)
-            {
-                _unreadCount++;
-            }
-            else
-            {
-                _unreadCount = 0;
-            }
-
-            StateHasChanged();
-            await ScrollToBottom();
-        });
-    }
-
-    private void OnConnectionStateChanged(bool isConnected)
-    {
-        InvokeAsync(() =>
-        {
-            if (!isConnected && !string.IsNullOrEmpty(_errorMessage))
-            {
-                _errorMessage = "Lost connection to chat service. Reconnecting...";
-            }
-            else if (isConnected && _errorMessage.Contains("connection"))
-            {
-                _errorMessage = string.Empty;
-            }
-            
-            StateHasChanged();
-        });
-    }
+    // Removed SignalR event handlers
 
     private async Task ToggleExpanded()
     {
         IsExpanded = !IsExpanded;
         await IsExpandedChanged.InvokeAsync(IsExpanded);
-        
+
         if (IsExpanded)
         {
             _unreadCount = 0;
@@ -251,7 +187,7 @@
             };
 
             var response = await ChatService.SendMessageAsync(messageText, context: context);
-            
+
             // Add bot response
             var botMessage = new ChatMessageDisplay
             {
@@ -267,7 +203,7 @@
         {
             Logger.LogError(ex, "Failed to send chat message");
             _errorMessage = "Failed to send message. Please try again.";
-            
+
             // Add error message to chat
             var errorMessage = new ChatMessageDisplay
             {
@@ -323,15 +259,10 @@
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        ChatService.MessageReceived -= OnMessageReceived;
-        ChatService.ConnectionStateChanged -= OnConnectionStateChanged;
-        
-        if (ChatService is IAsyncDisposable disposable)
-        {
-            await disposable.DisposeAsync();
-        }
+        // No event unsubscriptions needed
+        return ValueTask.CompletedTask;
     }
 
     private class ChatMessageDisplay
@@ -446,7 +377,8 @@
         gap: 12px;
     }
 
-    .user-message, .bot-message {
+    .user-message,
+    .bot-message {
         display: flex;
         gap: 8px;
         align-items: flex-start;
@@ -519,7 +451,8 @@
         margin-top: 8px;
     }
 
-    .suggestion-btn, .suggestion-link {
+    .suggestion-btn,
+    .suggestion-link {
         padding: 6px 12px;
         border-radius: 16px;
         font-size: 12px;
@@ -531,7 +464,8 @@
         transition: all 0.2s ease;
     }
 
-    .suggestion-btn:hover, .suggestion-link:hover {
+    .suggestion-btn:hover,
+    .suggestion-link:hover {
         background: #667eea;
         color: white;
         border-color: #667eea;
@@ -555,15 +489,25 @@
         animation: typing 1.4s infinite ease-in-out;
     }
 
-    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    .typing-indicator span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .typing-indicator span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
 
     .chat-widget .typing {
         animation: typing 1.4s infinite ease-in-out;
     }
 
-    .chat-widget .typing:nth-child(1) { animation-delay: -0.32s; }
-    .chat-widget .typing:nth-child(2) { animation-delay: -0.16s; }
+    .chat-widget .typing:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .chat-widget .typing:nth-child(2) {
+        animation-delay: -0.16s;
+    }
 
     .chat-input {
         padding: 16px;

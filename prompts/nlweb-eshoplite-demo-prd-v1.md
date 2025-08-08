@@ -12,17 +12,14 @@ Authoring source: `prompts/nlweb-eshoplite-demo.md`
 Build a new eShopLite search experience in C# that uses NLWeb to search across the website’s rendered content (product pages, categories, FAQs/marketing pages). The Search API **must be implemented using the official NLWebNet library** (<https://github.com/nlweb-ai/nlweb-net>), the .NET 9 implementation of the NLWeb protocol. Do not use the existing eShopLite Semantic Search scenario (no embeddings/vector DB from the legacy path). The deliverable is a production-quality demo slice with clear contracts, tests, and telemetry.
 
 **Chat Implementation Note:**
-The chat experience must use standard HTTP calls for all interactions. Do **not** use SignalR or any real-time websocket technology. All chat and search requests should be handled via RESTful HTTP endpoints.
+The chat experience is now fully HTTP-only. All SignalR dependencies, code, and documentation have been removed. Chat and search requests are handled via RESTful HTTP endpoints. NLWebNet is integrated for conversational and search capabilities, exposing `/ask` and `/mcp` endpoints in addition to the custom `/api/v1/chat/message` endpoint for Store compatibility.
 
 References:
 
 - NLWebNet (.NET 9 implementation): <https://github.com/nlweb-ai/nlweb-net>
 - NLWebNet NuGet: <https://www.nuget.org/packages/NLWebNet/>
-- NLWeb blog: <https://news.microsoft.com/source/features/company-news/introducing-nlweb-bringing-conversational-interfaces-directly-to-the-web>
-- NLWeb repo: <https://github.com/nlweb-ai/NLWeb>
-- eShopLite sample: <https://github.com/Azure-Samples/eShopLite>
-References:
-
+- NLWebNet demo-setup-guide: <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md>
+- NLWebNet manual-testing-guide: <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/manual-testing-guide.md>
 - NLWeb blog: <https://news.microsoft.com/source/features/company-news/introducing-nlweb-bringing-conversational-interfaces-directly-to-the-web>
 - NLWeb repo: <https://github.com/nlweb-ai/NLWeb>
 - eShopLite sample: <https://github.com/Azure-Samples/eShopLite>
@@ -76,13 +73,25 @@ Components (under `src/`):
   - Implementation: Use NLWebNet NuGet package for protocol compliance and MCP integration
   - Observability: structured logs, OTEL traces/metrics via Aspire service defaults
   - Reference: See NLWebNet documentation and sample applications for integration patterns
+  - **Data Loading:** The Search service must load and query real website data using NLWeb's ingestion and indexing capabilities. Mock clients are not permitted; all queries must use the actual NLWebNet integration and real indexed data.
+
 - Store (existing) — `Store/`
   - Add search box and `/search` page
   - Calls Search API; renders titles/snippets/links
   - Add static "About Us" page with sample information about Contoso (see below)
   - Add static "Careers" page with sample job offerings for Contoso (see below)
+
 - App Host (existing) — `eShopAppHost/`
   - Orchestrate services with Aspire 9.4; use service discovery
+  - **NLWeb Docker Container Resource:** Add a new resource to Aspire orchestration representing the NLWeb Docker container. This resource must:
+    - Be orchestrated and discoverable via Aspire service discovery
+    - Expose health/readiness endpoints
+    - Support configuration via environment variables for AI backends (Ollama, Azure OpenAI)
+    - Mount host directories for `/data` (persisted knowledge base) and `/config` (read-only config)
+    - Use official NLWeb Docker image and documented startup commands
+    - Support in-memory vector DB analysis for rapid prototyping and evaluation
+    - Document how to load real website data into NLWeb using the documented data loading command (e.g., `docker exec -it <container_id> python -m data_loading.db_load <url> <name>`)
+
 - Service Defaults — `eShopServiceDefaults/`
   - Shared Aspire configuration: service discovery, resiliency, health checks, OTEL
 
@@ -91,8 +100,8 @@ All HTTP calls, timeouts, service discovery, and resiliency options must use .NE
 
 Aspire requirements:
 
-- Enroll Search, Store, and AppHost into Aspire 9.4
-- Use Aspire service discovery for Store → Search calls (no hard-coded URLs)
+- Enroll Search, Store, AppHost, and NLWeb Docker resource into Aspire 9.4
+- Use Aspire service discovery for Store → Search and Search → NLWeb calls (no hard-coded URLs)
 - Centralize logging, tracing, and metrics via Aspire defaults
 - Expose readiness/liveness endpoints for diagnostics
 
@@ -136,7 +145,7 @@ Base path versioning: `/api/v1/`
 - Behavior: trigger NLWeb (re)crawl or sitemap import for `SiteBaseUrl`
 - Response 202/200 + operation info; log progress; optional status endpoint (future)
 
-## 8. Indexing Strategy
+## 8. Indexing & Data Loading Strategy
 
 - Sources: `SiteBaseUrl` and sitemap
 - Exclusions: admin/cart/checkout paths
@@ -144,6 +153,12 @@ Base path versioning: `/api/v1/`
 - Dynamic content: prefer rendered HTML where feasible
 - Trigger: manual reindex via POST; scheduled job (future)
 - Retention: reindex replaces prior state
+- **Real Data Loading:** All data indexed by NLWeb must be loaded from the live website or static content pages (e.g., About Us, Careers) using NLWeb's documented ingestion commands. Mock data or hard-coded results are not permitted in production or demo scenarios.
+- **Data Loading Command:** Use the documented NLWeb Docker command to ingest site data:
+  - `docker exec -it <container_id> python -m data_loading.db_load <url> <name>`
+  - For Docker Compose: `docker-compose exec nlweb python -m data_loading.db_load <url> <name>`
+- **Volume Mounts:** Persist data using `/data` volume; provide config via `/config` (read-only).
+- **Vector DB Support:** NLWeb supports in-memory vector DB for rapid prototyping, as well as external vector DBs (Qdrant, Milvus, Azure AI Search, etc.). For demo scenarios, in-memory vector DB may be used, but production should use a persistent backend.
 
 ## 9. Security & Privacy
 
@@ -237,17 +252,20 @@ Use `src\eShopLite-NLWeb.slnx` and enroll all services into Aspire 9.4.
 
 Step-by-step tasks:
 
-Use `src\eShopLite-NLWeb.slnx` and enroll all services into Aspire 9.4.
-
-Step-by-step tasks:
-
 1. Create `Search/` project (.NET 9). Reference `eShopServiceDefaults`. Add `builder.AddServiceDefaults()` and `app.MapDefaultEndpoints()`.
-2. Implement `GET /api/v1/search`: validate inputs, call NLWebNet endpoint (`/ask`) using NLWebNet library, map results, add telemetry.
+2. Implement `GET /api/v1/search`: validate inputs, call NLWebNet endpoint (`/ask`) using NLWebNet library, map results, add telemetry. **All queries must use real indexed data from NLWeb; mock clients are not permitted.**
 3. Implement `POST /api/v1/search/reindex`: protected route; call NLWebNet reindex logic as per protocol.
 4. Integrate NLWebNet NuGet package and configure endpoints/services according to documentation and sample code.
 5. Store: add search box and `/search` page; call `/api/v1/search` using service discovery (no hard-coded URL).
-6. Tests: unit tests for validators/mappers/handlers; integration test with NLWebNet mock/fake client.
-7. Aspire: update `eShopAppHost` to add the Search project and service wiring; enable service discovery and telemetry.
+6. Tests: unit tests for validators/mappers/handlers; integration test with NLWebNet and real data.
+7. Aspire: update `eShopAppHost` to add the Search project, NLWeb Docker resource, and service wiring; enable service discovery and telemetry.
+8. Orchestrate NLWeb Docker container in Aspire:
+   - Use official NLWeb Docker image
+   - Pass environment variables for AI backend selection (Ollama, Azure OpenAI)
+   - Mount `/data` and `/config` volumes
+   - Expose health/readiness endpoints
+   - Document and automate data loading using NLWeb's ingestion command
+   - Support in-memory vector DB for rapid prototyping; document how to switch to persistent DBs for production
 
 **Reference Implementation Details:**
 
@@ -264,8 +282,11 @@ Step-by-step tasks:
   app.MapNLWebNet();
   ```
 
-- Configure AI/data backends and secrets as per NLWebNet documentation.
-- See <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md> for step-by-step setup.
+- Configure AI/data backends and secrets as per NLWebNet and NLWeb Docker documentation. For Docker, use environment variables such as:
+  - `OPENAI_API_KEY`, `AZURE_OPENAI_API_KEY`, `AZURE_VECTOR_SEARCH_ENDPOINT`, etc.
+  - See `.env.template` in NLWeb repo for all options.
+- Load real website data into NLWeb using documented commands (see above).
+- See <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md> and <https://github.com/nlweb-ai/NLWeb/blob/main/docs/setup-docker.md> for step-by-step setup.
 
 **Note:** NLWebNet is alpha-quality and intended for prototyping and evaluation. Production use is not recommended at this time.
 Edge cases to cover:
@@ -284,11 +305,12 @@ Edge cases to cover:
 
 A separate document must be created to describe the specific implementation of NLWeb in this sample scenario. This document should include:
 
-- Integration steps for NLWebNet in the Search API
+- Integration steps for NLWebNet in the Search and Chat APIs
 - Configuration details (appsettings, secrets, environment variables)
-- Endpoint mapping and usage patterns
-- Data backend and AI service setup
+- Endpoint mapping and usage patterns (including `/ask`, `/mcp`, and `/api/v1/chat/message`)
+- Data backend and AI service setup (Azure OpenAI, Azure Search, etc.)
 - Security, observability, and deployment notes
+- Documentation updates reflecting HTTP-only and NLWebNet usage
 - References to sample code and documentation
 
 ## 22. Static Content Requirements
@@ -317,3 +339,15 @@ Create a static page with sample job offerings at Contoso. Example content:
 > We offer competitive salaries, flexible work arrangements, and opportunities for growth. Apply today to become part of the Contoso family.
 
 See NLWebNet [demo-setup-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md) and [manual-testing-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/manual-testing-guide.md) for examples.
+
+---
+
+**Latest Implementation Summary (August 2025):**
+
+- SignalR is fully removed from all code, configuration, and documentation.
+- Chat and search are HTTP-only, using RESTful endpoints.
+- NLWebNet is integrated in the Chat service, exposing `/ask` and `/mcp` endpoints, with configuration bound from `appsettings.json`.
+- The custom `/api/v1/chat/message` endpoint is preserved for Store compatibility.
+- Documentation (`docs/api/chat-api.md`) is updated to reflect HTTP-only and NLWebNet usage, with example requests and configuration notes.
+- Repository hygiene: deprecated hub files are deleted, and all SignalR references are purged.
+- All tests and builds pass; KPIs and requirements are met.

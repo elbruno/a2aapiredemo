@@ -1,5 +1,6 @@
 ﻿@using Store.Components.Cart
 @using Store.Components.Chat
+@inject NavigationManager NavigationManager
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -8,8 +9,21 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://aka.ms/eshoplite/repo" target="_blank">Source Code</a>
+        <div class="top-row px-4 d-flex justify-content-between align-items-center">
+            <!-- Search box -->
+            <div class="search-box d-flex flex-grow-1 me-3">
+                <div class="input-group" style="max-width: 400px;">
+                    <input type="text" class="form-control" @bind="searchQuery" @onkeypress="OnSearchKeyPress" placeholder="Search products and content..." />
+                    <button class="btn btn-outline-secondary" type="button" @onclick="PerformSearch">
+                        <span class="bi bi-search" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Source code link -->
+            <div class="source-link">
+                <a href="https://aka.ms/eshoplite/repo" target="_blank">Source Code</a>
+            </div>
         </div>
 
         <article class="content px-4">
@@ -31,6 +45,7 @@
 
 @code {
     private bool isCartVisible = false;
+    private string searchQuery = "";
 
     private Task ToggleCart()
     {
@@ -51,5 +66,23 @@
         // This can be used to refresh cart count or show notifications
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private void PerformSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var navigation = NavigationManager;
+            var encodedQuery = Uri.EscapeDataString(searchQuery.Trim());
+            navigation.NavigateTo($"/search?q={encodedQuery}");
+        }
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            PerformSearch();
+        }
     }
 }
