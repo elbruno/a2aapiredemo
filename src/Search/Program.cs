@@ -11,10 +11,10 @@ builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 
 // Configure HttpClient with resilience and service discovery
-builder.Services.AddHttpClient<INlWebClient, MockNlWebClient>();
+builder.Services.AddHttpClient<INlWebClient, NlWebNetClient>();
 
-// Register NLWeb client
-builder.Services.AddScoped<INlWebClient, MockNlWebClient>();
+// Register NLWebNet client (real implementation)
+builder.Services.AddScoped<INlWebClient, NlWebNetClient>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -207,4 +207,4 @@ app.MapPost("/api/v1/search/reindex", async (
 app.Run();
 
 // Make Program class visible to tests
-public partial class Program { }
+public partial class SearchProgram { }

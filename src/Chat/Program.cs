@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container
-builder.Services.AddOpenApi();
+// Note: OpenAPI not available in .NET 8, removing AddOpenApi()
+// builder.Services.AddOpenApi();
 
 // Configure HttpClient with resilience and service discovery
 builder.Services.AddHttpClient<INlWebClient, MockNlWebClient>();
@@ -58,7 +59,8 @@ app.MapDefaultEndpoints();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // Note: OpenAPI not available in .NET 8, removing MapOpenApi()
+    // app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
@@ -139,8 +141,8 @@ app.MapPost("/api/v1/chat/message", async (
     }
 })
 .WithName("SendChatMessage")
-.WithSummary("Send a chat message and get an AI response")
-.WithOpenApi();
+.WithSummary("Send a chat message and get an AI response");
+// .WithOpenApi(); // Not available in .NET 8
 
 // Chat session endpoint
 app.MapGet("/api/v1/chat/session/{sessionId}", async (
@@ -188,10 +190,10 @@ app.MapGet("/api/v1/chat/session/{sessionId}", async (
     }
 })
 .WithName("GetChatSession")
-.WithSummary("Get chat session history")
-.WithOpenApi();
+.WithSummary("Get chat session history");
+// .WithOpenApi(); // Not available in .NET 8
 
 app.Run();
 
 // Make Program class visible to tests
-public partial class Program { }
+public partial class ChatProgram { }
