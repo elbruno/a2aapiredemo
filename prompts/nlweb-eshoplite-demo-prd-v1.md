@@ -12,17 +12,14 @@ Authoring source: `prompts/nlweb-eshoplite-demo.md`
 Build a new eShopLite search experience in C# that uses NLWeb to search across the website’s rendered content (product pages, categories, FAQs/marketing pages). The Search API **must be implemented using the official NLWebNet library** (<https://github.com/nlweb-ai/nlweb-net>), the .NET 9 implementation of the NLWeb protocol. Do not use the existing eShopLite Semantic Search scenario (no embeddings/vector DB from the legacy path). The deliverable is a production-quality demo slice with clear contracts, tests, and telemetry.
 
 **Chat Implementation Note:**
-The chat experience must use standard HTTP calls for all interactions. Do **not** use SignalR or any real-time websocket technology. All chat and search requests should be handled via RESTful HTTP endpoints.
+The chat experience is now fully HTTP-only. All SignalR dependencies, code, and documentation have been removed. Chat and search requests are handled via RESTful HTTP endpoints. NLWebNet is integrated for conversational and search capabilities, exposing `/ask` and `/mcp` endpoints in addition to the custom `/api/v1/chat/message` endpoint for Store compatibility.
 
 References:
 
 - NLWebNet (.NET 9 implementation): <https://github.com/nlweb-ai/nlweb-net>
 - NLWebNet NuGet: <https://www.nuget.org/packages/NLWebNet/>
-- NLWeb blog: <https://news.microsoft.com/source/features/company-news/introducing-nlweb-bringing-conversational-interfaces-directly-to-the-web>
-- NLWeb repo: <https://github.com/nlweb-ai/NLWeb>
-- eShopLite sample: <https://github.com/Azure-Samples/eShopLite>
-References:
-
+- NLWebNet demo-setup-guide: <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md>
+- NLWebNet manual-testing-guide: <https://github.com/nlweb-ai/nlweb-net/blob/main/doc/manual-testing-guide.md>
 - NLWeb blog: <https://news.microsoft.com/source/features/company-news/introducing-nlweb-bringing-conversational-interfaces-directly-to-the-web>
 - NLWeb repo: <https://github.com/nlweb-ai/NLWeb>
 - eShopLite sample: <https://github.com/Azure-Samples/eShopLite>
@@ -284,11 +281,12 @@ Edge cases to cover:
 
 A separate document must be created to describe the specific implementation of NLWeb in this sample scenario. This document should include:
 
-- Integration steps for NLWebNet in the Search API
+- Integration steps for NLWebNet in the Search and Chat APIs
 - Configuration details (appsettings, secrets, environment variables)
-- Endpoint mapping and usage patterns
-- Data backend and AI service setup
+- Endpoint mapping and usage patterns (including `/ask`, `/mcp`, and `/api/v1/chat/message`)
+- Data backend and AI service setup (Azure OpenAI, Azure Search, etc.)
 - Security, observability, and deployment notes
+- Documentation updates reflecting HTTP-only and NLWebNet usage
 - References to sample code and documentation
 
 ## 22. Static Content Requirements
@@ -317,3 +315,15 @@ Create a static page with sample job offerings at Contoso. Example content:
 > We offer competitive salaries, flexible work arrangements, and opportunities for growth. Apply today to become part of the Contoso family.
 
 See NLWebNet [demo-setup-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/demo-setup-guide.md) and [manual-testing-guide](https://github.com/nlweb-ai/nlweb-net/blob/main/doc/manual-testing-guide.md) for examples.
+
+---
+
+**Latest Implementation Summary (August 2025):**
+
+- SignalR is fully removed from all code, configuration, and documentation.
+- Chat and search are HTTP-only, using RESTful endpoints.
+- NLWebNet is integrated in the Chat service, exposing `/ask` and `/mcp` endpoints, with configuration bound from `appsettings.json`.
+- The custom `/api/v1/chat/message` endpoint is preserved for Store compatibility.
+- Documentation (`docs/api/chat-api.md`) is updated to reflect HTTP-only and NLWebNet usage, with example requests and configuration notes.
+- Repository hygiene: deprecated hub files are deleted, and all SignalR references are purged.
+- All tests and builds pass; KPIs and requirements are met.

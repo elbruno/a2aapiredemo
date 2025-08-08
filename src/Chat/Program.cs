@@ -1,8 +1,8 @@
-using Chat.Hubs;
 using Chat.Services;
 using Search.Services;
 using SearchEntities;
 using Microsoft.AspNetCore.Mvc;
+using NLWebNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,18 +14,15 @@ builder.AddServiceDefaults();
 // builder.Services.AddOpenApi();
 
 // Configure HttpClient with resilience and service discovery
-builder.Services.AddHttpClient<INlWebClient, MockNlWebClient>();
+builder.Services.AddHttpClient<INlWebClient, NlWebNetClient>();
 
 // Register NLWeb client
-builder.Services.AddScoped<INlWebClient, MockNlWebClient>();
+builder.Services.AddScoped<INlWebClient, NlWebNetClient>();
 
 // Register Chat service
 builder.Services.AddScoped<IChatService, ChatService>();
 
-// Add SignalR
-builder.Services.AddSignalR();
-
-// Add CORS for SignalR and API
+// Add CORS for API
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowStore", policy =>
@@ -33,7 +30,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("https://localhost:7147", "https://store") // Allow Store service
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials(); // Required for SignalR
+              ;
     });
 });
 
@@ -51,6 +48,13 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
+// NLWebNet services
+builder.Services.AddNLWebNet(options =>
+{
+    // Bind from configuration if present, otherwise defaults
+    builder.Configuration.GetSection("NLWebNet").Bind(options);
+});
+
 var app = builder.Build();
 
 // Map Aspire default endpoints
@@ -66,18 +70,16 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowStore");
 app.UseRateLimiter();
-
-// Map SignalR hub
-app.MapHub<ChatHub>("/chat-hub");
+app.MapNLWebNet();
 
 // Chat API endpoint
 app.MapPost("/api/v1/chat/message", async (
     ChatMessage chatMessage,
     IChatService chatService,
-    ILogger<Program> logger) =>
+    ILogger<ChatProgram> logger) =>
 {
     var correlationId = Guid.NewGuid().ToString();
-    logger.LogInformation("Chat message request: sessionId={SessionId}, correlationId={CorrelationId}", 
+    logger.LogInformation("Chat message request: sessionId={SessionId}, correlationId={CorrelationId}",
         chatMessage.SessionId, correlationId);
 
     try
@@ -110,8 +112,8 @@ app.MapPost("/api/v1/chat/message", async (
         }
 
         var response = await chatService.SendMessageAsync(chatMessage);
-        
-        logger.LogInformation("Chat message processed: sessionId={SessionId}, responseTime={ResponseTime}ms, correlationId={CorrelationId}", 
+
+        logger.LogInformation("Chat message processed: sessionId={SessionId}, responseTime={ResponseTime}ms, correlationId={CorrelationId}",
             response.SessionId, response.Metadata.ResponseTime, correlationId);
 
         return Results.Ok(response);
@@ -148,10 +150,10 @@ app.MapPost("/api/v1/chat/message", async (
 app.MapGet("/api/v1/chat/session/{sessionId}", async (
     string sessionId,
     IChatService chatService,
-    ILogger<Program> logger) =>
+    ILogger<ChatProgram> logger) =>
 {
     var correlationId = Guid.NewGuid().ToString();
-    logger.LogInformation("Chat session request: sessionId={SessionId}, correlationId={CorrelationId}", 
+    logger.LogInformation("Chat session request: sessionId={SessionId}, correlationId={CorrelationId}",
         sessionId, correlationId);
 
     try
@@ -180,7 +182,7 @@ app.MapGet("/api/v1/chat/session/{sessionId}", async (
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Chat session request failed: sessionId={SessionId}, correlationId={CorrelationId}", 
+        logger.LogError(ex, "Chat session request failed: sessionId={SessionId}, correlationId={CorrelationId}",
             sessionId, correlationId);
         return Results.Problem(
             statusCode: 500,
