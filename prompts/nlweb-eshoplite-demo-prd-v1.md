@@ -67,36 +67,36 @@ Non‑Goals:
 Components (under `src/`):
 
 - Search API (new) — `Search/`
-  - Role: Own the search contract; call NLWeb using the NLWebNet library.
+  - Owns the search contract; calls NLWeb using the NLWebNet library.
   - Endpoints: `GET /api/v1/search`, `POST /api/v1/search/reindex` (protected)
-  - Tech: ASP.NET Core Minimal API (or MVC) on .NET 9; integrate NLWebNet endpoints and services
-  - Implementation: Use NLWebNet NuGet package for protocol compliance and MCP integration
+  - Tech: ASP.NET Core Minimal API (or MVC) on .NET 9; integrates NLWebNet endpoints and services
+  - Implementation: Uses NLWebNet NuGet package for protocol compliance and MCP integration
   - Observability: structured logs, OTEL traces/metrics via Aspire service defaults
   - Reference: See NLWebNet documentation and sample applications for integration patterns
-  - **Data Loading:** The Search service must load and query real website data using NLWeb's ingestion and indexing capabilities. Mock clients are not permitted; all queries must use the actual NLWebNet integration and real indexed data.
+  - **Data Loading:** The Search service loads and queries real website data using NLWeb's ingestion and indexing capabilities. Mock clients are not permitted; all queries use actual NLWebNet integration and real indexed data.
 
 - Store (existing) — `Store/`
-  - Add search box and `/search` page
+  - Adds search box and `/search` page
   - Calls Search API; renders titles/snippets/links
-  - Add static "About Us" page with sample information about Contoso (see below)
-  - Add static "Careers" page with sample job offerings for Contoso (see below)
+  - Adds static "About Us" and "Careers" pages with sample content for Contoso
 
 - App Host (existing) — `eShopAppHost/`
-  - Orchestrate services with Aspire 9.4; use service discovery
-  - **NLWeb Docker Container Resource:** Add a new resource to Aspire orchestration representing the NLWeb Docker container. This resource must:
-    - Be orchestrated and discoverable via Aspire service discovery
-    - Expose health/readiness endpoints
-    - Support configuration via environment variables for AI backends (Ollama, Azure OpenAI)
-    - Mount host directories for `/data` (persisted knowledge base) and `/config` (read-only config)
-    - Use official NLWeb Docker image and documented startup commands
-    - Support in-memory vector DB analysis for rapid prototyping and evaluation
-    - Document how to load real website data into NLWeb using the documented data loading command (e.g., `docker exec -it <container_id> python -m data_loading.db_load <url> <name>`)
+  - Orchestrates services with Aspire 9.4; uses service discovery
+  - **NLWeb Docker Container Resource:**
+    - Orchestrated and discoverable via Aspire service discovery
+    - Exposes health/readiness endpoints
+    - Configurable via environment variables for AI backends (Ollama, Azure OpenAI)
+    - Mounts host directories for `/data` (persisted knowledge base) and `/config` (read-only config)
+    - Uses official NLWeb Docker image and documented startup commands
+    - Supports in-memory vector DB analysis for rapid prototyping and evaluation
+    - **NLWeb assets provisioning:** NLWeb `code/` and `static/` directories are fetched dynamically via the `fetch-nlweb-assets.ps1` PowerShell script before orchestration. These assets are not tracked in the repository and are excluded via `.gitignore`.
+    - Data loading is automated/documented using the NLWeb ingestion command (e.g., `docker exec -it <container_id> python -m data_loading.db_load <url> <name>`)
 
 - Service Defaults — `eShopServiceDefaults/`
   - Shared Aspire configuration: service discovery, resiliency, health checks, OTEL
 
 **Service Defaults:**
-All HTTP calls, timeouts, service discovery, and resiliency options must use .NET Aspire service defaults. Do not hard-code values; always use Aspire configuration and extension methods for best practices.
+All HTTP calls, timeouts, service discovery, and resiliency options use .NET Aspire service defaults. No hard-coded values; always use Aspire configuration and extension methods for best practices.
 
 Aspire requirements:
 
@@ -266,6 +266,7 @@ Step-by-step tasks:
    - Expose health/readiness endpoints
    - Document and automate data loading using NLWeb's ingestion command
    - Support in-memory vector DB for rapid prototyping; document how to switch to persistent DBs for production
+   - **Provision NLWeb assets:** Before orchestration, run `fetch-nlweb-assets.ps1` to fetch the latest NLWeb `code/` and `static/` directories. These are not tracked in git and are excluded via `.gitignore`.
 
 **Reference Implementation Details:**
 
@@ -294,6 +295,13 @@ Edge cases to cover:
 - Empty/overly long `q`; `top` out of range; large `skip`
 - NLWeb timeout/5xx; return 502 with error body; preserve correlationId
 - Zero results; return `count: 0` and empty array with helpful message
+
+## 23. Repository Hygiene & Asset Provisioning
+
+- NLWeb `code/` and `static/` directories are not tracked in this repository. They are dynamically provisioned for local builds and orchestration using the `fetch-nlweb-assets.ps1` PowerShell script in `src/eShopAppHost/`.
+- `.gitignore` excludes these directories to prevent accidental commits.
+- Before building or running the solution, contributors must run the asset-fetch script to ensure the required NLWeb files are present for the Docker build.
+- This approach keeps the repository clean and ensures the latest NLWeb assets are always used for local development and demo scenarios.
 
 ## 20. Glossary & References
 

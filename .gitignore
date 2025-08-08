@@ -416,3 +416,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# NLWeb assets for local Docker build (do not track)
+src/eShopAppHost/code/
+src/eShopAppHost/static/

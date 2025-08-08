@@ -15,7 +15,13 @@ public class Program
         builder.Services.AddOpenApi();
 
         // Configure HttpClient with resilience and service discovery
-        builder.Services.AddHttpClient<INlWebClient, NlWebNetClient>();
+        builder.Services.AddHttpClient<INlWebClient, NlWebNetClient>("nlweb", (serviceProvider, client) =>
+        {
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            var timeout = configuration.GetValue<TimeSpan?>("NLWeb:Timeout") ?? TimeSpan.FromSeconds(30);
+            client.Timeout = timeout;
+            client.DefaultRequestHeaders.Add("User-Agent", "eShopLite-Search/1.0");
+        });
 
         // Register NLWebNet client (real implementation)
         builder.Services.AddScoped<INlWebClient, NlWebNetClient>();
