@@ -81,7 +81,7 @@ Projects/components (suggested within `src/`):
   - Calls the Search API, displays ranked results with snippets and links.
   - Optional facets (if derivable from URLs or metadata).
 - eShopAppHost (existing): `eShopAppHost/`
-  - Wire the new Search service into the app host profile (Aspire 9.4) if AppHost is used locally.
+  - Wire the new Search service into the app host profile (Aspire 9.4). Use Aspire service discovery for Store→Search calls and centralize telemetry via Aspire defaults.
 
 Key contracts:
 
@@ -181,8 +181,111 @@ Observability and quality:
 Dev experience:
 
 1. Provide `README` updates with run instructions and configuration samples.
-2. Optionally wire `Search` into `eShopAppHost` for one-command startup (Aspire 9.4 AppHost).
+2. Wire `Search` into `eShopAppHost` for one-command startup (Aspire 9.4 AppHost).
 3. Ensure .NET 9 SDK and Aspire 9.4 workloads are installed in the dev environment.
+
+## Aspire orchestration requirements
+
+- Enroll all services (Search, Store, AppHost) into .NET Aspire 9.4 orchestration using `eShopAppHost`.
+- Use Aspire service discovery for internal calls (e.g., Store → Search) instead of hard-coded hostnames/ports.
+- Configure typed `HttpClient` via DI and Aspire’s service defaults for resiliency (timeouts/retries) and observability (OTEL).
+- Centralize logs, metrics, and traces through Aspire’s default providers. Emit spans for NLWeb outbound calls.
+- Expose health endpoints (readiness/liveness) to integrate with Aspire diagnostics.
+- Manage secrets (e.g., NLWeb API key) via environment variables or user-secrets; do not commit secrets.
+
+## Personas and user stories
+
+- Shopper: “As a shopper, I want to search the site in natural language so I can find products and policies quickly.” Acceptance: P50 < 2s, relevant results, clickable links.
+- Support agent: “As support, I need quick answers from policy/FAQ pages to help customers.” Acceptance: authoritative pages with citations.
+- Merchandiser: “As merchandiser, I want visibility into zero-result queries to improve content.” Acceptance: zero-results metric displayed.
+
+## KPIs and success metrics
+
+- Latency: P50 < 2s, P95 < 4s (local/demo)
+- Error rate: < 1% 5xx for `/api/search`
+- Zero-results rate: tracked; target reduction over time
+- CTR on results: clicks per query
+- Uptime (demo SLO): 99% during demo windows
+- Index freshness: within 24h of content changes (demo SLA)
+
+## Scope boundaries and dependencies
+
+- Browsers: modern Chromium/Edge/Firefox; mobile responsive supported
+- Locale: English (initial)
+- Dependencies: NLWeb endpoint/key; .NET 9 SDK; Aspire 9.4; solution `src\eShopLite-NLWeb.slnx`
+
+## Detailed API contracts
+
+- Versioning: prefix routes with `/api/v1/` (e.g., `/api/v1/search`)
+- Parameters: `q` (required), `top` (1–50, default 10), `skip` (>=0, default 0)
+- Response: `{ query, count, results[] { title, url, snippet, score, metadata } }`
+- Errors: `{ code, message, correlationId }` with 400, 429, 502, 500
+- Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+- Auth: `POST /api/v1/search/reindex` requires bearer/API key (configurable)
+
+## Indexing strategy
+
+- Sources: `SiteBaseUrl`, sitemap; exclude admin/cart/checkout paths
+- Trigger: manual `POST /api/v1/search/reindex`; scheduled job (future)
+- Robots/dynamic: honor `robots.txt`; prefer rendered HTML content when feasible
+- Retention: reindex replaces prior state
+
+## Security and privacy
+
+- Input validation; enforce `MaxTop` and query length limits
+- Strict CORS to Store origin; internal calls via Aspire discovery
+- Secrets in env/user-secrets; redact sensitive values in logs
+- Abuse control: rate limiting and anomaly logging
+
+## Accessibility and UX
+
+- WCAG 2.2 AA keyboard/screen-reader support
+- Clear loading/empty/error states; snippet highlighting and truncation (~160 chars)
+
+## Observability
+
+- Metrics: requests, latency (P50/P95), error rate, zero-results, CTR
+- Logs: structured with correlationId; NLWeb call duration/status
+- Tracing: spans for API handler, NLWeb client, and Store→Search; wired via Aspire OTEL defaults
+- Basic dashboard with charts for latency, errors, zero-results, CTR
+
+## Testing and quality gates
+
+- Unit tests for handlers/validators/mappers; integration test for `/api/v1/search`
+- Load test: 10 concurrent users for 5 minutes; meet latency/error thresholds
+- Chaos tests for NLWeb timeouts/5xx; verify graceful fallback
+- Exit criteria: tests green, KPIs within thresholds
+
+## Environments and rollout
+
+- Local: Aspire 9.4 orchestrates services; discovery resolves service URLs; single-command startup
+- CI: build/test gates; packaging as needed
+- Feature flag for search UI; rollback by toggling flag
+
+## Risks, assumptions, and open questions
+
+- Risks: NLWeb rate limits/quotas; Mitigation: client rate limiting and (optional) caching
+- Assumptions: stable product URLs; complete sitemap
+- Open: anchor-level deep links support from NLWeb
+
+## Timeline and ownership
+
+- Milestones mapped to phased plan; roles: Eng/PM/QA/Ops
+
+## Alternatives considered
+
+- Legacy eShopLite semantic search vs. NLWeb; choose NLWeb for site-wide coverage and simplicity
+
+## Glossary and references
+
+- NLWeb: natural language web interaction/search framework
+- Aspire AppHost: .NET Aspire orchestration and service discovery
+- PRD: Product Requirements Document
+
+## Appendices
+
+- Sample queries: budget shoes under $60; return policy; waterproof jackets under 100
+- Analytics events: search_query, search_result_click, search_zero_results, search_latency
 
 Out of scope for this iteration:
 
