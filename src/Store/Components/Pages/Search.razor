@@ -1,9 +1,11 @@
 ﻿@page "/search"
 @using Store.Services
 @using SearchEntities
+@using Microsoft.AspNetCore.Components
 
 @inject ISearchService SearchService
 @inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
 
@@ -72,7 +74,25 @@ else if (hasSearched)
     private bool isLoading = false;
     private bool hasSearched = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Check for query parameter from search box
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        if (queryParams.TryGetValue("q", out var queryValue) && !string.IsNullOrWhiteSpace(queryValue))
+        {
+            searchTerm = queryValue.ToString();
+            await DoSearchInternal();
+        }
+    }
+
     private async Task DoSearch(MouseEventArgs e)
+    {
+        await DoSearchInternal();
+    }
+
+    private async Task DoSearchInternal()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
