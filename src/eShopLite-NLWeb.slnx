@@ -7,6 +7,7 @@
     <Project Path="Products/Products.csproj" />
     <Project Path="Store/Store.csproj" />
     <Project Path="Search/Search.csproj" />
+    <Project Path="Chat/Chat.csproj" />
   </Folder>
   <Folder Name="/3 Models/">
     <Project Path="CartEntities/CartEntities.csproj" />
