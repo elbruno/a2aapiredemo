@@ -97,13 +97,33 @@ To run the project locally, you'll need to make sure the following tools are ins
 
 - [.NET 9](https://dotnet.microsoft.com/downloads/)
 - [Git](https://git-scm.com/downloads)
-- [Azure Developer CLI (azd)](https://aka.ms/install-azd)
+- [Azure Developer CLI (azd)](https://aka.ms/install-azd) - Required for deploying to Azure
+  - **Windows**: Install via winget: `winget install microsoft.azd`
+  - **macOS**: Install via Homebrew: `brew tap azure/azd && brew install azd`
+  - **Linux**: Install via script: `curl -fsSL https://aka.ms/install-azd.sh | bash`
 - [Visual Studio Code](https://code.visualstudio.com/Download) or [Visual Studio](https://visualstudio.microsoft.com/downloads/)
   - If using Visual Studio Code, install the [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
 - .NET Aspire workload:
     Installed with the [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire) or the [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire).
 - An OCI compliant container runtime, such as:
   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/).
+
+#### Verify Prerequisites
+
+After installing the prerequisites, verify they are working correctly:
+
+```bash
+# Verify .NET 9 SDK
+dotnet --version
+
+# Verify Azure Developer CLI
+azd version
+
+# Verify Docker/Podman
+docker --version
+# or
+podman --version
+```
 
 ### Run the solution
 
