@@ -10,6 +10,7 @@ using Products.Models;
 using SearchEntities;
 using System.Text;
 using VectorEntities;
+using Microsoft.Extensions.AI;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Products.Memory;
@@ -79,6 +80,7 @@ public class MemoryContext
             }
         }
 
+        _isMemoryCollectionInitialized = true;
         _logger.LogInformation("DONE! Filling products in memory");
         return true;
     }
@@ -107,7 +109,7 @@ public class MemoryContext
 
             await foreach (var resultItem in _productsCollection.SearchAsync(vectorSearchQuery, top: 3))
             {
-                if (resultItem.Score > 0.5)
+                if (resultItem.Score > 0.3)
                 {
                     var product = await db.FindAsync<Product>(resultItem.Record.Id);
                     if (product != null)
@@ -131,10 +133,10 @@ Include products details.
     - Found Products: 
 {sbFoundProducts}";
 
-            var messages = new List<ChatMessage>
+            var messages = new List<OpenAI.Chat.ChatMessage>
     {
-        new SystemChatMessage(_systemPrompt),
-        new UserChatMessage(prompt)
+        new OpenAI.Chat.SystemChatMessage(_systemPrompt),
+        new OpenAI.Chat.UserChatMessage(prompt)
     };
 
             _logger.LogInformation("{ChatHistory}", JsonConvert.SerializeObject(messages));

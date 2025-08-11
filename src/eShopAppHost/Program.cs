@@ -42,10 +42,21 @@ if (builder.ExecutionContext.IsPublishMode)
     products.WithReference(appInsights)
         .WithReference(aoai)
         .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
-        .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+        .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName)
+        .WithEnvironment("AI_UseGitHubModels", "false");
 
     store.WithReference(appInsights)
         .WithExternalHttpEndpoints();
+}
+else
+{
+    // local development uses GitHub models
+    var githubToken = builder.AddParameter("githubToken", secret: true)
+        .WithDescription("GitHub Personal Access Token for accessing GitHub Models API");
+    
+    products
+        .WithEnvironment("AI_UseGitHubModels", "true")
+        .WithEnvironment("GitHubToken", githubToken);
 }
 
 builder.Build().Run();
