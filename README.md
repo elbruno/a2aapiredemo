@@ -129,6 +129,42 @@ Follow these steps to run the project, locally or in CodeSpaces:
   dotnet run
   ````
 
+### Local Development with GitHub Models
+
+For local development, this solution now supports using **GitHub Models** instead of Azure OpenAI services. This provides a cost-effective way to develop and test AI features locally.
+
+#### Prerequisites
+
+- A [GitHub account](https://github.com)
+- Access to [GitHub Models](https://github.com/marketplace/models) (currently in beta)
+- A GitHub Personal Access Token with appropriate permissions
+
+#### Setup GitHub Models for Local Development
+
+1. **Create a GitHub Personal Access Token:**
+   - Go to GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)
+   - Create a new token with appropriate scopes for GitHub Models access
+   - Keep the token secure as you'll need it for local development
+
+2. **Run the project locally:**
+   ```bash
+   cd ./src/eShopAppHost/
+   dotnet run
+   ```
+
+3. **Interactive Token Prompt:**
+   - When running locally (not in publish mode), .NET Aspire will automatically prompt you for the GitHub token
+   - This uses Aspire's new interactive parameter prompting feature from version 9.4
+   - The token is securely handled and only required for local development scenarios
+
+#### How it Works
+
+- **Local Development**: Uses GitHub Models (gpt-4o-mini for chat, text-embedding-3-small for embeddings)
+- **Production/Published**: Uses Azure OpenAI services as configured in the AppHost
+- **Automatic Detection**: The solution automatically detects the environment and uses the appropriate AI service
+
+The GitHub Models integration provides the same AI functionality as Azure OpenAI but runs entirely through GitHub's inference API, making it perfect for local development and testing.
+
 Check the [Video Resources](#resources) for a step-by-step on how to run this project.
 
 > **Note:** Working with .NET Aspire in GitHub Codespaces is not fully supported yet. As a developer you need to perform a lot of manual steps to access the .NET Aspire portal, like changing ports to public, copy the access token and more. The .NET Aspire version 9.1 will improve the whole developer experience. We will update these steps when the version 9.1 is released.

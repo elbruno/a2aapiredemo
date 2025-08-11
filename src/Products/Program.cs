@@ -4,6 +4,8 @@ using OpenAI.Embeddings;
 using Products.Endpoints;
 using Products.Memory;
 using Products.Models;
+using Microsoft.Extensions.AI;
+using System.ClientModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,47 +19,99 @@ builder.Services.AddProblemDetails();
 // Add DbContext service
 builder.AddSqlServerDbContext<Context>("productsDb");
 
-// in dev scenarios rename this to "openaidev", and check the documentation to reuse existing AOAI resources
-var azureOpenAiClientName = "openai";
-var chatDeploymentName = "gpt-4.1-mini";
-var embeddingsDeploymentName = "text-embedding-ada-002";
-builder.AddAzureOpenAIClient(azureOpenAiClientName);
+// Check if we should use GitHub models (local development) or Azure OpenAI (production)
+var useGitHubModels = builder.Configuration.GetValue<bool>("AI_UseGitHubModels", false);
 
-// get azure openai client and create Chat client from aspire hosting configuration
-builder.Services.AddSingleton<ChatClient>(serviceProvider =>
+if (useGitHubModels)
 {
-    var logger = serviceProvider.GetService<ILogger<Program>>()!;
-    logger.LogInformation($"Chat client configuration, modelId: {chatDeploymentName}");
-    ChatClient chatClient = null;
-    try
+    // Local development with GitHub models
+    var githubToken = builder.Configuration["GitHubToken"];
+    
+    // Register the legacy ChatClient for backward compatibility
+    builder.Services.AddSingleton<ChatClient>(serviceProvider =>
     {
-        OpenAIClient client = serviceProvider.GetRequiredService<OpenAIClient>();
-        chatClient = client.GetChatClient(chatDeploymentName);
-    }
-    catch (Exception exc)
+        var logger = serviceProvider.GetService<ILogger<Program>>()!;
+        logger.LogInformation("Configuring GitHub Models Chat client for local development");
+        
+        if (string.IsNullOrEmpty(githubToken))
+        {
+            logger.LogError("GitHub token is required for local development with GitHub models");
+            return null!;
+        }
+        
+        var client = new OpenAIClient(new ApiKeyCredential(githubToken), new OpenAIClientOptions
+        {
+            Endpoint = new Uri("https://models.inference.ai.azure.com")
+        });
+        
+        return client.GetChatClient("gpt-4o-mini");
+    });
+    
+    // Register the legacy EmbeddingClient for backward compatibility
+    builder.Services.AddSingleton<EmbeddingClient>(serviceProvider =>
     {
-        logger.LogError(exc, "Error creating chat client");
-    }
-    return chatClient;
-});
+        var logger = serviceProvider.GetService<ILogger<Program>>()!;
+        logger.LogInformation("Configuring GitHub Models Embedding client for local development");
+        
+        if (string.IsNullOrEmpty(githubToken))
+        {
+            logger.LogError("GitHub token is required for local development with GitHub models");
+            return null!;
+        }
+        
+        var client = new OpenAIClient(new ApiKeyCredential(githubToken), new OpenAIClientOptions
+        {
+            Endpoint = new Uri("https://models.inference.ai.azure.com")
+        });
+        
+        return client.GetEmbeddingClient("text-embedding-3-small");
+    });
+}
+else
+{
+    // Production with Azure OpenAI
+    // in dev scenarios rename this to "openaidev", and check the documentation to reuse existing AOAI resources
+    var azureOpenAiClientName = "openai";
+    var chatDeploymentName = "gpt-4.1-mini";
+    var embeddingsDeploymentName = "text-embedding-ada-002";
+    builder.AddAzureOpenAIClient(azureOpenAiClientName);
 
-// get azure openai client and create embedding client from aspire hosting configuration
-builder.Services.AddSingleton<EmbeddingClient>(serviceProvider =>
-{
-    var logger = serviceProvider.GetService<ILogger<Program>>()!;
-    logger.LogInformation($"Embeddings client configuration, modelId: {embeddingsDeploymentName}");
-    EmbeddingClient embeddingsClient = null;
-    try
+    // get azure openai client and create Chat client from aspire hosting configuration
+    builder.Services.AddSingleton<ChatClient>(serviceProvider =>
     {
-        OpenAIClient client = serviceProvider.GetRequiredService<OpenAIClient>();
-        embeddingsClient = client.GetEmbeddingClient(embeddingsDeploymentName);
-    }
-    catch (Exception exc)
+        var logger = serviceProvider.GetService<ILogger<Program>>()!;
+        logger.LogInformation($"Chat client configuration, modelId: {chatDeploymentName}");
+        ChatClient chatClient = null;
+        try
+        {
+            OpenAIClient client = serviceProvider.GetRequiredService<OpenAIClient>();
+            chatClient = client.GetChatClient(chatDeploymentName);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error creating chat client");
+        }
+        return chatClient;
+    });
+
+    // get azure openai client and create embedding client from aspire hosting configuration
+    builder.Services.AddSingleton<EmbeddingClient>(serviceProvider =>
     {
-        logger.LogError(exc, "Error creating embeddings client");
-    }
-    return embeddingsClient;
-});
+        var logger = serviceProvider.GetService<ILogger<Program>>()!;
+        logger.LogInformation($"Embeddings client configuration, modelId: {embeddingsDeploymentName}");
+        EmbeddingClient embeddingsClient = null;
+        try
+        {
+            OpenAIClient client = serviceProvider.GetRequiredService<OpenAIClient>();
+            embeddingsClient = client.GetEmbeddingClient(embeddingsDeploymentName);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error creating embeddings client");
+        }
+        return embeddingsClient;
+    });
+}
 
 builder.Services.AddSingleton<IConfiguration>(sp =>
 {
@@ -69,7 +123,12 @@ builder.Services.AddSingleton(sp =>
 {
     var logger = sp.GetService<ILogger<Program>>();
     logger.LogInformation("Creating memory context");
-    return new MemoryContext(logger, sp.GetService<ChatClient>(), sp.GetService<EmbeddingClient>());
+    
+    // Try to get legacy clients first (for Azure OpenAI)
+    var chatClient = sp.GetService<ChatClient>();
+    var embeddingClient = sp.GetService<EmbeddingClient>();
+    
+    return new MemoryContext(logger, chatClient, embeddingClient);
 });
 
 // Add services to the container.
@@ -85,8 +144,16 @@ app.MapProductEndpoints();
 
 app.UseStaticFiles();
 
-// log Azure OpenAI resources
-app.Logger.LogInformation($"Azure OpenAI resources\n >> OpenAI Client Name: {azureOpenAiClientName}");
+// log AI configuration
+var isUsingGitHubModels = builder.Configuration.GetValue<bool>("AI_UseGitHubModels", false);
+if (isUsingGitHubModels)
+{
+    app.Logger.LogInformation("Using GitHub Models for local development");
+}
+else
+{
+    app.Logger.LogInformation("Using Azure OpenAI for production");
+}
 AppContext.SetSwitch("OpenAI.Experimental.EnableOpenTelemetry", true);
 
 // manage db

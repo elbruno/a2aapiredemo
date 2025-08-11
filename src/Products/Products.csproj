@@ -32,6 +32,9 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.61.0-preview" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+    <!-- GitHub Models for local development -->
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.7.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.7.0-preview.1.25356.2" />
     <!--AI Search NuGet packages-->
   </ItemGroup>
   <ItemGroup>

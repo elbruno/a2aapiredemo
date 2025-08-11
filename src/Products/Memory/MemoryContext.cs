@@ -10,6 +10,7 @@ using Products.Models;
 using SearchEntities;
 using System.Text;
 using VectorEntities;
+using Microsoft.Extensions.AI;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Products.Memory;
@@ -131,10 +132,10 @@ Include products details.
     - Found Products: 
 {sbFoundProducts}";
 
-            var messages = new List<ChatMessage>
+            var messages = new List<OpenAI.Chat.ChatMessage>
     {
-        new SystemChatMessage(_systemPrompt),
-        new UserChatMessage(prompt)
+        new OpenAI.Chat.SystemChatMessage(_systemPrompt),
+        new OpenAI.Chat.UserChatMessage(prompt)
     };
 
             _logger.LogInformation("{ChatHistory}", JsonConvert.SerializeObject(messages));
