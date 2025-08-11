@@ -1,7 +1,0 @@
-
-llm:
-  preferred_endpoint: "https://<your-resource-name>.openai.azure.com/"
-  preferred_model: "gpt-5-mini"
-  preferred_api_key: "<your-azure-openai-api-key>"
-  provider: "azure_openai"
-  api_version: "2023-05-15"

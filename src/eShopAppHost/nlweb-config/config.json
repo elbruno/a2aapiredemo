@@ -1,4 +1,0 @@
-{
-    "log_level": "INFO",
-    "vector_db": "in_memory"
-}
