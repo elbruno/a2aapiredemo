@@ -39,6 +39,62 @@ The Products service switches behavior using environment settings provided by th
 - AI_UseGitHubModels: "true" uses GitHub Models locally; "false" uses Azure OpenAI in publish/deploy.
 - GitHubToken: Personal Access Token used locally to call GitHub Models.
 
+### Key features (this scenario)
+
+- Local-first AI using GitHub Models with .NET Aspire 9.4
+- Automatic switch to Azure OpenAI in publish/deploy (no code changes)
+- Secure interactive token prompt for GitHub access (Aspire parameters)
+- Same app behavior across environments (Store + Products stay unchanged)
+
+### Architecture (local development)
+
+```mermaid
+graph TD
+  A[Store (Blazor UI)] --> B[Products API]
+  B -->|Chat + Embeddings| C[GitHub Models API\n<https://models.inference.ai.azure.com>]
+
+  subgraph Local Development
+    A
+    B
+  end
+
+  classDef cloud fill:#E6F7FF,stroke:#0366d6,color:#111;
+  class C cloud;
+```
+
+### Request flow (local)
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant S as Store (UI)
+  participant P as Products API
+  participant G as GitHub Models API
+
+  U->>S: Search query
+  S->>P: GET /api/search?q=...
+  P->>G: Chat (gpt-4.1-mini)
+  P->>G: Embeddings (text-embedding-3-small)
+  G-->>P: Responses
+  P-->>S: Aggregated results
+  S-->>U: Rendered results
+```
+
+### Minimal configuration (local)
+
+Products picks configuration from Aspire-set environment variables:
+
+- AI_UseGitHubModels=true
+- GitHubToken=YOUR_GITHUB_PERSONAL_ACCESS_TOKEN
+- Endpoint: <https://models.inference.ai.azure.com>
+
+Run from the AppHost so Aspire wires services and parameters for you:
+
+```powershell
+cd ./src/eShopAppHost/
+dotnet run
+```
+
 ## Features
 
 **GitHub CodeSpaces:** This project is designed to be opened in GitHub Codespaces as an easy way for anyone to deploy the solution entirely in the browser.
@@ -372,6 +428,9 @@ The documentation includes:
 
 - [Aspiring .NET Applications with Azure OpenAI](https://learn.microsoft.com/shows/azure-developers-dotnet-aspire-day-2024/aspiring-dotnet-applications-with-azure-openai)
 
+- GitHub Models: [gpt-4.1-mini](https://github.com/marketplace/models/azure-openai/gpt-4-1-mini)
+- GitHub Models: [text-embedding-3-small](https://github.com/marketplace/models/azure-openai/text-embedding-3-small)
+
 ### Video Recordings
 
-[![Run eShopLite Semantic Search in Minutes with .NET Aspire & GitHub Codespaces 🚀](./images/90ytrunfromcodespaces.png)](https://youtu.be/T9HwjVIDPAE)
+- Run eShopLite Semantic Search in Minutes with .NET Aspire & GitHub Codespaces: <https://youtu.be/T9HwjVIDPAE>

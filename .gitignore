@@ -398,6 +398,7 @@ FodyWeavers.xsd
 
 # VS Code files for those working on multiple tools
 .vscode/*
+!.vscode/mcp.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -416,7 +417,3 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-
-# NLWeb assets for local Docker build (do not track)
-src/eShopAppHost/code/
-src/eShopAppHost/static/
