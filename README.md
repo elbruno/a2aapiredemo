@@ -104,7 +104,12 @@ To run the project locally, you'll need to make sure the following tools are ins
 - [Visual Studio Code](https://code.visualstudio.com/Download) or [Visual Studio](https://visualstudio.microsoft.com/downloads/)
   - If using Visual Studio Code, install the [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
 - .NET Aspire workload:
-    Installed with the [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire) or the [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire).
+  - **Visual Studio 2022**: Install via [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire)
+    - Open Visual Studio Installer → Modify → Select "ASP.NET and web development" workload → Check ".NET Aspire SDK" → Modify
+  - **.NET CLI**: Install via [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=dotnet-cli&pivots=dotnet-cli)
+    ```bash
+    dotnet workload install aspire
+    ```
 - An OCI compliant container runtime, such as:
   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/).
 
@@ -119,11 +124,27 @@ dotnet --version
 # Verify Azure Developer CLI
 azd version
 
+# Verify .NET Aspire workload is installed
+dotnet workload list
+
 # Verify Docker/Podman
 docker --version
 # or
 podman --version
 ```
+
+**Expected Output for .NET Aspire:**
+```
+aspire    9.4.0/9.0.100    SDK 9.0.100    .NET Aspire SDK
+```
+
+#### Troubleshooting Prerequisites
+
+If you encounter issues with .NET Aspire installation:
+
+- **Unable to install .NET Aspire workload**: See the [troubleshooting guide](https://learn.microsoft.com/dotnet/aspire/troubleshooting/unable-to-install-workload)
+- **Container runtime issues**: Ensure Docker Desktop or Podman is running and accessible
+- **Visual Studio integration**: Make sure you have Visual Studio 2022 version 17.9 or higher for full .NET Aspire support
 
 ### Run the solution
 
@@ -220,7 +241,7 @@ Consider the following example for the *appsettings.json* file in the eShopAppHo
 }
 ```
 
-Check [.NET Aspire Azure hosting integrations](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#net-aspire-azure-hosting-integrations) for more information on how .NET Aspire create the necessary cloud resources for local development.
+Check [.NET Aspire Azure hosting integrations](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning) for more information on how .NET Aspire creates the necessary cloud resources for local development. For detailed deployment guidance, see the [Azure Container Apps deployment guide](https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth).
 
 ### Local development using an existing gpt-4.1-mini and ada-002 model
 
