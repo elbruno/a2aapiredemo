@@ -43,8 +43,9 @@ if (useGitHubModels)
         {
             Endpoint = new Uri("https://models.inference.ai.azure.com")
         });
-        
-        return client.GetChatClient("gpt-4o-mini");
+
+        // reference: https://github.com/marketplace/models/azure-openai/gpt-4-1-mini
+        return client.GetChatClient("gpt-4.1-mini");
     });
     
     // Register the legacy EmbeddingClient for backward compatibility
@@ -63,7 +64,8 @@ if (useGitHubModels)
         {
             Endpoint = new Uri("https://models.inference.ai.azure.com")
         });
-        
+
+        // reference: https://github.com/marketplace/models/azure-openai/text-embedding-3-small
         return client.GetEmbeddingClient("text-embedding-3-small");
     });
 }
@@ -169,7 +171,7 @@ using (var scope = app.Services.CreateScope())
     {
         app.Logger.LogError(exc, "Error creating database");
     }
-    DbInitializer.Initialize(context);
+    DbInitializer.Initialize(context, isUsingGitHubModels);
 
     app.Logger.LogInformation("Start fill products in vector db");
     var memoryContext = app.Services.GetRequiredService<MemoryContext>();

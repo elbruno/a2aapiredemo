@@ -4,7 +4,7 @@ namespace Products.Models
 {
     public static class DbInitializer
     {
-        public static void Initialize(Context context)
+        public static void Initialize(Context context, bool isUsingGitHubModels = false)
         {
             if (context.Product.Any())
                 return;
@@ -21,6 +21,13 @@ namespace Products.Models
             new Product { Name = "Camping Lantern", Description = "This lantern is perfect for lighting up your campsite", Price = 19.99m, ImageUrl = "product8.png" },
             new Product { Name = "Camping Tent", Description = "This tent is perfect for camping trips", Price = 99.99m, ImageUrl = "product9.png" },
         };
+
+            // If isUsingGitHubModels is true, filter the products to only include the 1st three ones
+            if (isUsingGitHubModels)
+            {
+                // Keep only the first three products for GitHub models
+                products = products.Take(3).ToList();
+            }
 
             context.AddRange(products);
 
