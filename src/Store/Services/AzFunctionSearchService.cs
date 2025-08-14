@@ -22,8 +22,8 @@ public class AzFunctionSearchService : IAzFunctionSearchService
         {
             Uri requestUri = new Uri(_httpClient.BaseAddress, "api/semanticsearch");
 
-            var payload = new { query = query, top = top };
-            var response = await _httpClient.PostAsJsonAsync(requestUri, payload);
+            var searchRequest = new SearchRequest { query = query, top = top };
+            var response = await _httpClient.PostAsJsonAsync(requestUri, searchRequest);
             var responseText = await response.Content.ReadAsStringAsync();
 
             _logger.LogInformation("[AzFunctionSearchService] status: {Status}, content: {Content}", response.StatusCode, responseText);
