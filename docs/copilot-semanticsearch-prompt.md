@@ -49,6 +49,8 @@ You are an expert .NET developer and automated coding agent. Make all changes di
   - Use CancellationToken and a default command timeout (e.g., 15s).
   - Do not log raw connection strings or sensitive data.
   - Return a `traceId` on 500/503 errors and log it for troubleshooting.
+- Tests requirement:
+  - Update or add unit tests if needed. If existing unit tests in the repo are failing, fix them as part of this work so the test suite passes. If you make behavior changes that affect tests, update the tests accordingly.
 
 ---
 
@@ -94,6 +96,10 @@ store.WithReference(semantic);
   - Unit tests for repository logic (mock ADO or use in-memory where appropriate).
   - Integration smoke test that runs the orchestration (containerized SQL) and calls `/api/semanticsearch`.
 
+- Fix existing failing tests:
+  - If the repo contains existing unit tests that fail, diagnose and fix them as part of this task. Do not leave the test suite broken. Update tests if intended behavior changes.
+- Add or update tests as necessary to cover new behavior introduced by the Semantic Search function.
+
 ### F. README update
 
 - Update `README.md` with:
@@ -138,7 +144,7 @@ store.WithReference(semantic);
 3. The `store` project registration references the new semantic search project so the orchestration knows the dependency.
 4. The function endpoint `/api/semanticsearch` returns semantic results from the `productsDb` (verify by calling endpoint after running the orchestration locally).
 5. The root `README.md` has a new "Semantic Search" section that includes usage, env vars, SQL reference link, and example requests.
-6. Unit/integration tests exist and pass locally and in CI (or clear instructions provided if an integration test requires the orchestration to run).
+6. Unit/integration tests exist and pass locally and in CI. Any existing failing unit tests in the repository must be fixed as part of this work.
 
 ---
 
