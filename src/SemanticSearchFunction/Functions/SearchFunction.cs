@@ -21,7 +21,7 @@ public class SearchFunction
 
     [Function("SemanticSearch")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "semanticsearch")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "semanticsearch")] HttpRequestData req, 
         CancellationToken cancellationToken = default)
     {
         var traceId = System.Diagnostics.Activity.Current?.Id ?? Guid.NewGuid().ToString();
@@ -30,27 +30,14 @@ public class SearchFunction
         {
             _logger.LogInformation("Semantic search request received. TraceId: {TraceId}", traceId);
 
-            // Parse request body
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
-            
-            if (string.IsNullOrWhiteSpace(requestBody))
+            var queryParameters = req.Query;
+            SearchRequest searchRequest = new()
             {
-                return await CreateErrorResponse(req, HttpStatusCode.BadRequest, "Request body is required", traceId);
-            }
+                Query = queryParameters["query"]
+            };
 
-            SearchRequest? searchRequest;
-            try
-            {
-                searchRequest = JsonSerializer.Deserialize<SearchRequest>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "Invalid JSON in request. TraceId: {TraceId}", traceId);
-                return await CreateErrorResponse(req, HttpStatusCode.BadRequest, "Invalid JSON format", traceId);
-            }
+            int.TryParse(queryParameters["top"], out int topParam);
+            searchRequest.Top = topParam;
 
             if (searchRequest == null || string.IsNullOrWhiteSpace(searchRequest.Query))
             {

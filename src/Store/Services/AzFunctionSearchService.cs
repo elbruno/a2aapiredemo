@@ -20,10 +20,24 @@ public class AzFunctionSearchService : IAzFunctionSearchService
     {
         try
         {
-            Uri requestUri = new Uri(_httpClient.BaseAddress, "api/semanticsearch");
+            Uri requestUri = new Uri(_httpClient.BaseAddress, $"api/semanticsearch");
 
-            var searchRequest = new SearchRequest { query = query, top = top };
-            var response = await _httpClient.PostAsJsonAsync(requestUri, searchRequest);
+            // complete the query to have the parameters query and top
+            var queryParameters = new List<string>();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                queryParameters.Add($"query={Uri.EscapeDataString(query)}");
+            }
+            if (top > 0)
+            {
+                queryParameters.Add($"top={top}");
+            }
+            if (queryParameters.Count > 0)
+            {
+                requestUri = new Uri(requestUri, "?" + string.Join("&", queryParameters));
+            }
+            
+            var response = await _httpClient.GetAsync(requestUri);
             var responseText = await response.Content.ReadAsStringAsync();
 
             _logger.LogInformation("[AzFunctionSearchService] status: {Status}, content: {Content}", response.StatusCode, responseText);
