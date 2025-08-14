@@ -15,7 +15,8 @@ var productsDb = sql
 
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
-    .WaitFor(productsDb);
+    .WaitFor(productsDb)
+    .WithExternalHttpEndpoints();
 
 var semanticSearch = builder.AddProject<Projects.SemanticSearchFunction>("semanticsearch")
     .WithReference(productsDb)
@@ -24,8 +25,9 @@ var semanticSearch = builder.AddProject<Projects.SemanticSearchFunction>("semant
 
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
-    .WithReference(semanticSearch)
     .WaitFor(products)
+    .WithReference(semanticSearch)
+    .WaitFor(semanticSearch)
     .WithExternalHttpEndpoints();
 
 IResourceBuilder<IResourceWithConnectionString>? openai;
