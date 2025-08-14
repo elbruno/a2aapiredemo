@@ -27,6 +27,9 @@ public class Product
 
     [JsonPropertyName("imageUrl")]
     public virtual string ImageUrl { get; set; }
+
+    // demo for SQL Server 2025 new vector type
+    public float[] Embedding { get; set; } = [];
 }
 
 

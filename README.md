@@ -2,18 +2,13 @@
 
 ## Description
 
-**eShopLite - Semantic Search** is a reference .NET application implementing an eCommerce site with Search features using Keyword Search and Semantic Search.
+**eShopLite - Semantic Search using SQL 2025** is a reference .NET application implementing an eCommerce site with Search features using vector search and vector indexes in the SQL Database Engine
 
 - [Features](#features)
 - [Architecture diagram](#architecture-diagram)
 - [Getting started](#getting-started)
 - [Deploying to Azure](#deploying)
 - Run solution
-  - [Run locally](#run-locally)
-  - [Run the solution](#run-the-solution)
-  - [.NET Aspire Azure Resources creation](#net-aspire-azure-resources-creation)
-  - [Local dev using an existing model](#local-development-using-an-existing-gpt-41-mini-and-ada-002-model)
-  - [Telemetry with .NET Aspire and Azure Application Insights](#telemetry-with-net-aspire-and-azure-application-insights)
 - [Resources](#resources)
 - [Video Recordings](#video-recordings)
 - [Guidance](#guidance)
@@ -25,193 +20,107 @@
 
 **GitHub CodeSpaces:** This project is designed to be opened in GitHub Codespaces as an easy way for anyone to deploy the solution entirely in the browser.
 
-This is the eShopLite Aplication running, performing a **Keyword Search**:
+This is the eShopLite Application running, performing a **Keyword Search**:
 
-![eShopLite Aplication running doing search using keyworkd search](./images/05eShopLite-SearchKeyWord.gif)
+![eShopLite Application running doing search using keyword search](./images/05eShopLite-SearchKeyWord.gif)
 
-This is the eShopLite Aplication running, performing a **Semantic Search**:
+This is the eShopLite Application running, performing a **Semantic Search**:
 
-![eShopLite Aplication running doing search using keyworkd search](./images/06eShopLite-SearchSemantic.gif)
-
-The Aspire Dashboard to check the running services:
-
-![Aspire Dashboard to check the running services](./images/10AzureResources.png)
-
-The Azure Resource Group with all the deployed services:
-
-![Azure Resource Group with all the deployed services](./images/15AspireDashboard.png)
+![eShopLite Application running doing search using keyword search](./images/06eShopLite-SearchSemantic.gif)
 
 ## Architecture diagram
 
-![Architecture diagram](./images/30Diagram.png)
+  ```mermaid
+  flowchart TD
+      subgraph "Azure Container Apps Environment - .NET Aspire"
+          store[store service]
+          products[products service]
+          sql[SQL service]
+          store --> products
+          products --> sql
+      end
+  
+      ContainerRegistry[Container Registry]
+      StorageAccount[Storage Account]
+      ManagedIdentity[Managed Identity]
+      OpenAI[Azure OpenAI\nChat + Embeddings]
+      AISearch[Azure AI Search\nVector Index]
+      LogAnalytics[Log Analytics]
+  
+      ContainerRegistry --> ManagedIdentity
+      ManagedIdentity --> OpenAI
+      ManagedIdentity --> AISearch
+  
+      products --> ManagedIdentity
+      products -->|semantic search| AISearch
+      products -->|generate embeddings + chat| OpenAI
+  
+      store --> LogAnalytics
+      products --> LogAnalytics
+  
+  ```
 
 ## Getting Started
 
-The solution is in the `./src` folder, the main solution is **[eShopLite-Aspire.slnx](./src/eShopLite-Aspire.slnx)**.
+## Main Concepts in this Scenario
+
+This scenario demonstrates how to use [SQL Server 2025's Vector search and Vector index features](https://learn.microsoft.com/sql/relational-databases/vectors/vectors-sql-server?view=sql-server-ver17) in a .NET Aspire application. The main concepts and implementation details are:
+
+- The .NET Aspire AppHost project creates the SQL Server 2025 instance directly using the container image `mcr.microsoft.com/mssql/server:2025-latest` from the Docker repository for SQL Server 2025: [Microsoft SQL Server - Ubuntu based images](https://hub.docker.com/r/microsoft/mssql-server/).
+
+- The logic for initializing and running the SQL Server container is implemented in [`scenarios/08-Sql2025/src/eShopAppHost/Program.cs`](scenarios/08-Sql2025/src/eShopAppHost/Program.cs):
+
+    ```csharp
+    var builder = DistributedApplication.CreateBuilder(args);
+    
+    var sql = builder.AddSqlServer("sql")
+        .WithLifetime(ContainerLifetime.Persistent)
+        .WithImageTag("2025-latest")
+        .WithEnvironment("ACCEPT_EULA", "Y");
+    
+    var productsDb = sql
+        .WithDataVolume()
+        .AddDatabase("productsDb");
+    
+    var products = builder.AddProject<Projects.Products>("products")
+        .WithReference(productsDb)
+        .WaitFor(productsDb);    
+    ```
+
+- Using an embedding client, once the database is initialized and a set of sample products is added, a new vector field is completed using an embedding. This logic is in [`scenarios/08-Sql2025/src/Products/Models/DbInitializer.cs`](./src/Products/Models/DbInitializer.cs).
+
+- The `ProductApiActions` class ([`scenarios/08-Sql2025/src/Products/Endpoints/ProductApiActions.cs`](./src/Products/Endpoints/ProductApiActions.cs)) implements an `AISearch()` function that performs semantic search using [EFCore.SqlServer.VectorSearch](https://www.nuget.org/packages/EFCore.SqlServer.VectorSearch/9.0.0-preview.2#show-readme-container) functions:
+
+    ```csharp
+    public static async Task<IResult> AISearch(string search, Context db, EmbeddingClient embeddingClient, int dimensions = 1536)
+    {
+        Console.WriteLine("Querying for similar products...");
+    
+        var embeddingSearch = embeddingClient.GenerateEmbedding(search, new() { Dimensions = dimensions });
+        var vectorSearch = embeddingSearch.Value.ToFloats().ToArray();
+        var products = await db.Product
+            .OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding, vectorSearch))
+            .Take(3)
+            .ToListAsync();
+    
+        var response = new SearchResponse
+        {
+            Products = products,
+            Response = products.Count > 0 ?
+                $"{products.Count} Products found for [{search}]" :
+                $"No products found for [{search}]"
+        };
+        return Results.Ok(response);
+    }
+    ```
+
+These components work together to enable semantic search over product data using SQL Server 2025's vector capabilities.
+
+The solution is in the `./src` folder, the main solution is **[eShopLite-Sql2025.slnx](./src/eShopLite-Sql2025.slnx)**.
 
 ## Deploying
 
-Once you've opened the project in [Codespaces](#github-codespaces), or [locally](#run-locally), you can deploy it to Azure.
-
-From a Terminal window, open the folder with the clone of this repo and run the following commands.
-
-1. Login to Azure:
-
-    ```shell
-    azd auth login
-    ```
-
-1. Provision and deploy all the resources:
-
-    ```shell
-    azd up
-    ```
-
-    It will prompt you to provide an `azd` environment name (like "eShopLite"), select a subscription from your Azure account, and select a [location where OpenAI the models gpt-4.1-mini and ADA-002 are available](https://azure.microsoft.com/explore/global-infrastructure/products-by-region/?products=cognitive-services&regions=all) (like "eastus2").
-
-1. When `azd` has finished deploying, you'll see the list of resources created in Azure and a set of URIs in the command output.
-
-1. Visit the **store** URI, and you should see the **eShop Lite app**! 🎉
-
-1. This is an example of the command output:
-
-![Deploy Azure Complete](./images/20AzdUpConsoleComplete.png)
-
-1. **Coming Soon!** You can check this video with a 5 minutes overview of the deploy process from codespaces: [Deploy Your **eShopLite - Semantic Search** to Azure in Minutes!]().
-
-***Note:** The deploy files are located in the `./src/eShopAppHost/infra/` folder. They are generated by the `Aspire AppHost` project.*
-
-### GitHub CodeSpaces
-
-- Create a new  Codespace using the `Code` button at the top of the repository.
-
-![create Codespace](./images/25CreateCodeSpaces.png)
-
-- The Codespace creation process can take a couple of minutes.
-
-- Once the Codespace is loaded, it should have all the necessary requirements to deploy the solution.
-
-### Run Locally
-
-To run the project locally, you'll need to make sure the following tools are installed:
-
-- [.NET 9](https://dotnet.microsoft.com/downloads/)
-- [Git](https://git-scm.com/downloads)
-- [Azure Developer CLI (azd)](https://aka.ms/install-azd)
-- [Visual Studio Code](https://code.visualstudio.com/Download) or [Visual Studio](https://visualstudio.microsoft.com/downloads/)
-  - If using Visual Studio Code, install the [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
-- .NET Aspire workload:
-    Installed with the [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire) or the [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire).
-- An OCI compliant container runtime, such as:
-  - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/).
-
-### Run the solution
-
-Follow these steps to run the project, locally or in CodeSpaces:
-
-- Navigate to the Aspire Host folder project using the command:
-
-  ```bash
-  cd ./src/eShopAppHost/
-  ```
-
-- If you are running the project in Codespaces, you need to run this command:
-
-  ```bash
-  dotnet dev-certs https --trust
-  ```
-
-- By default the AppHost project creates the necessary resources on Azure. Check the **[.NET Aspire Azure Resources creation](#net-aspire-azure-resources-creation)** section to learn how to configure the project to create Azure resources.
-
-- Run the project:
-
-  ```bash
-  dotnet run
-  ````
-
-Check the [Video Resources](#resources) for a step-by-step on how to run this project.
-
-> **Note:** Working with .NET Aspire in GitHub Codespaces is not fully supported yet. As a developer you need to perform a lot of manual steps to access the .NET Aspire portal, like changing ports to public, copy the access token and more. The .NET Aspire version 9.1 will improve the whole developer experience. We will update these steps when the version 9.1 is released.
-
-## .NET Aspire Azure Resources creation
-
-When utilizing Azure resources in your local development environment, you need to:
-
-- Authenticate to the Azure Tenant where the resources will be created. Run the following command to connect with your Azure tenant:
-
-  ```bash
-  az login 
-  ```
-- Provide the necessary Configuration values are specified under the Azure section in the `eShopAppHost` project:
-
-  - CredentialSource: Delegates to the [AzureCliCredential](https://learn.microsoft.com/dotnet/api/azure.identity.azureclicredential).
-  - SubscriptionId: The Azure subscription ID.
-  - AllowResourceGroupCreation: A boolean value that indicates whether to create a new resource group.
-  - ResourceGroup: The name of the resource group to use.
-  - Location: The Azure region to use.
-
-Consider the following example for the *appsettings.json* file in the eShopAppHost project configuration:
-
-```json
-{
-  "Azure": {
-    "CredentialSource": "AzureCli",
-    "SubscriptionId": "<Your subscription id>",
-    "AllowResourceGroupCreation": true,
-    "ResourceGroup": "<Valid resource group name>",
-    "Location": "<Valid Azure location>"
-  }
-}
-```
-
-Check [.NET Aspire Azure hosting integrations](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#net-aspire-azure-hosting-integrations) for more information on how .NET Aspire create the necessary cloud resources for local development.
-
-### Local development using an existing gpt-4.1-mini and ada-002 model
-
-In order to use existing models: gpt-4.1-mini and text-embedding-ada-002, you need to define the specific connection string in the `Products` project.
-
-Add a user secret with the configuration:
-
-```bash
-cd src/Products
-
-dotnet user-secrets set "ConnectionStrings:openaidev" "Endpoint=https://<endpoint>.openai.azure.com/;Key=<key>;"
-```
-
-This Azure OpenAI service must contain:
-
-- a `gpt-4.1-mini` model named **gpt-4.1-mini**
-- a `text-embedding-ada-002` model named **text-embedding-ada-002**
-
-To use these services, edit the `program.cs`, and change this:
-
-```csharp
-// in dev scenarios rename this to "openaidev", and check the documentation to reuse existing AOAI resources
-var azureOpenAiClientName = "openai";
-builder.AddAzureOpenAIClient(azureOpenAiClientName);
-```
-
-to this:
-
-```csharp
-// in dev scenarios rename this to "openaidev", and check the documentation to reuse existing AOAI resources
-var azureOpenAiClientName = "openaidev";
-builder.AddAzureOpenAIClient(azureOpenAiClientName);
-```
-
-### Telemetry with .NET Aspire and Azure Application Insights
-
-The eShopLite solution leverages the Aspire Dashboard and Azure Application Insights to provide comprehensive telemetry and monitoring capabilities
-
-The **.NET Aspire Dashboard** offers a centralized view of the application's performance, health, and usage metrics. It integrates seamlessly with the Azure OpenAI services, allowing developers to monitor the performance of the `gpt-4.1-mini` and `text-embedding-ada-002` models. The dashboard provides real-time insights into the application's behavior, helping to identify and resolve issues quickly.
-
-![Aspire Dashboard](./images/40AspireDashboard.png)
-
-**Azure Application Insights** complements the Aspire Dashboard by offering deep diagnostic capabilities and advanced analytics. It collects detailed telemetry data, including request rates, response times, and failure rates, enabling developers to understand how the application is performing under different conditions. Application Insights also provides powerful querying and visualization tools, making it easier to analyze trends and detect anomalies. 
-
-![Azure Application Insights](./images/45AppInsightsDashboard.png)
-
-By combining the Aspire Dashboard with Azure Application Insights, the eShopLite solution ensures robust monitoring and diagnostics, enhancing the overall reliability and performance of the application.
+> **Note:** The deployment process for this scenario is the same as in [scenario 01 - Semantic Search](../01-SemanticSearch/README.md). Please refer to the [Deploying](../01-SemanticSearch/README.md#deploying) section in that README for detailed steps and requirements. All Azure resource provisioning, local development, and Codespaces instructions are identical for this scenario.
 
 ## Guidance
 
@@ -223,7 +132,7 @@ However, Azure Container Registry has a fixed cost per registry per day.
 
 You can try the [Azure pricing calculator](https://azure.com/e/2176802ea14941e4959eae8ad335aeb5) for the resources:
 
-- Azure OpenAI Service: S0 tier, gpt-4.1-mini and text-embedding-ada-002 models. Pricing is based on token count. [Pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/)
+- Azure OpenAI Service: S0 tier, gpt-4.1-mini and text-embedding-3-small models. Pricing is based on token count. [Pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/)
 - Azure Container App: Consumption tier with 0.5 CPU, 1GiB memory/storage. Pricing is based on resource allocation, and each month allows for a certain amount of free usage. [Pricing](https://azure.microsoft.com/pricing/details/container-apps/)
 - Azure Container Registry: Basic tier. [Pricing](https://azure.microsoft.com/pricing/details/container-registry/)
 - Log analytics: Pay-as-you-go tier. Costs based on data ingested. [Pricing](https://azure.microsoft.com/pricing/details/monitor/)
@@ -245,17 +154,17 @@ You may want to consider additional security measures, such as:
 
 ## Want to know more?
 
-For detailed technical documentation about the components and features of this scenario, including implementation details, architecture patterns, and configuration guides, see the comprehensive documentation:
+For detailed technical documentation about the SQL Server 2025 vector capabilities and native vector search implementation of this scenario, including implementation details, database features, and configuration guides, see the comprehensive documentation:
 
 **[📚 View Complete Technical Documentation](./docs/README.md)**
 
 The documentation includes:
-- Service architecture and .NET Aspire orchestration
-- Azure OpenAI integration patterns
-- Semantic search implementation details  
-- Memory context and vector operations
-- API endpoints and data models
-- Configuration and deployment guides
+- SQL Server 2025 native vector search capabilities
+- Vector data types and indexing strategies
+- Entity Framework Core vector integration
+- Modern database features and optimizations
+- Performance tuning for vector operations
+- Migration patterns from external vector stores
 
 ## Resources
 

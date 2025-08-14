@@ -1,15 +1,16 @@
 ﻿using DataEntities;
+using Microsoft.Extensions.AI;
 
-namespace Products.Models
+namespace Products.Models;
+
+public static class DbInitializer
 {
-    public static class DbInitializer
+    public static async Task Initialize(Context context, IEmbeddingGenerator<string, Embedding<float>> embeddingClient, int dimensions = 1536)
     {
-        public static void Initialize(Context context)
-        {
-            if (context.Product.Any())
-                return;
+        if (context.Product.Any())
+            return;
 
-            var products = new List<Product>
+        var products = new List<Product>
         {
             new Product { Name = "Solar Powered Flashlight", Description = "A fantastic product for outdoor enthusiasts", Price = 19.99m, ImageUrl = "product1.png" },
             new Product { Name = "Hiking Poles", Description = "Ideal for camping and hiking trips", Price = 24.99m, ImageUrl = "product2.png" },
@@ -22,32 +23,17 @@ namespace Products.Models
             new Product { Name = "Camping Tent", Description = "This tent is perfect for camping trips", Price = 99.99m, ImageUrl = "product9.png" },
         };
 
-            context.AddRange(products);
-
-            // sample add 500 products
-            // context.AddRange(GetProductsToAdd(500, products));
-
-            context.SaveChanges();
-        }
-
-        private static List<Product> GetProductsToAdd(int count, List<Product> baseProducts)
+        // add embeddings
+        foreach (var product in products)
         {
-            var productsToAdd = new List<Product>();
-            for (int i = 1; i < count; i++)
-            {
-                foreach (var product in baseProducts)
-                {
-                    var newproduct = new Product
-                    {
-                        Name = $"{product.Name}-{i}",
-                        Description = product.Description,
-                        ImageUrl = product.ImageUrl,
-                        Price = product.Price
-                    };
-                    productsToAdd.Add(newproduct);
-                }
-            }
-            return productsToAdd;
+            var productInformation = $"Name = {product.Name} - Description = {product.Description} - Price = {product.Price}";
+            var productInformationEmbedding = await embeddingClient.GenerateVectorAsync(productInformation, new() { Dimensions = dimensions });
+            product.Embedding = productInformationEmbedding.ToArray();
         }
+
+        // add products to context
+        context.AddRange(products);
+
+        context.SaveChanges();
     }
 }

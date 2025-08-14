@@ -1,11 +1,5 @@
 ﻿using SearchEntities;
 using DataEntities;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using Products.Memory;
-using Products.Models;
-using OpenAI.Embeddings;
-using OpenAI.Chat;
 
 namespace Products.Endpoints;
 
@@ -78,11 +72,9 @@ public static class ProductEndpoints
             .WithName("SearchAllProducts")
             .Produces<List<Product>>(StatusCodes.Status200OK);
 
-        #region AI Search Endpoint
-        routes.MapGet("/api/aisearch/{search}", ProductAiActions.AISearch)
+        routes.MapGet("/api/aisearch/{search}", ProductApiActions.AISearch)
             .WithName("AISearch")
             .Produces<SearchResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
-        #endregion
     }
 }
