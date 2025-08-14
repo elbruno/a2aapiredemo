@@ -67,12 +67,7 @@ using (var scope = app.Services.CreateScope())
     {
         app.Logger.LogError(exc, "Error creating database");
     }
-    await DbInitializer.Initialize(context, app.Services.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
-
-    //app.Logger.LogInformation("Start fill products in vector db");
-    //var memoryContext = app.Services.GetRequiredService<MemoryContext>();
-    //await memoryContext.InitMemoryContextAsync(context);
-    //app.Logger.LogInformation("Done fill products in vector db");
+    await DbInitializer.Initialize(context, app.Services.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>(), logger: app.Logger);
 }
 
 app.Run();

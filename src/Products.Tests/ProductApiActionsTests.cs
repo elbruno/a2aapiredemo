@@ -56,13 +56,33 @@ namespace Products.Tests
             }
             using (var context = new Context(_dbOptions))
             {
-                var found = await ProductApiActions.GetProductById(10, context);
-                var okResult = found as Microsoft.AspNetCore.Http.HttpResults.Ok<Product>;
-                Assert.IsNotNull(okResult);
-                Assert.AreEqual("Prod10", okResult.Value.Name);
+                var foundResult = await ProductApiActions.GetProductById(10, context);
+                if (foundResult is Microsoft.AspNetCore.Http.HttpResults.Results<Microsoft.AspNetCore.Http.HttpResults.Ok<Product>, Microsoft.AspNetCore.Http.HttpResults.NotFound> results)
+                {
+                    if (results.Result is Microsoft.AspNetCore.Http.HttpResults.Ok<Product> okResult)
+                    {
+                        Assert.IsNotNull(okResult);
+                        Assert.AreEqual("Prod10", okResult.Value.Name);
+                    }
+                    else
+                    {
+                        Assert.Fail("Expected Ok<Product> result");
+                    }
+                }
+                else
+                {
+                    Assert.Fail("Expected Results<Ok<Product>, NotFound> result");
+                }
 
-                var notFound = await ProductApiActions.GetProductById(999, context);
-                Assert.IsInstanceOfType(notFound, typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound));
+                var notFoundResult = await ProductApiActions.GetProductById(999, context);
+                if (notFoundResult is Microsoft.AspNetCore.Http.HttpResults.Results<Microsoft.AspNetCore.Http.HttpResults.Ok<Product>, Microsoft.AspNetCore.Http.HttpResults.NotFound> notFoundResults)
+                {
+                    Assert.IsInstanceOfType(notFoundResults.Result, typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound));
+                }
+                else
+                {
+                    Assert.Fail("Expected Results<Ok<Product>, NotFound> result");
+                }
             }
         }
 
@@ -174,7 +194,7 @@ namespace Products.Tests
             {
                 await Assert.ThrowsExceptionAsync<NullReferenceException>(async () =>
                 {
-                    await ProductApiActions.AISearch("test search", context, null!);
+                    await ProductApiActions.AISearch("test search", context, null!, null!);
                 });
             }
         }
