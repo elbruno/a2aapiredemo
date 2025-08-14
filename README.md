@@ -4,8 +4,6 @@
 
 **eShopLite - Semantic Search** is a reference .NET application implementing an eCommerce site with Search features using Keyword Search and Semantic Search.
 
-This branch showcases a local-first developer experience using GitHub Models with .NET Aspire 9.4. In local runs, the app uses GitHub Models; when published/deployed, it uses Azure OpenAI.
-
 - [Features](#features)
 - [Architecture diagram](#architecture-diagram)
 - [Getting started](#getting-started)
@@ -21,83 +19,31 @@ This branch showcases a local-first developer experience using GitHub Models wit
 - [Guidance](#guidance)
   - [Costs](#costs)
   - [Security Guidelines](#security-guidelines)
-
-## Scenario overview: eShopLite with GitHub Models (local-first)
-
-This scenario demonstrates how to run eShopLite with AI features powered by GitHub Models in local development, while seamlessly switching to Azure OpenAI when publishing/deploying.
-
-- Local development
-  - Chat: gpt-4.1-mini (via GitHub Models)
-  - Embeddings: text-embedding-3-small (via GitHub Models)
-  - Token: prompted interactively by .NET Aspire 9.4 (secure parameter)
-- Publish/Deploy (Azure)
-  - Chat: gpt-4.1-mini (Azure OpenAI deployment)
-  - Embeddings: text-embedding-ada-002 (Azure OpenAI deployment)
-
-The Products service switches behavior using environment settings provided by the Aspire AppHost:
-
-- AI_UseGitHubModels: "true" uses GitHub Models locally; "false" uses Azure OpenAI in publish/deploy.
-- GitHubToken: Personal Access Token used locally to call GitHub Models.
-
-### Key features (this scenario)
-
-- Local-first AI using GitHub Models with .NET Aspire 9.4
-- Automatic switch to Azure OpenAI in publish/deploy (no code changes)
-- Secure interactive token prompt for GitHub access (Aspire parameters)
-- Same app behavior across environments (Store + Products stay unchanged)
-
-### Architecture (local development)
-
-```mermaid
-graph TD
-  A[Store (Blazor UI)] --> B[Products API]
-  B -->|Chat + Embeddings| C[GitHub Models API\n<https://models.inference.ai.azure.com>]
-
-  subgraph Local Development
-    A
-    B
-  end
-
-  classDef cloud fill:#E6F7FF,stroke:#0366d6,color:#111;
-  class C cloud;
-```
-
-### Request flow (local)
-
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant S as Store (UI)
-  participant P as Products API
-  participant G as GitHub Models API
-
-  U->>S: Search query
-  S->>P: GET /api/search?q=...
-  P->>G: Chat (gpt-4.1-mini)
-  P->>G: Embeddings (text-embedding-3-small)
-  G-->>P: Responses
-  P-->>S: Aggregated results
-  S-->>U: Rendered results
-```
-
-### Minimal configuration (local)
-
-Products picks configuration from Aspire-set environment variables:
-
-- AI_UseGitHubModels=true
-- GitHubToken=YOUR_GITHUB_PERSONAL_ACCESS_TOKEN
-- Endpoint: <https://models.inference.ai.azure.com>
-
-Run from the AppHost so Aspire wires services and parameters for you:
-
-```powershell
-cd ./src/eShopAppHost/
-dotnet run
-```
+- [Resources](#resources)
 
 ## Features
 
 **GitHub CodeSpaces:** This project is designed to be opened in GitHub Codespaces as an easy way for anyone to deploy the solution entirely in the browser.
+
+This is the eShopLite Aplication running, performing a **Keyword Search**:
+
+![eShopLite Aplication running doing search using keyworkd search](./images/05eShopLite-SearchKeyWord.gif)
+
+This is the eShopLite Aplication running, performing a **Semantic Search**:
+
+![eShopLite Aplication running doing search using keyworkd search](./images/06eShopLite-SearchSemantic.gif)
+
+The Aspire Dashboard to check the running services:
+
+![Aspire Dashboard to check the running services](./images/10AzureResources.png)
+
+The Azure Resource Group with all the deployed services:
+
+![Azure Resource Group with all the deployed services](./images/15AspireDashboard.png)
+
+## Architecture diagram
+
+![Architecture diagram](./images/30Diagram.png)
 
 ## Getting Started
 
@@ -105,7 +51,45 @@ The solution is in the `./src` folder, the main solution is **[eShopLite-Aspire.
 
 ## Deploying
 
-Deployment steps for eShopLite are documented in Scenario 01 (base setup and Azure deployment). This scenario focuses on using GitHub Models for local development. Please follow Scenario 01 for end-to-end deployment guidance.
+Once you've opened the project in [Codespaces](#github-codespaces), or [locally](#run-locally), you can deploy it to Azure.
+
+From a Terminal window, open the folder with the clone of this repo and run the following commands.
+
+1. Login to Azure:
+
+    ```shell
+    azd auth login
+    ```
+
+1. Provision and deploy all the resources:
+
+    ```shell
+    azd up
+    ```
+
+    It will prompt you to provide an `azd` environment name (like "eShopLite"), select a subscription from your Azure account, and select a [location where OpenAI the models gpt-4.1-mini and ADA-002 are available](https://azure.microsoft.com/explore/global-infrastructure/products-by-region/?products=cognitive-services&regions=all) (like "eastus2").
+
+1. When `azd` has finished deploying, you'll see the list of resources created in Azure and a set of URIs in the command output.
+
+1. Visit the **store** URI, and you should see the **eShop Lite app**! 🎉
+
+1. This is an example of the command output:
+
+![Deploy Azure Complete](./images/20AzdUpConsoleComplete.png)
+
+1. **Coming Soon!** You can check this video with a 5 minutes overview of the deploy process from codespaces: [Deploy Your **eShopLite - Semantic Search** to Azure in Minutes!]().
+
+***Note:** The deploy files are located in the `./src/eShopAppHost/infra/` folder. They are generated by the `Aspire AppHost` project.*
+
+### GitHub CodeSpaces
+
+- Create a new  Codespace using the `Code` button at the top of the repository.
+
+![create Codespace](./images/25CreateCodeSpaces.png)
+
+- The Codespace creation process can take a couple of minutes.
+
+- Once the Codespace is loaded, it should have all the necessary requirements to deploy the solution.
 
 ### Run Locally
 
@@ -113,57 +97,13 @@ To run the project locally, you'll need to make sure the following tools are ins
 
 - [.NET 9](https://dotnet.microsoft.com/downloads/)
 - [Git](https://git-scm.com/downloads)
-- [Azure Developer CLI (azd)](https://aka.ms/install-azd) - Required for deploying to Azure
-  - **Windows**: Install via winget: `winget install microsoft.azd`
-  - **macOS**: Install via Homebrew: `brew tap azure/azd && brew install azd`
-  - **Linux**: Install via script: `curl -fsSL https://aka.ms/install-azd.sh | bash`
+- [Azure Developer CLI (azd)](https://aka.ms/install-azd)
 - [Visual Studio Code](https://code.visualstudio.com/Download) or [Visual Studio](https://visualstudio.microsoft.com/downloads/)
   - If using Visual Studio Code, install the [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
 - .NET Aspire workload:
-  - **Visual Studio 2022**: Install via [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire)
-    - Open Visual Studio Installer → Modify → Select "ASP.NET and web development" workload → Check ".NET Aspire SDK" → Modify
-  - **.NET CLI**: Install via [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=dotnet-cli&pivots=dotnet-cli)
-
-    ```bash
-    dotnet workload install aspire
-    ```
-
+    Installed with the [Visual Studio installer](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire) or the [.NET CLI workload](https://learn.microsoft.com/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=visual-studio#install-net-aspire).
 - An OCI compliant container runtime, such as:
   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/).
-
-#### Verify Prerequisites
-
-After installing the prerequisites, verify they are working correctly:
-
-```bash
-# Verify .NET 9 SDK
-dotnet --version
-
-# Verify Azure Developer CLI
-azd version
-
-# Verify .NET Aspire workload is installed
-dotnet workload list
-
-# Verify Docker/Podman
-docker --version
-# or
-podman --version
-```
-
-**Expected Output for .NET Aspire:**
-
-```text
-aspire    9.4.0/9.0.100    SDK 9.0.100    .NET Aspire SDK
-```
-
-#### Troubleshooting Prerequisites
-
-If you encounter issues with .NET Aspire installation:
-
-- **Unable to install .NET Aspire workload**: See the [troubleshooting guide](https://learn.microsoft.com/dotnet/aspire/troubleshooting/unable-to-install-workload)
-- **Container runtime issues**: Ensure Docker Desktop or Podman is running and accessible
-- **Visual Studio integration**: Make sure you have Visual Studio 2022 version 17.9 or higher for full .NET Aspire support
 
 ### Run the solution
 
@@ -187,52 +127,7 @@ Follow these steps to run the project, locally or in CodeSpaces:
 
   ```bash
   dotnet run
-  ```
-
-### Local Development with GitHub Models
-
-For local development, this solution uses **GitHub Models** instead of Azure OpenAI services. This offers a simple, cost-effective way to develop and test AI features locally.
-
-#### Prerequisites
-
-- A [GitHub account](https://github.com)
-- Access to [GitHub Models](https://github.com/marketplace/models) (currently in beta)
-- A GitHub Personal Access Token with appropriate permissions
-
-#### Setup GitHub Models for Local Development
-
-1. **Create a GitHub Personal Access Token:**
-   - Go to GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)
-   - Create a new token with appropriate scopes for GitHub Models access
-   - Keep the token secure as you'll need it for local development
-
-1. **Run the project locally:**
-
-  ```bash
-  cd ./src/eShopAppHost/
-  dotnet run
-  ```
-
-1. **Interactive Token Prompt:**
-
-- When running locally (not in publish mode), .NET Aspire 9.4 prompts for a GitHub token
-- The token is handled as a secure parameter and isn't required when publishing/deploying
-- You can rotate or re-enter it on subsequent runs as needed
-
-#### How it Works
-
-- Local Development
-  - Chat model: gpt-4.1-mini
-  - Embeddings model: text-embedding-3-small
-  - Endpoint: <https://models.inference.ai.azure.com>
-- Production/Published
-  - Chat deployment: gpt-4.1-mini (Azure OpenAI)
-  - Embeddings deployment: text-embedding-ada-002 (Azure OpenAI)
-- Automatic Detection
-  - The AppHost sets AI_UseGitHubModels and GitHubToken for local runs
-  - In publish/deploy mode, Azure OpenAI resources are provisioned and used automatically
-
-The GitHub Models integration provides the same AI functionality as Azure OpenAI but runs entirely through GitHub's inference API, making it perfect for local development and testing.
+  ````
 
 Check the [Video Resources](#resources) for a step-by-step on how to run this project.
 
@@ -247,7 +142,6 @@ When utilizing Azure resources in your local development environment, you need t
   ```bash
   az login 
   ```
-
 - Provide the necessary Configuration values are specified under the Azure section in the `eShopAppHost` project:
 
   - CredentialSource: Delegates to the [AzureCliCredential](https://learn.microsoft.com/dotnet/api/azure.identity.azureclicredential).
@@ -270,7 +164,7 @@ Consider the following example for the *appsettings.json* file in the eShopAppHo
 }
 ```
 
-Check [.NET Aspire Azure hosting integrations](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning) for more information on how .NET Aspire creates the necessary cloud resources for local development. For detailed deployment guidance, see the [Azure Container Apps deployment guide](https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth).
+Check [.NET Aspire Azure hosting integrations](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#net-aspire-azure-hosting-integrations) for more information on how .NET Aspire create the necessary cloud resources for local development.
 
 ### Local development using an existing gpt-4.1-mini and ada-002 model
 
@@ -286,8 +180,8 @@ dotnet user-secrets set "ConnectionStrings:openaidev" "Endpoint=https://<endpoin
 
 This Azure OpenAI service must contain:
 
-- a `gpt-4.1-mini` deployment named **gpt-4.1-mini**
-- a `text-embedding-ada-002` deployment named **text-embedding-ada-002**
+- a `gpt-4.1-mini` model named **gpt-4.1-mini**
+- a `text-embedding-ada-002` model named **text-embedding-ada-002**
 
 To use these services, edit the `program.cs`, and change this:
 
@@ -313,7 +207,7 @@ The **.NET Aspire Dashboard** offers a centralized view of the application's per
 
 ![Aspire Dashboard](./images/40AspireDashboard.png)
 
-**Azure Application Insights** complements the Aspire Dashboard by offering deep diagnostic capabilities and advanced analytics. It collects detailed telemetry data, including request rates, response times, and failure rates, enabling developers to understand how the application is performing under different conditions. Application Insights also provides powerful querying and visualization tools, making it easier to analyze trends and detect anomalies.
+**Azure Application Insights** complements the Aspire Dashboard by offering deep diagnostic capabilities and advanced analytics. It collects detailed telemetry data, including request rates, response times, and failure rates, enabling developers to understand how the application is performing under different conditions. Application Insights also provides powerful querying and visualization tools, making it easier to analyze trends and detect anomalies. 
 
 ![Azure Application Insights](./images/45AppInsightsDashboard.png)
 
@@ -341,7 +235,7 @@ You can try the [Azure pricing calculator](https://azure.com/e/2176802ea14941e49
 
 Samples in this templates uses Azure OpenAI Services with ApiKey and [Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
 
-The Main Sample uses [Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
+The Main Sample uses Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
 
 Additionally, we have added a [GitHub Action](https://github.com/microsoft/security-devops-action) that scans the infrastructure-as-code files and generates a report containing any detected issues. To ensure continued best practices in your own repository, we recommend that anyone creating solutions based on our templates ensure that the [Github secret scanning](https://docs.github.com/code-security/secret-scanning/about-secret-scanning) setting is enabled.
 
@@ -356,7 +250,6 @@ For detailed technical documentation about the components and features of this s
 **[📚 View Complete Technical Documentation](./docs/README.md)**
 
 The documentation includes:
-
 - Service architecture and .NET Aspire orchestration
 - Azure OpenAI integration patterns
 - Semantic search implementation details  
@@ -370,9 +263,6 @@ The documentation includes:
 
 - [Aspiring .NET Applications with Azure OpenAI](https://learn.microsoft.com/shows/azure-developers-dotnet-aspire-day-2024/aspiring-dotnet-applications-with-azure-openai)
 
-- GitHub Models: [gpt-4.1-mini](https://github.com/marketplace/models/azure-openai/gpt-4-1-mini)
-- GitHub Models: [text-embedding-3-small](https://github.com/marketplace/models/azure-openai/text-embedding-3-small)
-
 ### Video Recordings
 
-- Run eShopLite Semantic Search in Minutes with .NET Aspire & GitHub Codespaces: <https://youtu.be/T9HwjVIDPAE>
+[![Run eShopLite Semantic Search in Minutes with .NET Aspire & GitHub Codespaces 🚀](./images/90ytrunfromcodespaces.png)](https://youtu.be/T9HwjVIDPAE)
