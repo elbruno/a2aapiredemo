@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Products\Products.csproj" />
     <ProjectReference Include="..\Store\Store.csproj" />
+    <ProjectReference Include="..\SemanticSearchFunction\SemanticSearchFunction.csproj" />
   </ItemGroup>
 </Project>

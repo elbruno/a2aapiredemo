@@ -116,7 +116,107 @@ This scenario demonstrates how to use [SQL Server 2025's Vector search and Vecto
 
 These components work together to enable semantic search over product data using SQL Server 2025's vector capabilities.
 
-The solution is in the `./src` folder, the main solution is **[eShopLite-Sql2025.slnx](./src/eShopLite-Sql2025.slnx)**.
+The solution is in the `./src` folder, the main solution is **[eShopLite-AzFnc.slnx](./src/eShopLite-AzFnc.slnx)**.
+
+## Semantic Search Azure Function
+
+This implementation includes a dedicated **Semantic Search Azure Function** that provides an independent, scalable endpoint for semantic search operations. The function integrates with the existing SQL2025 vector search capabilities and .NET Aspire orchestration.
+
+### Features
+
+- **HTTP POST Endpoint**: `/api/semanticsearch` accepts JSON requests with query text and optional result count
+- **SQL2025 Integration**: Leverages SQL Server 2025 vector search capabilities for semantic similarity matching
+- **Parameterized Queries**: Secure SQL implementation prevents injection attacks
+- **Error Handling**: Comprehensive error responses with trace IDs for debugging
+- **Aspire Integration**: Fully orchestrated with the main application stack
+
+### Usage
+
+#### Request Format
+```json
+POST /api/semanticsearch
+Content-Type: application/json
+
+{
+  "query": "wireless headphones",
+  "top": 10
+}
+```
+
+#### Response Format
+```json
+{
+  "results": [
+    {
+      "id": 123,
+      "title": "Premium Wireless Headphones",
+      "score": 0.85,
+      "snippet": "High-quality wireless headphones with noise cancellation...",
+      "metadata": {
+        "price": "$199.99",
+        "source": "products"
+      }
+    }
+  ],
+  "traceId": "trace-12345"
+}
+```
+
+#### Error Responses
+- **400 Bad Request**: Invalid JSON or missing query parameter
+- **503 Service Unavailable**: Database connectivity issues
+- **500 Internal Server Error**: Unexpected errors (includes traceId)
+
+### Environment Variables
+
+Configure the following environment variables for local development:
+
+```json
+{
+  "ConnectionStrings__productsDb": "Server=localhost,1433;Database=productsDb;User Id=sa;Password=Your_password123;TrustServerCertificate=true;",
+  "SEMANTIC_SEARCH_TOP_DEFAULT": "10",
+  "SEMANTIC_SEARCH_USE_EMBEDDINGS": "false"
+}
+```
+
+### Local Testing
+
+#### Using curl:
+```bash
+curl -X POST http://localhost:5000/api/semanticsearch \
+  -H "Content-Type: application/json" \
+  -d '{"query": "laptop computer", "top": 5}'
+```
+
+#### Using PowerShell:
+```powershell
+$body = @{ query = "wireless headphones"; top = 5 } | ConvertTo-Json
+Invoke-RestMethod -Method POST -Uri "http://localhost:5000/api/semanticsearch" -Body $body -ContentType "application/json"
+```
+
+### Integration with Store
+
+The Semantic Search Function is integrated into the .NET Aspire orchestration and can be called from the Store frontend. The orchestration automatically handles:
+
+- Service discovery between Store and Semantic Search Function
+- Database connection sharing with the main Products service
+- Health checks and dependency management
+- Logging and telemetry correlation
+
+### Running Tests
+
+```bash
+# Build and run unit tests
+cd src/SemanticSearch.Tests
+dotnet test
+
+# Run specific test
+dotnet test --filter "SearchAsync_WithValidQuery"
+```
+
+### SQL2025 Reference
+
+This implementation follows the patterns described in the [SQL2025 scenario documentation](https://github.com/Azure-Samples/eShopLite/tree/main/scenarios/08-Sql2025) for optimal vector search performance and compatibility.
 
 ## Deploying
 

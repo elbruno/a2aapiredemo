@@ -17,8 +17,14 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
     .WaitFor(productsDb);
 
+var semanticSearch = builder.AddProject<Projects.SemanticSearchFunction>("semanticsearch")
+    .WithReference(productsDb)
+    .WaitFor(productsDb)
+    .WithExternalHttpEndpoints();
+
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
+    .WithReference(semanticSearch)
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
