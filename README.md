@@ -109,169 +109,147 @@ This scenario demonstrates how to use [SQL Server 2025's Vector search and Vecto
             Response = products.Count > 0 ?
                 $"{products.Count} Products found for [{search}]" :
                 $"No products found for [{search}]"
-        };
-        return Results.Ok(response);
-    }
-    ```
+        [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](/LICENSE)
 
-These components work together to enable semantic search over product data using SQL Server 2025's vector capabilities.
+        ## eShopLite - .NET Aspire + Azure Functions (Semantic Search)
 
-The solution is in the `./src` folder, the main solution is **[eShopLite-AzFnc.slnx](./src/eShopLite-AzFnc.slnx)**.
+        This repository demonstrates a small reference scenario that combines .NET Aspire (service discovery, resilience and orchestration) with an Azure Function that provides a semantic search endpoint over product data powered by SQL Server 2025 vector features.
 
-## Semantic Search Azure Function
+        Goals for this README
+        - Explain how .NET Aspire is used for service discovery and resilience
+        - Explain how the Store app calls both the Products API and the independent Semantic Search Azure Function
+        - Provide ASCII and mermaid diagrams to illustrate runtime architecture
+        - Show configuration keys and quick run steps
 
-This implementation includes a dedicated **Semantic Search Azure Function** that provides an independent, scalable endpoint for semantic search operations. The function integrates with the existing SQL2025 vector search capabilities and .NET Aspire orchestration.
+        ## High-level architecture (ASCII)
 
-### Features
+        Simple ASCII diagram showing the main runtime pieces and service discovery layer:
 
-- **HTTP POST Endpoint**: `/api/semanticsearch` accepts JSON requests with query text and optional result count
-- **SQL2025 Integration**: Leverages SQL Server 2025 vector search capabilities for semantic similarity matching
-- **Parameterized Queries**: Secure SQL implementation prevents injection attacks
-- **Error Handling**: Comprehensive error responses with trace IDs for debugging
-- **Aspire Integration**: Fully orchestrated with the main application stack
+        ```
+                                +---------------------+
+                                |   Service Registry  |  <- .NET Aspire Service Discovery
+                                +----------+----------+
+                                           ^
+                       service discovery    |    service discovery
+           +-----------+        +-----------+v+         +---------------------+
+           |  Browser  | <----> |   Store    | <-----> |   Products Service   |  (product APIs, embeddings, SQL2025)
+           +-----------+        +-----------+           +---------------------+
+                                         \
+                                          \_ HTTP (via Aspire HttpClient)
+                                           \
+                                            \-> +-------------------------+
+                                                 |  Semantic Search Azure   |  (POST /api/semanticsearch)
+                                                 |  Function (SQL2025)      |
+                                                 +-------------------------+
 
-### Usage
+        ```
 
-#### Request Format
-```json
-POST /api/semanticsearch
-Content-Type: application/json
+        ## High-level architecture (Mermaid)
 
-{
-  "query": "wireless headphones",
-  "top": 10
-}
-```
+        ```mermaid
+        flowchart LR
+            Browser[Browser / Store UI]
+            StoreService[Store Service (Blazor/UI)]
+            Products[Products Service (API + SQL2025)]
+            SemanticFn[Semantic Search Azure Function]
+            ServiceDiscovery[(Service Discovery)]
+            SQL[(SQL Server 2025 - Vector Index)]
 
-#### Response Format
-```json
-{
-  "results": [
-    {
-      "id": 123,
-      "title": "Premium Wireless Headphones",
-      "score": 0.85,
-      "snippet": "High-quality wireless headphones with noise cancellation...",
-      "metadata": {
-        "price": "$199.99",
-        "source": "products"
-      }
-    }
-  ],
-  "traceId": "trace-12345"
-}
-```
+            Browser -->|HTTP| StoreService
+            StoreService -->|aspire-http (products)| ServiceDiscovery --> Products
+            StoreService -->|aspire-http (semanticfunction)| ServiceDiscovery --> SemanticFn
+            Products -->|vector search| SQL
+            SemanticFn -->|vector search| SQL
 
-#### Error Responses
-- **400 Bad Request**: Invalid JSON or missing query parameter
-- **503 Service Unavailable**: Database connectivity issues
-- **500 Internal Server Error**: Unexpected errors (includes traceId)
+            classDef infra fill:#f9f,stroke:#333,stroke-width:1px;
+            class ServiceDiscovery infra;
+        ```
 
-### Environment Variables
+        ## How the code uses .NET Aspire
 
-Configure the following environment variables for local development:
+        - The repository includes an `eShopServiceDefaults` project which exposes `AddServiceDefaults()`.
+          - This method registers service discovery and configures HttpClient defaults (resilience handlers and service discovery handlers).
+          - Files to look at: `src/eShopServiceDefaults/Extensions.cs`.
+        - In `src/Store/Program.cs` the Store app registers HttpClients that use the Aspire service discovery URIs, e.g.:
 
-```json
-{
-  "ConnectionStrings__productsDb": "Server=localhost,1433;Database=productsDb;User Id=sa;Password=Your_password123;TrustServerCertificate=true;",
-  "SEMANTIC_SEARCH_TOP_DEFAULT": "10",
-  "SEMANTIC_SEARCH_USE_EMBEDDINGS": "false"
-}
-```
+        ```csharp
+        builder.AddServiceDefaults();
 
-### Local Testing
+        // ProductService uses Aspire service discovery to resolve "products" service
+        builder.Services.AddHttpClient<ProductService>(static client =>
+        {
+            client.BaseAddress = new Uri("https+http://products");
+        });
 
-#### Using curl:
-```bash
-curl -X POST http://localhost:5000/api/semanticsearch \
-  -H "Content-Type: application/json" \
-  -d '{"query": "laptop computer", "top": 5}'
-```
+        // Azure Function Semantic Search service uses Aspire service discovery to resolve "semanticsearchfunction"
+        builder.Services.AddHttpClient<IAzFunctionSearchService, AzFunctionSearchService>(static client =>
+        {
+            client.BaseAddress = new Uri("https+http://semanticsearchfunction");
+        });
+        ```
 
-#### Using PowerShell:
-```powershell
-$body = @{ query = "wireless headphones"; top = 5 } | ConvertTo-Json
-Invoke-RestMethod -Method POST -Uri "http://localhost:5000/api/semanticsearch" -Body $body -ContentType "application/json"
-```
+        This avoids hard-coded hostnames and ports in code; the `https+http://{service}` pattern is interpreted by the service discovery/resolver configured by Aspire.
 
-### Integration with Store
+        ## Store -> Semantic Search integration
 
-The Semantic Search Function is integrated into the .NET Aspire orchestration and can be called from the Store frontend. The orchestration automatically handles:
+        - The Store UI provides a search page with 3 modes: Standard, Semantic (AI via Products API), and Azure Function Semantic Search.
+        - For the Azure Function mode the Store's `ProductService` delegates the call to `IAzFunctionSearchService` which posts JSON { query, top } to `/api/semanticsearch`.
+        - The `AzFunctionSearchService` was implemented to prefer a configuration value `SemanticSearchFunctionEndpoint` (which can be a service discovery URI or a real URL) and otherwise use the HttpClient base address (registered via service discovery).
 
-- Service discovery between Store and Semantic Search Function
-- Database connection sharing with the main Products service
-- Health checks and dependency management
-- Logging and telemetry correlation
+        ## Config keys you may want to set locally
 
-### Running Tests
+        - `ProductEndpoint` (optional) — legacy; with Aspire you should prefer service discovery
+        - `SemanticSearchFunctionEndpoint` — set this to a concrete URL (eg. `http://localhost:7071/`) for local debugging or to a service discovery URI (eg. `https+http://semanticsearchfunction`) if using Aspire discovery
+        - Connection strings and SQL settings (see `src/SemanticSearchFunction/local.settings.json` and `src/Store/appsettings.json`)
 
-```bash
-# Build and run unit tests
-cd src/SemanticSearch.Tests
-dotnet test
+        Example `appsettings.Development.json` snippet:
 
-# Run specific test
-dotnet test --filter "SearchAsync_WithValidQuery"
-```
+        ```json
+        {
+          "ProductEndpoint": "http://localhost:5228/",
+          "SemanticSearchFunctionEndpoint": "http://localhost:7071/"
+        }
+        ```
 
-### SQL2025 Reference
+        Or, to use service discovery for both services in an Aspire-hosted environment:
 
-This implementation follows the patterns described in the [SQL2025 scenario documentation](https://github.com/Azure-Samples/eShopLite/tree/main/scenarios/08-Sql2025) for optimal vector search performance and compatibility.
+        ```json
+        {
+          "SemanticSearchFunctionEndpoint": "https+http://semanticsearchfunction"
+        }
+        ```
 
-## Deploying
+        ## Quick local run (developer flow)
 
-> **Note:** The deployment process for this scenario is the same as in [scenario 01 - Semantic Search](../01-SemanticSearch/README.md). Please refer to the [Deploying](../01-SemanticSearch/README.md#deploying) section in that README for detailed steps and requirements. All Azure resource provisioning, local development, and Codespaces instructions are identical for this scenario.
+        1. Start the Products service and SQL2025 (see `src/Products` instructions) so the product API and database are available.
+        2. Start the Semantic Search Azure Function (open `src/SemanticSearchFunction` in VS Code and run the function locally) or run the function in your environment.
+        3. Start the Store app:
 
-## Guidance
+        ```powershell
+        cd src/Store
+        dotnet run
+        # Open https://localhost:5001/search (or the address displayed by ASP.NET Core)
+        ```
 
-### Costs
+        4. On the Store search page, choose "Azure Function Semantic Search" from the dropdown, enter a query and run.
 
-For **Azure OpenAI Services**, pricing varies per region and usage, so it isn't possible to predict exact costs for your usage.
-The majority of the Azure resources used in this infrastructure are on usage-based pricing tiers.
-However, Azure Container Registry has a fixed cost per registry per day.
+        ## Diagrams (ASCII + Mermaid) — Usage notes
 
-You can try the [Azure pricing calculator](https://azure.com/e/2176802ea14941e4959eae8ad335aeb5) for the resources:
+        - ASCII diagrams are intentionally simple and useful when viewing README in plain terminals or small editors.
+        - Mermaid diagrams render nicely on GitHub and VS Code markdown preview and give a clearer view of relationships and service discovery.
 
-- Azure OpenAI Service: S0 tier, gpt-4.1-mini and text-embedding-3-small models. Pricing is based on token count. [Pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/)
-- Azure Container App: Consumption tier with 0.5 CPU, 1GiB memory/storage. Pricing is based on resource allocation, and each month allows for a certain amount of free usage. [Pricing](https://azure.microsoft.com/pricing/details/container-apps/)
-- Azure Container Registry: Basic tier. [Pricing](https://azure.microsoft.com/pricing/details/container-registry/)
-- Log analytics: Pay-as-you-go tier. Costs based on data ingested. [Pricing](https://azure.microsoft.com/pricing/details/monitor/)
-- Azure Application Insights pricing is based on a Pay-As-You-Go model. [Pricing](https://learn.microsoft.com/azure/azure-monitor/logs/cost-logs).
+        ## Troubleshooting
 
-⚠️ To avoid unnecessary costs, remember to take down your app if it's no longer in use, either by deleting the resource group in the Portal or running `azd down`.
+        - If service discovery does not resolve a service name, check that the environment where Aspire runs provides a discovery provider (for local dev this may be skipped and you must use local URLs in `SemanticSearchFunctionEndpoint`).
+        - Use logs: the solution is instrumented with OpenTelemetry and logging via `AddServiceDefaults()` — check app logs for discovery/resolver entries.
 
-### Security Guidelines
+        ## Contributing
 
-Samples in this templates uses Azure OpenAI Services with ApiKey and [Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
+        If you want to extend the scenario:
+        - Add health checks for the function and wire them into `MapDefaultEndpoints()`
+        - Add a configuration UI to allow switching between service discovery and explicit endpoints at runtime
+        - Add tests for `AzFunctionSearchService` (mock HttpClient) and for `ProductService` delegating behavior
 
-The Main Sample uses Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for authenticating to the Azure OpenAI service.
+        ---
 
-Additionally, we have added a [GitHub Action](https://github.com/microsoft/security-devops-action) that scans the infrastructure-as-code files and generates a report containing any detected issues. To ensure continued best practices in your own repository, we recommend that anyone creating solutions based on our templates ensure that the [Github secret scanning](https://docs.github.com/code-security/secret-scanning/about-secret-scanning) setting is enabled.
-
-You may want to consider additional security measures, such as:
-
-- Protecting the Azure Container Apps instance with a [firewall](https://learn.microsoft.com/azure/container-apps/waf-app-gateway) and/or [Virtual Network](https://learn.microsoft.com/azure/container-apps/networking?tabs=workload-profiles-env%2Cazure-cli).
-
-## Want to know more?
-
-For detailed technical documentation about the SQL Server 2025 vector capabilities and native vector search implementation of this scenario, including implementation details, database features, and configuration guides, see the comprehensive documentation:
-
-**[📚 View Complete Technical Documentation](./docs/README.md)**
-
-The documentation includes:
-- SQL Server 2025 native vector search capabilities
-- Vector data types and indexing strategies
-- Entity Framework Core vector integration
-- Modern database features and optimizations
-- Performance tuning for vector operations
-- Migration patterns from external vector stores
-
-## Resources
-
-- [Deploy a .NET Aspire project to Azure Container Apps using the Azure Developer CLI (in-depth guide)](https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth)
-
-- [Aspiring .NET Applications with Azure OpenAI](https://learn.microsoft.com/shows/azure-developers-dotnet-aspire-day-2024/aspiring-dotnet-applications-with-azure-openai)
-
-### Video Recordings
-
-[![Run eShopLite Semantic Search in Minutes with .NET Aspire & GitHub Codespaces 🚀](./images/90ytrunfromcodespaces.png)](https://youtu.be/T9HwjVIDPAE)
+        For full technical documentation about SQL Server 2025 vector features and the original scenario, see `./docs/README.md`.

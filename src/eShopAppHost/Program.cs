@@ -18,7 +18,7 @@ var products = builder.AddProject<Projects.Products>("products")
     .WaitFor(productsDb)
     .WithExternalHttpEndpoints();
 
-var semanticSearch = builder.AddProject<Projects.SemanticSearchFunction>("semanticsearch")
+var semanticSearchFunction = builder.AddAzureFunctionsProject<Projects.SemanticSearchFunction>("semanticsearchfunction")
     .WithReference(productsDb)
     .WaitFor(productsDb)
     .WithExternalHttpEndpoints();
@@ -26,8 +26,8 @@ var semanticSearch = builder.AddProject<Projects.SemanticSearchFunction>("semant
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
     .WaitFor(products)
-    .WithReference(semanticSearch)
-    .WaitFor(semanticSearch)
+    .WithReference(semanticSearchFunction)
+    .WaitFor(semanticSearchFunction)
     .WithExternalHttpEndpoints();
 
 IResourceBuilder<IResourceWithConnectionString>? openai;
