@@ -2,21 +2,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using SearchEntities;
+using SemanticSearchFunction.Functions;
 
 namespace SemanticSearchFunction.Repositories;
 
 public class SqlSemanticSearchRepository
 {
-    private readonly ILogger<SqlSemanticSearchRepository> _logger;
+    private readonly ILogger<SearchFunction> _logger;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly int _dimensions = 1536;
     private readonly Context _db;
 
     public SqlSemanticSearchRepository(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-        int dimensions,
         Context db,
-        ILogger<SqlSemanticSearchRepository> logger)
+        ILogger<SearchFunction> logger,
+        int dimensions = 1536)
     {
         _logger = logger;
         _embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
