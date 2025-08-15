@@ -68,7 +68,7 @@ flowchart LR
 sequenceDiagram
      participant User
      participant Store
-     participant Products
+     participant Products (WebAPI)
      participant SemanticFn as Azure Function
      participant SQL as SQL 2025 (Vectors)
 
@@ -79,8 +79,8 @@ sequenceDiagram
      Products-->>Store: Product list
      Store-->>User: Render results
 
-     Note over User,Store: 2) Semantic (Direct)
-     User->>Store: Enter query + select Semantic (Direct)
+     Note over User,Store: 2) Semantic (WebAPI)
+     User->>Store: Enter query + select Semantic (WebAPI)
      Store->>Products: POST /products/semantic { query }
      Products->>Products: Generate embedding
      Products->>SQL: Vector similarity search
