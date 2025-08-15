@@ -68,7 +68,7 @@ flowchart LR
 sequenceDiagram
      participant User
      participant Store
-     participant Products (WebAPI)
+     participant Products as Products (WebAPI)
      participant SemanticFn as Azure Function
      participant SQL as SQL 2025 (Vectors)
 
