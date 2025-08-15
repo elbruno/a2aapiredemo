@@ -46,16 +46,16 @@ Animated examples were previously provided as GIFs; if/when assets are added bac
 ```mermaid
 flowchart LR
      subgraph AppHost[.NET Aspire AppHost]
-          Store[Store Blazor UI<br>3 search options]
+          Store[<b>Store Blazor UI</b><br>3 search options]
           Products[Products Service]
           SemanticFn[Semantic Search Azure Function]
           SQL[SQL Server 2025 - Vector Index]
      end
 
-     Store -->|Keyword<br>Standard SQL Search| Products
-     Store -->|Semantic - WebAPI<br>SQL Vector Search| Products
-     Store -->|Semantic - Azure Function<br>SQL Vector Search| SemanticFn
-     Products -->|Vector Search| SQL
+     Store -->|<b>Keyword</b><br>Standard SQL Search| Products
+     Store -->|<b>Semantic - WebAPI</b><br>SQL Vector Search| Products
+     Store -->|<b>Semantic - Azure Function</b><br>SQL Vector Search| SemanticFn
+     Products -->|Keywords and Vector Search| SQL
      SemanticFn -->|Vector Search| SQL
 
      classDef svc fill:#eef,stroke:#336;
