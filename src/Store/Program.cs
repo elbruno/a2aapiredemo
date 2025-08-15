@@ -6,9 +6,16 @@ var builder = WebApplication.CreateBuilder(args);
 // add aspire service defaults
 builder.AddServiceDefaults();
 
-builder.Services.AddSingleton<ProductService>();
-builder.Services.AddHttpClient<ProductService>(
-    static client => client.BaseAddress = new("https+http://products"));
+builder.Services.AddHttpClient<ProductService>(static client =>
+{
+    client.BaseAddress = new Uri("https+http://products");
+});
+
+// Register Azure Function search service and use Aspire service discovery for its HTTP client.
+builder.Services.AddHttpClient<IAzFunctionSearchService, AzFunctionSearchService>(static client =>
+{
+    client.BaseAddress = new Uri("https+http://semanticsearchfunction");
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

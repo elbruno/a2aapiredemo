@@ -13,5 +13,9 @@
   </Folder>
   <Folder Name="/4 Tests/">
     <Project Path="Products.Tests/Products.Tests.csproj" />
+    <Project Path="SemanticSearch.Tests/SemanticSearch.Tests.csproj" />
+  </Folder>
+  <Folder Name="/5 Functions/">
+    <Project Path="SemanticSearchFunction/SemanticSearchFunction.csproj" />
   </Folder>
 </Solution>

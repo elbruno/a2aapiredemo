@@ -13,16 +13,24 @@ var productsDb = sql
     .WithDataVolume()
     .AddDatabase("productsDb");
 
+IResourceBuilder<IResourceWithConnectionString>? openai;
+
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
-    .WaitFor(productsDb);
+    .WaitFor(productsDb)
+    .WithExternalHttpEndpoints();
+
+var semanticSearchFunction = builder.AddAzureFunctionsProject<Projects.SemanticSearchFunction>("semanticsearchfunction")
+    .WithReference(productsDb)
+    .WaitFor(productsDb)
+    .WithExternalHttpEndpoints();
 
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
     .WaitFor(products)
+    .WithReference(semanticSearchFunction)
+    .WaitFor(semanticSearchFunction)
     .WithExternalHttpEndpoints();
-
-IResourceBuilder<IResourceWithConnectionString>? openai;
 
 var chatDeploymentName = "gpt-41-mini";
 var embeddingsDeploymentName = "text-embedding-3-small";
@@ -43,8 +51,12 @@ if (builder.ExecutionContext.IsPublishMode)
         modelName: embeddingsDeploymentName,
         modelVersion: "1");
 
-
     products.WithReference(appInsights)
+        .WithReference(aoai)
+        .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
+        .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+    semanticSearchFunction.WithReference(appInsights)
         .WithReference(aoai)
         .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
         .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
@@ -60,6 +72,10 @@ else
 }
 
 products.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
+    .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+semanticSearchFunction.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
