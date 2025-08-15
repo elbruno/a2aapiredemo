@@ -46,7 +46,7 @@ Animated examples were previously provided as GIFs; if/when assets are added bac
 ```mermaid
 flowchart LR
      subgraph AppHost[.NET Aspire AppHost]
-          Store[Store Blazor UI [3 Search options]]
+          Store[Store Blazor UI<br>3 search options]
           Products[Products Service]
           SemanticFn[Semantic Search Azure Function]
           SQL[SQL Server 2025 - Vector Index]
