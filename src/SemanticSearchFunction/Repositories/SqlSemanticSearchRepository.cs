@@ -38,6 +38,12 @@ public class SqlSemanticSearchRepository
             .Take(3)
             .ToListAsync();
 
+        // remove the embedding from the results to avoid sending unnecessary data
+        foreach (var product in products)
+        {
+            product.Embedding = null; // Clear the embedding to avoid sending it back
+        }
+
         response.Products = products;
         response.Response = products.Count > 0 ?
                 $"{products.Count} Products found for [{searchRequest.query}]" :
