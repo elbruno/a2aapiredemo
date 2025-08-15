@@ -113,13 +113,13 @@ namespace Products.Tests
             {
                 var updated = new Product { Id = 30, Name = "UpdatedName", Description = "UpdatedDesc", Price = 333, ImageUrl = "img30u" };
                 var result = await ProductApiActions.UpdateProduct(30, updated, context);
-                Assert.IsInstanceOfType(result, typeof(Microsoft.AspNetCore.Http.HttpResults.Ok));
+                Assert.IsInstanceOfType(result, typeof(Microsoft.AspNetCore.Http.HttpResults.Results<Microsoft.AspNetCore.Http.HttpResults.Ok, Microsoft.AspNetCore.Http.HttpResults.NotFound>));
                 var prod = context.Product.First(p => p.Id == 30);
                 Assert.AreEqual("UpdatedName", prod.Name);
                 Assert.AreEqual(333, prod.Price);
 
                 var notFound = await ProductApiActions.UpdateProduct(999, updated, context);
-                Assert.IsInstanceOfType(notFound, typeof(Microsoft.AspNetCore.Http.HttpResults.NotFound));
+                Assert.IsInstanceOfType(notFound, typeof(Microsoft.AspNetCore.Http.HttpResults.Results<Microsoft.AspNetCore.Http.HttpResults.Ok, Microsoft.AspNetCore.Http.HttpResults.NotFound>));
             }
         }
 
@@ -138,7 +138,7 @@ namespace Products.Tests
                 // In real SQL Server environments, this method would work correctly
                 
                 // Test deletion of existing product throws expected exception due to in-memory DB limitation
-                var exception = await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () =>
+                var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
                 {
                     await ProductApiActions.DeleteProduct(40, context);
                 });
@@ -147,7 +147,7 @@ namespace Products.Tests
                     "Exception should be related to ExecuteDelete not being supported");
                 
                 // Test deletion of non-existent product also throws same exception
-                var notFoundException = await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () =>
+                var notFoundException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
                 {
                     await ProductApiActions.DeleteProduct(999, context);
                 });
@@ -192,7 +192,7 @@ namespace Products.Tests
             // Arrange & Act & Assert - Test the method signature and basic error handling
             using (var context = new Context(_dbOptions))
             {
-                await Assert.ThrowsExceptionAsync<NullReferenceException>(async () =>
+                await Assert.ThrowsExactlyAsync<ArgumentNullException>(async () =>
                 {
                     await ProductApiActions.AISearch("test search", context, null!, null!);
                 });
