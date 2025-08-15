@@ -1,39 +1,46 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SemanticSearchFunction.Models;
+using SearchEntities;
 
 namespace SemanticSearchFunction.Repositories;
 
 public class SqlSemanticSearchRepository
 {
-    private readonly string _connectionString;
     private readonly ILogger<SqlSemanticSearchRepository> _logger;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly int _dimensions = 1536;
+    private readonly Context _db;
 
     public SqlSemanticSearchRepository(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         int dimensions,
-        IConfiguration configuration, 
+        Context db,
         ILogger<SqlSemanticSearchRepository> logger)
     {
-        _connectionString = configuration.GetConnectionString("productsDb")
-            ?? throw new InvalidOperationException("Connection string 'productsDb' not found.");
         _logger = logger;
         _embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
         _dimensions = dimensions;
+        _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
-    public async Task<IEnumerable<SearchResult>> SearchAsync(string query, int top, CancellationToken cancellationToken = default)
+    public async Task<SearchResponse> SearchAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
     {
-        var results = new List<SearchResult>();
+        var response = new SearchResponse();
 
-                // Generate embedding for query using the provided delegate
-                var queryVector = await _embeddingGenerator.GenerateVectorAsync(query, new() { Dimensions = _dimensions });
+        // Generate embedding for query using the provided delegate
+        var queryVector = await _embeddingGenerator.GenerateVectorAsync(searchRequest.query, new() { Dimensions = _dimensions });
 
+        var vectorSearch = queryVector.ToArray();
+        var products = await _db.Product
+            .OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding, vectorSearch))
+            .Take(3)
+            .ToListAsync();
 
-        return results;
+        response.Products = products;
+        response.Response = products.Count > 0 ?
+                $"{products.Count} Products found for [{searchRequest.query}]" :
+                $"No products found for [{searchRequest.query}]";       
+        return response;
     }
-
 }
