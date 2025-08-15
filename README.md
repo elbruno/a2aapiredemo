@@ -1,255 +1,191 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](/LICENSE)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](/LICENSE)
 
-## Description
+# eShopLite – Store + Products + Semantic Search (.NET Aspire)
 
-**eShopLite - Semantic Search using SQL 2025** is a reference .NET application implementing an eCommerce site with Search features using vector search and vector indexes in the SQL Database Engine
+This repository contains a simplified e‑commerce sample (Store frontend + Products backend) extended with Semantic Search capabilities. The solution demonstrates:
 
-- [Features](#features)
-- [Architecture diagram](#architecture-diagram)
-- [Getting started](#getting-started)
-- [Deploying to Azure](#deploying)
-- Run solution
-- [Resources](#resources)
-- [Video Recordings](#video-recordings)
-- [Guidance](#guidance)
-  - [Costs](#costs)
-  - [Security Guidelines](#security-guidelines)
-- [Resources](#resources)
+* Orchestration and service discovery using **.NET Aspire AppHost**
+* Three different product search experiences in the Store UI
+* Re–use of SQL Server 2025 vector search capabilities (single mention, no deep SQL setup guidance here)
+* Optional Azure Functions façade for semantic search
 
-## Features
+> NOTE: Detailed inner workings of SQL Server 2025 vector indexes and setup are out of scope in this README. We only rely on its vector search capability. See Scenario 01 Guidance & Costs for links and operational considerations.
 
-**GitHub CodeSpaces:** This project is designed to be opened in GitHub Codespaces as an easy way for anyone to deploy the solution entirely in the browser.
+## Table of contents
 
-This is the eShopLite Application running, performing a **Keyword Search**:
+* [Search Features](#search-features)
+* [Architecture](#architecture)
+  * [High level (Mermaid)](#high-level-mermaid)
+  * [Search flows](#search-flows)
+* [Projects](#projects)
+* [Configuration](#configuration)
+* [Running locally](#running-locally)
+* [Search modes in detail](#search-modes-in-detail)
+* [Scenario 01 Guidance & Costs](#scenario-01-guidance--costs)
+* [Troubleshooting](#troubleshooting)
+* [Contributing](#contributing)
+* [License](#license)
 
-![eShopLite Application running doing search using keyword search](./images/05eShopLite-SearchKeyWord.gif)
+## Search Features
 
-This is the eShopLite Application running, performing a **Semantic Search**:
+The Store UI exposes 3 search options (dropdown / selector on the Search page):
 
-![eShopLite Application running doing search using keyword search](./images/06eShopLite-SearchSemantic.gif)
+1. Keyword Search (standard text filtering)  
+    *Implementation:* `Products` API endpoint in `src/Products/Endpoints/ProductApiActions.cs` (e.g. simple `WHERE` / LINQ filtering).
+2. Semantic Search (direct API)  
+    *Implementation:* Products API builds an embedding, performs SQL Server 2025 vector similarity query; defined in `ProductApiActions.cs`.
+3. Semantic Search via Azure Function  
+    *Implementation:* Store calls `SemanticSearchFunction` (`src/SemanticSearchFunction/Functions/SearchFunction.cs`), which performs the same underlying SQL vector similarity, returning top matches.
 
-## Architecture diagram
+Animated examples were previously provided as GIFs; if/when assets are added back place them under `./images/` and reference here. For now the flows are described below.
 
-  ```mermaid
-  flowchart TD
-      subgraph "Azure Container Apps Environment - .NET Aspire"
-          store[store service]
-          products[products service]
-          sql[SQL service]
-          store --> products
-          products --> sql
-      end
-  
-      ContainerRegistry[Container Registry]
-      StorageAccount[Storage Account]
-      ManagedIdentity[Managed Identity]
-      OpenAI[Azure OpenAI\nChat + Embeddings]
-      AISearch[Azure AI Search\nVector Index]
-      LogAnalytics[Log Analytics]
-  
-      ContainerRegistry --> ManagedIdentity
-      ManagedIdentity --> OpenAI
-      ManagedIdentity --> AISearch
-  
-      products --> ManagedIdentity
-      products -->|semantic search| AISearch
-      products -->|generate embeddings + chat| OpenAI
-  
-      store --> LogAnalytics
-      products --> LogAnalytics
-  
-  ```
+## Architecture
 
-## Getting Started
+### High level (Mermaid)
 
-## Main Concepts in this Scenario
+```mermaid
+flowchart LR
+     subgraph AppHost[.NET Aspire AppHost]
+          Store[Store (Blazor/UI)]
+          Products[Products Service]
+          SemanticFn[Semantic Search Azure Function]
+          SQL[(SQL Server 2025\nVector Index)]
+     end
 
-This scenario demonstrates how to use [SQL Server 2025's Vector search and Vector index features](https://learn.microsoft.com/sql/relational-databases/vectors/vectors-sql-server?view=sql-server-ver17) in a .NET Aspire application. The main concepts and implementation details are:
+     Store -->|Keyword| Products
+     Store -->|Semantic (Direct)| Products
+     Store -->|Semantic (Azure Function)| SemanticFn
+     Products -->|Vector Search| SQL
+     SemanticFn -->|Vector Search| SQL
 
-- The .NET Aspire AppHost project creates the SQL Server 2025 instance directly using the container image `mcr.microsoft.com/mssql/server:2025-latest` from the Docker repository for SQL Server 2025: [Microsoft SQL Server - Ubuntu based images](https://hub.docker.com/r/microsoft/mssql-server/).
+     classDef svc fill:#eef,stroke:#336;
+     class Store,Products,SemanticFn svc;
+```
 
-- The logic for initializing and running the SQL Server container is implemented in [`scenarios/08-Sql2025/src/eShopAppHost/Program.cs`](scenarios/08-Sql2025/src/eShopAppHost/Program.cs):
+### Search flows
 
-    ```csharp
-    var builder = DistributedApplication.CreateBuilder(args);
-    
-    var sql = builder.AddSqlServer("sql")
-        .WithLifetime(ContainerLifetime.Persistent)
-        .WithImageTag("2025-latest")
-        .WithEnvironment("ACCEPT_EULA", "Y");
-    
-    var productsDb = sql
-        .WithDataVolume()
-        .AddDatabase("productsDb");
-    
-    var products = builder.AddProject<Projects.Products>("products")
-        .WithReference(productsDb)
-        .WaitFor(productsDb);    
-    ```
+```mermaid
+sequenceDiagram
+     participant User
+     participant Store
+     participant Products
+     participant SemanticFn as Azure Function
+     participant SQL as SQL 2025 (Vectors)
 
-- Using an embedding client, once the database is initialized and a set of sample products is added, a new vector field is completed using an embedding. This logic is in [`scenarios/08-Sql2025/src/Products/Models/DbInitializer.cs`](./src/Products/Models/DbInitializer.cs).
+     Note over User,Store: 1) Keyword Search
+     User->>Store: Enter term + select Keyword
+     Store->>Products: GET /products?search=term
+     Products->>SQL: Text filter query
+     Products-->>Store: Product list
+     Store-->>User: Render results
 
-- The `ProductApiActions` class ([`scenarios/08-Sql2025/src/Products/Endpoints/ProductApiActions.cs`](./src/Products/Endpoints/ProductApiActions.cs)) implements an `AISearch()` function that performs semantic search using [EFCore.SqlServer.VectorSearch](https://www.nuget.org/packages/EFCore.SqlServer.VectorSearch/9.0.0-preview.2#show-readme-container) functions:
+     Note over User,Store: 2) Semantic (Direct)
+     User->>Store: Enter query + select Semantic (Direct)
+     Store->>Products: POST /products/semantic { query }
+     Products->>Products: Generate embedding
+     Products->>SQL: Vector similarity search
+     SQL-->>Products: Top N products
+     Products-->>Store: Results
+     Store-->>User: Render
 
-    ```csharp
-    public static async Task<IResult> AISearch(string search, Context db, EmbeddingClient embeddingClient, int dimensions = 1536)
-    {
-        Console.WriteLine("Querying for similar products...");
-    
-        var embeddingSearch = embeddingClient.GenerateEmbedding(search, new() { Dimensions = dimensions });
-        var vectorSearch = embeddingSearch.Value.ToFloats().ToArray();
-        var products = await db.Product
-            .OrderBy(p => EF.Functions.VectorDistance("cosine", p.Embedding, vectorSearch))
-            .Take(3)
-            .ToListAsync();
-    
-        var response = new SearchResponse
-        {
-            Products = products,
-            Response = products.Count > 0 ?
-                $"{products.Count} Products found for [{search}]" :
-                $"No products found for [{search}]"
-        [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](/LICENSE)
+     Note over User,Store: 3) Semantic (Azure Function)
+     User->>Store: Enter query + select Semantic (Function)
+     Store->>SemanticFn: POST /api/semanticsearch { query }
+     SemanticFn->>SemanticFn: Generate embedding
+     SemanticFn->>SQL: Vector similarity search
+     SQL-->>SemanticFn: Top N products
+     SemanticFn-->>Store: Results
+     Store-->>User: Render
+```
 
-        ## eShopLite - .NET Aspire + Azure Functions (Semantic Search)
+## Projects
 
-        This repository demonstrates a small reference scenario that combines .NET Aspire (service discovery, resilience and orchestration) with an Azure Function that provides a semantic search endpoint over product data powered by SQL Server 2025 vector features.
+| Project | Purpose |
+| ------- | ------- |
+| `src/eShopAppHost` | Aspire AppHost orchestrating services (service discovery, lifecycles). |
+| `src/Store` | Front-end (Blazor) calling Products API & Azure Function. |
+| `src/Products` | Product catalog API, keyword + direct semantic search (vector). |
+| `src/SemanticSearchFunction` | Azure Function exposing semantic search endpoint. |
+| `src/DataEntities`, `src/SearchEntities` | Data contract / model assemblies. |
+| `src/eShopServiceDefaults` | Shared service discovery + resilience registrations (`AddServiceDefaults`). |
+| `tests` projects | Unit tests (`Products.Tests`, `SemanticSearch.Tests`). |
 
-        Goals for this README
-        - Explain how .NET Aspire is used for service discovery and resilience
-        - Explain how the Store app calls both the Products API and the independent Semantic Search Azure Function
-        - Provide ASCII and mermaid diagrams to illustrate runtime architecture
-        - Show configuration keys and quick run steps
+## Configuration
 
-        ## High-level architecture (ASCII)
+Primary settings affecting search:
 
-        Simple ASCII diagram showing the main runtime pieces and service discovery layer:
+| Setting | Where | Description |
+| ------- | ----- | ----------- |
+| `SemanticSearchFunctionEndpoint` | Store `appsettings.*` | Optional override of service discovery for the Azure Function (e.g. `http://localhost:7071/`). |
+| `ProductEndpoint` | Store `appsettings.*` | Legacy; usually replaced by service discovery `https+http://products`. |
+| Connection strings | Function & Products | Access to SQL Server instance containing product + vector data. |
 
-        ```
-                                +---------------------+
-                                |   Service Registry  |  <- .NET Aspire Service Discovery
-                                +----------+----------+
-                                           ^
-                       service discovery    |    service discovery
-           +-----------+        +-----------+v+         +---------------------+
-           |  Browser  | <----> |   Store    | <-----> |   Products Service   |  (product APIs, embeddings, SQL2025)
-           +-----------+        +-----------+           +---------------------+
-                                         \
-                                          \_ HTTP (via Aspire HttpClient)
-                                           \
-                                            \-> +-------------------------+
-                                                 |  Semantic Search Azure   |  (POST /api/semanticsearch)
-                                                 |  Function (SQL2025)      |
-                                                 +-------------------------+
+When using Aspire service discovery you can omit concrete host/ports and use `https+http://{servicename}` URIs in `BaseAddress`.
 
-        ```
+## Running locally
 
-        ## High-level architecture (Mermaid)
+1. Build & start via AppHost (preferred unified experience):
 
-        ```mermaid
-        flowchart LR
-            Browser[Browser / Store UI]
-            StoreService[Store Service (Blazor/UI)]
-            Products[Products Service (API + SQL2025)]
-            SemanticFn[Semantic Search Azure Function]
-            ServiceDiscovery[(Service Discovery)]
-            SQL[(SQL Server 2025 - Vector Index)]
+```powershell
+dotnet run --project src/eShopAppHost
+```
 
-            Browser -->|HTTP| StoreService
-            StoreService -->|aspire-http (products)| ServiceDiscovery --> Products
-            StoreService -->|aspire-http (semanticfunction)| ServiceDiscovery --> SemanticFn
-            Products -->|vector search| SQL
-            SemanticFn -->|vector search| SQL
+The dashboard lists services (Store, Products, SemanticSearchFunction, SQL). Open the Store UI, navigate to Search page.
 
-            classDef infra fill:#f9f,stroke:#333,stroke-width:1px;
-            class ServiceDiscovery infra;
-        ```
+1. Or run individually:
 
-        ## How the code uses .NET Aspire
+```powershell
+dotnet run --project src/Products
+func start --csharp src/SemanticSearchFunction  # or use VS Code Azure Functions tooling
+dotnet run --project src/Store
+```
 
-        - The repository includes an `eShopServiceDefaults` project which exposes `AddServiceDefaults()`.
-          - This method registers service discovery and configures HttpClient defaults (resilience handlers and service discovery handlers).
-          - Files to look at: `src/eShopServiceDefaults/Extensions.cs`.
-        - In `src/Store/Program.cs` the Store app registers HttpClients that use the Aspire service discovery URIs, e.g.:
+Provide `SemanticSearchFunctionEndpoint` and `ProductEndpoint` if not using AppHost discovery.
 
-        ```csharp
-        builder.AddServiceDefaults();
+## Search modes in detail
 
-        // ProductService uses Aspire service discovery to resolve "products" service
-        builder.Services.AddHttpClient<ProductService>(static client =>
-        {
-            client.BaseAddress = new Uri("https+http://products");
-        });
+| Mode | Trigger | Code Path | Notes |
+| ---- | ------- | --------- | ----- |
+| Keyword | Selector: Keyword | `ProductApiActions` (standard endpoint) | Simple filter / LIKE logic. |
+| Semantic (Direct) | Selector: Semantic (API) | `ProductApiActions` semantic endpoint | Embedding + vector distance query. |
+| Semantic (Function) | Selector: Semantic (Azure Function) | `SearchFunction.cs` | Separate function; illustrates alternative deployment boundary / scaling unit. |
 
-        // Azure Function Semantic Search service uses Aspire service discovery to resolve "semanticsearchfunction"
-        builder.Services.AddHttpClient<IAzFunctionSearchService, AzFunctionSearchService>(static client =>
-        {
-            client.BaseAddress = new Uri("https+http://semanticsearchfunction");
-        });
-        ```
+All semantic paths execute a SQL 2025 vector similarity search. Only one brief mention of SQL 2025 is kept here per requirements.
 
-        This avoids hard-coded hostnames and ports in code; the `https+http://{service}` pattern is interpreted by the service discovery/resolver configured by Aspire.
+## Scenario 01 Guidance & Costs
 
-        ## Store -> Semantic Search integration
+Scenario 01 (this repository baseline) guidance, including cost considerations (compute/container sizing, Azure Function consumption vs dedicated, SQL Server licensing / vector feature resource usage) is centralized in:  
+[`docs/scenario-01-guidance.md`](./docs/scenario-01-guidance.md)
 
-        - The Store UI provides a search page with 3 modes: Standard, Semantic (AI via Products API), and Azure Function Semantic Search.
-        - For the Azure Function mode the Store's `ProductService` delegates the call to `IAzFunctionSearchService` which posts JSON { query, top } to `/api/semanticsearch`.
-        - The `AzFunctionSearchService` was implemented to prefer a configuration value `SemanticSearchFunctionEndpoint` (which can be a service discovery URI or a real URL) and otherwise use the HttpClient base address (registered via service discovery).
+Summary:
 
-        ## Config keys you may want to set locally
+* Azure Function semantic search adds an independent scaling surface (can scale independently from Products service).
+* Direct semantic search keeps latency slightly lower (1 less network hop) but couples functionality to Products deployment cadence.
+* Use configuration to switch between service discovery and explicit endpoints for local debugging.
 
-        - `ProductEndpoint` (optional) — legacy; with Aspire you should prefer service discovery
-        - `SemanticSearchFunctionEndpoint` — set this to a concrete URL (eg. `http://localhost:7071/`) for local debugging or to a service discovery URI (eg. `https+http://semanticsearchfunction`) if using Aspire discovery
-        - Connection strings and SQL settings (see `src/SemanticSearchFunction/local.settings.json` and `src/Store/appsettings.json`)
+## Troubleshooting
 
-        Example `appsettings.Development.json` snippet:
+| Issue | Tip |
+| ----- | --- |
+| Service name not resolving | Ensure running under AppHost or supply explicit endpoints. |
+| Empty semantic results | Verify vectors initialized and embeddings dimension matches configuration. |
+| Function 404 | Check route: `/api/semanticsearch` and that function host is running. |
+| SSL issues locally | Use `https+http://` scheme for service discovery URIs or trust dev certs. |
 
-        ```json
-        {
-          "ProductEndpoint": "http://localhost:5228/",
-          "SemanticSearchFunctionEndpoint": "http://localhost:7071/"
-        }
-        ```
+## Contributing
 
-        Or, to use service discovery for both services in an Aspire-hosted environment:
+Pull requests welcome. Ideas:
+Pull requests welcome. Ideas:
 
-        ```json
-        {
-          "SemanticSearchFunctionEndpoint": "https+http://semanticsearchfunction"
-        }
-        ```
+* Health checks exposure & dashboards
+* Add caching layer for embeddings
+* Add benchmark comparing direct vs function semantic search latency
+* UI toggle to show raw vector score
 
-        ## Quick local run (developer flow)
+## License
 
-        1. Start the Products service and SQL2025 (see `src/Products` instructions) so the product API and database are available.
-        2. Start the Semantic Search Azure Function (open `src/SemanticSearchFunction` in VS Code and run the function locally) or run the function in your environment.
-        3. Start the Store app:
+MIT – see [LICENSE](./LICENSE)
 
-        ```powershell
-        cd src/Store
-        dotnet run
-        # Open https://localhost:5001/search (or the address displayed by ASP.NET Core)
-        ```
+---
 
-        4. On the Store search page, choose "Azure Function Semantic Search" from the dropdown, enter a query and run.
-
-        ## Diagrams (ASCII + Mermaid) — Usage notes
-
-        - ASCII diagrams are intentionally simple and useful when viewing README in plain terminals or small editors.
-        - Mermaid diagrams render nicely on GitHub and VS Code markdown preview and give a clearer view of relationships and service discovery.
-
-        ## Troubleshooting
-
-        - If service discovery does not resolve a service name, check that the environment where Aspire runs provides a discovery provider (for local dev this may be skipped and you must use local URLs in `SemanticSearchFunctionEndpoint`).
-        - Use logs: the solution is instrumented with OpenTelemetry and logging via `AddServiceDefaults()` — check app logs for discovery/resolver entries.
-
-        ## Contributing
-
-        If you want to extend the scenario:
-        - Add health checks for the function and wire them into `MapDefaultEndpoints()`
-        - Add a configuration UI to allow switching between service discovery and explicit endpoints at runtime
-        - Add tests for `AzFunctionSearchService` (mock HttpClient) and for `ProductService` delegating behavior
-
-        ---
-
-        For full technical documentation about SQL Server 2025 vector features and the original scenario, see `./docs/README.md`.
+Historical / deep SQL vector feature docs were removed to keep README focused. Only vector search capability mention retained per request.
