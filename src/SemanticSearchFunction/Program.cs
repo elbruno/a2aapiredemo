@@ -12,13 +12,13 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
-        // add db
+        // add db with support for vector search
         var productsDbConnectionString = context.Configuration.GetConnectionString("productsDb");
         services.AddDbContext<Context>(options =>
             options.UseSqlServer(productsDbConnectionString, o => o.UseVectorSearch()));
 
+        // add embedding generator
         var embeddingsDeploymentName = context.Configuration["AI_embeddingsDeploymentName"] ?? "text-embedding-3-small";
-
         services.AddSingleton(_ =>
             AzureOpenAiEmbeddingProvider.CreateEmbeddingClient(context.Configuration, embeddingsDeploymentName));
     })
