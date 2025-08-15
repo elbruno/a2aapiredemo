@@ -53,8 +53,8 @@ flowchart LR
      end
 
      Store -->|Keyword| Products
-     Store -->|Semantic (Direct)| Products
-     Store -->|Semantic (Azure Function)| SemanticFn
+     Store -->|Semantic - WebAPI| Products
+     Store -->|Semantic - Azure Function| SemanticFn
      Products -->|Vector Search| SQL
      SemanticFn -->|Vector Search| SQL
 
