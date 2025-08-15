@@ -52,9 +52,9 @@ flowchart LR
           SQL[SQL Server 2025 - Vector Index]
      end
 
-     Store -->|Keyword| Products
-     Store -->|Semantic - WebAPI| Products
-     Store -->|Semantic - Azure Function| SemanticFn
+     Store -->|Keyword<br>Standard SQL Search| Products
+     Store -->|Semantic - WebAPI<br>SQL Vector Search| Products
+     Store -->|Semantic - Azure Function<br>SQL Vector Search| SemanticFn
      Products -->|Vector Search| SQL
      SemanticFn -->|Vector Search| SQL
 
