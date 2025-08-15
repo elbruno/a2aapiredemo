@@ -5,8 +5,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SemanticSearchFunction.Functions;
-using SemanticSearchFunction.Models;
-using SemanticSearchFunction.Repositories;
 
 namespace SemanticSearch.Tests;
 
@@ -14,7 +12,6 @@ namespace SemanticSearch.Tests;
 public class SearchFunctionTests
 {
     private Mock<ILogger<SearchFunction>> _loggerMock;
-    private Mock<ISemanticSearchRepository> _repositoryMock;
     private SearchFunction _function;
     private Mock<HttpRequestData> _requestMock;
     private Mock<FunctionContext> _contextMock;
@@ -23,7 +20,6 @@ public class SearchFunctionTests
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<SearchFunction>>();
-        _repositoryMock = new Mock<ISemanticSearchRepository>();
         _function = new SearchFunction(_loggerMock.Object, _repositoryMock.Object);
         
         _contextMock = new Mock<FunctionContext>();
