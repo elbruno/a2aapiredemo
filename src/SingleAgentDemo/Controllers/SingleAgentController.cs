@@ -109,6 +109,8 @@ Always format your responses in a clear, structured way with sections for:
 Be concise but thorough, and always prioritize the customer's safety and success.",
             Kernel = _kernel
         };
+    }
+
     private async Task<string> GenerateToolReasoningWithAgentAsync(ChatCompletionAgent agent, PhotoAnalysisResult photoAnalysis, CustomerInformation customer, string prompt)
     {
         try

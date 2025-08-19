@@ -70,7 +70,7 @@ if (builder.ExecutionContext.IsPublishMode)
 
     var gpt5mini = aoai.AddDeployment(name: chatDeploymentName,
             modelName: "gpt-5-mini",
-            modelVersion: "2025-08-07");    
+            modelVersion: "2025-08-07");
     gpt5mini.Resource.SkuName = "GlobalStandard";
 
     var embeddingsDeployment = aoai.AddDeployment(name: embeddingsDeploymentName,
@@ -105,14 +105,18 @@ products.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
-// Configure OpenAI for agent demo services and reasoning service
+// Configure OpenAI for agent demo services and external services
+analyzePhotoService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+customerInformationService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+toolReasoningService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+inventoryService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 singleAgentDemo.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
-
 multiAgentDemo.WithReference(openai)
-    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
-
-toolReasoningService.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 
 builder.Build().Run();
