@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using MultiAgentDemo.Models;
+using SharedEntities;
 
 namespace MultiAgentDemo.Controllers;
 
@@ -23,14 +24,14 @@ public class MultiAgentController : ControllerBase
     }
 
     [HttpPost("assist")]
-    public async Task<ActionResult<MultiAgentResponse>> AssistAsync([FromBody] MultiAgentRequest request)
+    public async Task<ActionResult<SharedEntities.MultiAgentResponse>> AssistAsync([FromBody] SharedEntities.MultiAgentRequest request)
     {
         try
         {
             var orchestrationId = Guid.NewGuid().ToString();
             _logger.LogInformation("Starting multi-agent orchestration {OrchestrationId} for user {UserId}", orchestrationId, request.UserId);
 
-            var steps = new List<AgentStep>();
+            var steps = new List<SharedEntities.AgentStep>();
             
             // Step 1: Inventory Agent - Search for products
             var inventoryStep = await RunInventoryAgentAsync(request.ProductQuery);
@@ -56,7 +57,7 @@ public class MultiAgentController : ControllerBase
             // Generate alternatives based on agent results
             var alternatives = await GenerateProductAlternativesAsync(request.ProductQuery);
 
-            var response = new MultiAgentResponse
+            var response = new SharedEntities.MultiAgentResponse
             {
                 OrchestrationId = orchestrationId,
                 Steps = steps.ToArray(),
@@ -85,7 +86,7 @@ public class MultiAgentController : ControllerBase
                 await response.Content.ReadAsStringAsync() : 
                 $"Found 3 products matching '{productQuery}'";
 
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "InventoryAgent",
                 Action = $"Search inventory for '{productQuery}'",
@@ -96,7 +97,7 @@ public class MultiAgentController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Inventory agent failed, using fallback");
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "InventoryAgent",
                 Action = $"Search inventory for '{productQuery}'",
@@ -118,7 +119,7 @@ public class MultiAgentController : ControllerBase
                 await response.Content.ReadAsStringAsync() : 
                 $"Found 2 alternative products for '{productQuery}'";
 
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "MatchmakingAgent",
                 Action = $"Find alternatives for '{productQuery}'",
@@ -129,7 +130,7 @@ public class MultiAgentController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Matchmaking agent failed, using fallback");
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "MatchmakingAgent",
                 Action = $"Find alternatives for '{productQuery}'",
@@ -151,7 +152,7 @@ public class MultiAgentController : ControllerBase
                 await response.Content.ReadAsStringAsync() : 
                 $"Products located in Aisle 5 and Aisle 12";
 
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "LocationAgent",
                 Action = $"Locate '{productQuery}' in store",
@@ -162,7 +163,7 @@ public class MultiAgentController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Location agent failed, using fallback");
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "LocationAgent",
                 Action = $"Locate '{productQuery}' in store",
@@ -185,7 +186,7 @@ public class MultiAgentController : ControllerBase
                 await response.Content.ReadAsStringAsync() : 
                 "Generated optimal route to product locations";
 
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "NavigationAgent",
                 Action = $"Generate route to '{productQuery}'",
@@ -196,7 +197,7 @@ public class MultiAgentController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Navigation agent failed, using fallback");
-            return new AgentStep
+            return new SharedEntities.AgentStep
             {
                 Agent = "NavigationAgent",
                 Action = $"Generate route to '{productQuery}'",
@@ -206,14 +207,14 @@ public class MultiAgentController : ControllerBase
         }
     }
 
-    private async Task<ProductAlternative[]> GenerateProductAlternativesAsync(string productQuery)
+    private async Task<SharedEntities.ProductAlternative[]> GenerateProductAlternativesAsync(string productQuery)
     {
         // Simulate multi-agent coordination results
         await Task.Delay(50); // Simulate processing time
 
-        return new ProductAlternative[]
+        return new SharedEntities.ProductAlternative[]
         {
-            new ProductAlternative
+            new SharedEntities.ProductAlternative
             {
                 Name = $"Premium {productQuery}",
                 Sku = "PREM-" + productQuery.Replace(" ", "").ToUpper(),
@@ -223,7 +224,7 @@ public class MultiAgentController : ControllerBase
                 Aisle = 5,
                 Section = "A"
             },
-            new ProductAlternative
+            new SharedEntities.ProductAlternative
             {
                 Name = $"Standard {productQuery}",
                 Sku = "STD-" + productQuery.Replace(" ", "").ToUpper(),
@@ -233,7 +234,7 @@ public class MultiAgentController : ControllerBase
                 Aisle = 5,
                 Section = "B"
             },
-            new ProductAlternative
+            new SharedEntities.ProductAlternative
             {
                 Name = $"Budget {productQuery}",
                 Sku = "BDG-" + productQuery.Replace(" ", "").ToUpper(),
@@ -251,25 +252,25 @@ public class MultiAgentController : ControllerBase
         // Simulate navigation generation
         await Task.Delay(50);
 
-        return new NavigationInstructions
+        return new SharedEntities.NavigationInstructions
         {
             StartLocation = $"Current position ({userLocation.Lat:F4}, {userLocation.Lon:F4})",
             EstimatedTime = "3-4 minutes",
-            Steps = new NavigationStep[]
+            Steps = new SharedEntities.NavigationStep[]
             {
-                new NavigationStep
+                new SharedEntities.NavigationStep
                 {
                     Direction = "Head east",
                     Description = "Walk towards the hardware section",
                     Landmark = "Customer Service Desk"
                 },
-                new NavigationStep
+                new SharedEntities.NavigationStep
                 {
                     Direction = "Turn right",
                     Description = "Enter Aisle 5",
                     Landmark = "Paint Display"
                 },
-                new NavigationStep
+                new SharedEntities.NavigationStep
                 {
                     Direction = "Continue straight",
                     Description = $"Find {productQuery} in section A",

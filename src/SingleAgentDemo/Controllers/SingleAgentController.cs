@@ -3,6 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SingleAgentDemo.Models;
+using SharedEntities;
 
 namespace SingleAgentDemo.Controllers;
 
@@ -25,7 +26,7 @@ public class SingleAgentController : ControllerBase
     }
 
     [HttpPost("analyze")]
-    public async Task<ActionResult<SingleAgentAnalysisResponse>> AnalyzeAsync(
+    public async Task<ActionResult<SharedEntities.SingleAgentAnalysisResponse>> AnalyzeAsync(
         [FromForm] IFormFile image,
         [FromForm] string prompt,
         [FromForm] string customerId)
@@ -52,11 +53,18 @@ public class SingleAgentController : ControllerBase
             // Step 5: Enrich with inventory information
             var enrichedTools = await EnrichWithInventoryAsync(toolMatch.MissingTools);
 
-            var response = new SingleAgentAnalysisResponse
+            var response = new SharedEntities.SingleAgentAnalysisResponse
             {
                 Analysis = photoAnalysis.Description,
                 ReusableTools = toolMatch.ReusableTools,
-                RecommendedTools = enrichedTools,
+                RecommendedTools = enrichedTools.Select(t => new SharedEntities.ToolRecommendation
+                {
+                    Name = t.Name,
+                    Sku = t.Sku,
+                    IsAvailable = t.IsAvailable,
+                    Price = t.Price,
+                    Description = t.Description
+                }).ToArray(),
                 Reasoning = reasoning
             };
 
@@ -272,14 +280,14 @@ Provide detailed reasoning for tool recommendations considering their existing t
             ReusableTools = new[] { "measuring tape", "screwdriver" },
             MissingTools = new[]
             {
-                new ToolRecommendation { Name = "Paint Roller", Sku = "PAINT-ROLLER-9IN", IsAvailable = true, Price = 12.99m, Description = "9-inch paint roller for smooth walls" },
-                new ToolRecommendation { Name = "Paint Brush Set", Sku = "BRUSH-SET-3PC", IsAvailable = true, Price = 24.99m, Description = "3-piece brush set for detail work" },
-                new ToolRecommendation { Name = "Drop Cloth", Sku = "DROP-CLOTH-9X12", IsAvailable = true, Price = 8.99m, Description = "Plastic drop cloth protection" }
+                new InternalToolRecommendation { Name = "Paint Roller", Sku = "PAINT-ROLLER-9IN", IsAvailable = true, Price = 12.99m, Description = "9-inch paint roller for smooth walls" },
+                new InternalToolRecommendation { Name = "Paint Brush Set", Sku = "BRUSH-SET-3PC", IsAvailable = true, Price = 24.99m, Description = "3-piece brush set for detail work" },
+                new InternalToolRecommendation { Name = "Drop Cloth", Sku = "DROP-CLOTH-9X12", IsAvailable = true, Price = 8.99m, Description = "Plastic drop cloth protection" }
             }
         };
     }
 
-    private async Task<ToolRecommendation[]> EnrichWithInventoryAsync(ToolRecommendation[] tools)
+    private async Task<InternalToolRecommendation[]> EnrichWithInventoryAsync(InternalToolRecommendation[] tools)
     {
         try
         {
@@ -293,7 +301,7 @@ Provide detailed reasoning for tool recommendations considering their existing t
             
             if (response.IsSuccessStatusCode)
             {
-                var inventoryResults = await response.Content.ReadFromJsonAsync<ToolRecommendation[]>();
+                var inventoryResults = await response.Content.ReadFromJsonAsync<InternalToolRecommendation[]>();
                 return inventoryResults ?? tools;
             }
         }

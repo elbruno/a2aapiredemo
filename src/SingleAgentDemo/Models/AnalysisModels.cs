@@ -31,10 +31,10 @@ public class ToolMatchRequest
 public class ToolMatchResult
 {
     public string[] ReusableTools { get; set; } = Array.Empty<string>();
-    public ToolRecommendation[] MissingTools { get; set; } = Array.Empty<ToolRecommendation>();
+    public InternalToolRecommendation[] MissingTools { get; set; } = Array.Empty<InternalToolRecommendation>();
 }
 
-public class ToolRecommendation
+public class InternalToolRecommendation
 {
     public string Name { get; set; } = string.Empty;
     public string Sku { get; set; } = string.Empty;
@@ -53,12 +53,4 @@ public class ReasoningRequest
     public PhotoAnalysisResult PhotoAnalysis { get; set; } = new();
     public CustomerInformation Customer { get; set; } = new();
     public string Prompt { get; set; } = string.Empty;
-}
-
-public class SingleAgentAnalysisResponse
-{
-    public string Analysis { get; set; } = string.Empty;
-    public string[] ReusableTools { get; set; } = Array.Empty<string>();
-    public ToolRecommendation[] RecommendedTools { get; set; } = Array.Empty<ToolRecommendation>();
-    public string Reasoning { get; set; } = string.Empty;
 }

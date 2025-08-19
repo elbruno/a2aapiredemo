@@ -9,7 +9,6 @@
   </Folder>
   <Folder Name="/3 Models/">
     <File Path="Store/Services/ToolRecommendation.cs" />
-    <Project Path="AgentModels/AgentModels.csproj" Id="20d2621d-c957-4058-87dd-3ad9f9638774" />
     <Project Path="CartEntities/CartEntities.csproj" />
     <Project Path="DataEntities/DataEntities.csproj" />
     <Project Path="SearchEntities/SearchEntities.csproj" />
