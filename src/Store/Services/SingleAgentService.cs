@@ -1,8 +1,9 @@
+using Store.Models;
 using System.Text.Json;
 
 namespace Store.Services;
 
-public class SingleAgentService : ISingleAgentService
+public class SingleAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<SingleAgentService> _logger;

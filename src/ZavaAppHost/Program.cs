@@ -19,10 +19,6 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
     .WaitFor(productsDb);
 
-var store = builder.AddProject<Projects.Store>("store")
-    .WithReference(products)
-    .WaitFor(products)
-    .WithExternalHttpEndpoints();
 
 // Add new microservices for agent functionality
 var analyzePhotoService = builder.AddProject<Projects.AnalyzePhotoService>("analyze-photo-service")
@@ -47,6 +43,16 @@ var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("single-agent
 
 var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multi-agent-demo")
     .WithExternalHttpEndpoints();
+
+var store = builder.AddProject<Projects.Store>("store")
+    .WithReference(products)
+    .WaitFor(products)
+    .WithReference(singleAgentDemo)
+    .WaitFor(singleAgentDemo)
+    .WithReference(multiAgentDemo)
+    .WaitFor(multiAgentDemo)
+    .WithExternalHttpEndpoints();
+
 
 if (builder.ExecutionContext.IsPublishMode)
 {
