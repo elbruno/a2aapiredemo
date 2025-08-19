@@ -198,9 +198,12 @@
                                                 </div>
                                                 <div class="flex-grow-1 ms-3">
                                                     <strong>@step.Direction</strong> - @step.Description
-                                                    @if (!string.IsNullOrEmpty(step.Landmark))
+                                                    @{
+                                                        var landmarkText = step.Landmark?.ToString();
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(landmarkText))
                                                     {
-                                                        <br><small class="text-muted">Landmark: @step.Landmark</small>
+                                                        <br><small class="text-muted">Landmark: @landmarkText</small>
                                                     }
                                                 </div>
                                             </div>

@@ -18,7 +18,7 @@ Important requirement from the repository owner
 High-level intent
 
 - Scenario 1: a single agent that performs photo analysis, customer lookups, skill/tool matching, and inventory enrichment to return a recommendation.
-- Scenario 2: a multi-agent orchestration where inventory, matchmaking, mapping/navigation agents coordinate to produce alternatives and in-store directions.
+- Scenario 2: a multi-agent orchestration where inventory, matchmaking, location, and navigation agents coordinate to produce structured orchestration steps, product alternatives, and optional in-store navigation instructions returned from a single endpoint.
 
 Assumptions
 
@@ -94,8 +94,16 @@ SingleAgentController (summary):
 
 MultiAgentController (summary):
 
-- `POST /api/multi-agent/assist` accepts JSON with `userId`, `productQuery`, optional `location`.
-- Orchestrates calls to inventory/matchmaking/location/mapping/navigation agents and returns structured orchestration steps and results.
+- `POST /api/multi-agent/assist` accepts JSON with `userId`, `productQuery`, optional `location` (a `Location` with `Lat` and `Lon`).
+- Behavior implemented in `src/MultiAgentDemo/Controllers/MultiAgentController.cs`:
+  - Validates `ProductQuery` and builds an orchestration id.
+  - Invokes (typed HTTP client) services in order: `IInventoryAgentService`, `IMatchmakingAgentService`, `ILocationAgentService`.
+  - If `location` is provided, invokes `INavigationAgentService` to generate directions and includes `NavigationInstructions` in the response.
+  - Returns `MultiAgentResponse` containing:
+    - `OrchestrationId` (string)
+    - `Steps` (array of `AgentStep` objects describing each agent action and result)
+    - `Alternatives` (array of `ProductAlternative`)
+    - `NavigationInstructions` (optional `NavigationInstructions` with `Steps`, `StartLocation`, `EstimatedTime`)
 
 Mock services (recommended)
 
