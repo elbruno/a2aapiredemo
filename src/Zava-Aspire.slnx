@@ -20,9 +20,9 @@
   <Folder Name="/5 Agent Services/">
     <Project Path="AnalyzePhotoService/AnalyzePhotoService.csproj" />
     <Project Path="CustomerInformationService/CustomerInformationService.csproj" />
+    <Project Path="MultiAgentDemo/MultiAgentDemo.csproj" />
+    <Project Path="SingleAgentDemo/SingleAgentDemo.csproj" />
     <Project Path="ToolReasoningService/ToolReasoningService.csproj" />
     <Project Path="InventoryService/InventoryService.csproj" />
   </Folder>
-  <Project Path="MultiAgentDemo/MultiAgentDemo.csproj" />
-  <Project Path="SingleAgentDemo/SingleAgentDemo.csproj" />
 </Solution>
