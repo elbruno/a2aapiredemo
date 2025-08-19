@@ -17,4 +17,6 @@
     <Project Path="Products.Tests/Products.Tests.csproj" />
     <Project Path="Store.Tests/Store.Tests.csproj" />
   </Folder>
+  <Project Path="MultiAgentDemo/MultiAgentDemo.csproj" />
+  <Project Path="SingleAgentDemo/SingleAgentDemo.csproj" />
 </Solution>

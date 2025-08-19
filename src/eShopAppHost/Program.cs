@@ -24,6 +24,13 @@ var store = builder.AddProject<Projects.Store>("store")
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
+// Add new agent demo services
+var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("single-agent-demo")
+    .WithExternalHttpEndpoints();
+
+var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multi-agent-demo")
+    .WithExternalHttpEndpoints();
+
 if (builder.ExecutionContext.IsPublishMode)
 {
     // production code uses Azure services, so we need to add them here
@@ -44,6 +51,12 @@ if (builder.ExecutionContext.IsPublishMode)
     store.WithReference(appInsights)
         .WithExternalHttpEndpoints();
 
+    singleAgentDemo.WithReference(appInsights)
+        .WithExternalHttpEndpoints();
+
+    multiAgentDemo.WithReference(appInsights)
+        .WithExternalHttpEndpoints();
+
     openai = aoai;
 }
 else
@@ -54,5 +67,12 @@ else
 products.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+// Configure OpenAI for agent demo services
+singleAgentDemo.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+
+multiAgentDemo.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 
 builder.Build().Run();
