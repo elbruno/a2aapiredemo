@@ -9,9 +9,17 @@ builder.AddServiceDefaults();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+builder.Services.AddScoped<ISingleAgentService, SingleAgentService>();
+builder.Services.AddScoped<IMultiAgentService, MultiAgentService>();
 
 builder.Services.AddHttpClient<IProductService, ProductService>(
     static client => client.BaseAddress = new("https+http://products"));
+
+builder.Services.AddHttpClient<ISingleAgentService, SingleAgentService>(
+    static client => client.BaseAddress = new("https+http://single-agent-demo"));
+
+builder.Services.AddHttpClient<IMultiAgentService, MultiAgentService>(
+    static client => client.BaseAddress = new("https+http://multi-agent-demo"));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

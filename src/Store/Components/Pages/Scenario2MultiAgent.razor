@@ -1,6 +1,6 @@
 @page "/scenario2-multi-agent"
-@using System.Text.Json
-@inject HttpClient Http
+@using Store.Services
+@inject IMultiAgentService MultiAgentService
 @inject ILogger<Scenario2MultiAgent> Logger
 
 <PageTitle>Scenario 2 - Multi-Agent Demo</PageTitle>
@@ -314,195 +314,21 @@
                 multiAgentRequest.Location = null;
             }
 
-            // Attempt to call the actual service first, then fallback to demo data
-            var response = await Http.PostAsJsonAsync("http://localhost:5003/api/multi-agent/assist", multiAgentRequest);
+            orchestrationResult = await MultiAgentService.AssistAsync(multiAgentRequest);
             
-            if (response.IsSuccessStatusCode)
+            if (orchestrationResult == null)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                orchestrationResult = JsonSerializer.Deserialize<MultiAgentResponse>(json, new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
-                });
-            }
-            else
-            {
-                // Fallback to demo data for development
-                await Task.Delay(3000); // Simulate processing time
-                orchestrationResult = CreateDemoResult();
+                errorMessage = "Multi-agent service is currently unavailable. Please try again later.";
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error calling multi-agent service");
-            // Fallback to demo data
-            await Task.Delay(3000);
-            orchestrationResult = CreateDemoResult();
+            errorMessage = "An error occurred while processing your request. Please try again.";
         }
         finally
         {
             isSubmitting = false;
         }
-    }
-
-    private MultiAgentResponse CreateDemoResult()
-    {
-        var orchestrationId = Guid.NewGuid().ToString("N")[..8];
-        var baseTime = DateTime.UtcNow;
-
-        return new MultiAgentResponse
-        {
-            OrchestrationId = orchestrationId,
-            Steps = new[]
-            {
-                new AgentStep
-                {
-                    Agent = "InventoryAgent",
-                    Action = $"Search inventory for '{multiAgentRequest.ProductQuery}'",
-                    Result = $"Found 5 products matching '{multiAgentRequest.ProductQuery}' across hardware and tools sections",
-                    Timestamp = baseTime
-                },
-                new AgentStep
-                {
-                    Agent = "MatchmakingAgent",
-                    Action = $"Find alternatives for '{multiAgentRequest.ProductQuery}'",
-                    Result = "Identified 3 product alternatives: Premium, Standard, and Budget options with different feature sets",
-                    Timestamp = baseTime.AddSeconds(1)
-                },
-                new AgentStep
-                {
-                    Agent = "LocationAgent",
-                    Action = $"Locate '{multiAgentRequest.ProductQuery}' in store",
-                    Result = "Products located in Aisles 5, 7, and 12 with current stock levels verified",
-                    Timestamp = baseTime.AddSeconds(2)
-                },
-                new AgentStep
-                {
-                    Agent = "NavigationAgent",
-                    Action = $"Generate route to '{multiAgentRequest.ProductQuery}'",
-                    Result = "Calculated optimal path through store to visit all product locations efficiently",
-                    Timestamp = baseTime.AddSeconds(3)
-                }
-            },
-            Alternatives = new[]
-            {
-                new ProductAlternative
-                {
-                    Name = $"Premium {multiAgentRequest.ProductQuery}",
-                    Sku = "PREM-" + multiAgentRequest.ProductQuery.Replace(" ", "").ToUpper(),
-                    Price = 189.99m,
-                    InStock = true,
-                    Location = "Aisle 5",
-                    Aisle = 5,
-                    Section = "A"
-                },
-                new ProductAlternative
-                {
-                    Name = $"Standard {multiAgentRequest.ProductQuery}",
-                    Sku = "STD-" + multiAgentRequest.ProductQuery.Replace(" ", "").ToUpper(),
-                    Price = 89.99m,
-                    InStock = true,
-                    Location = "Aisle 7",
-                    Aisle = 7,
-                    Section = "B"
-                },
-                new ProductAlternative
-                {
-                    Name = $"Budget {multiAgentRequest.ProductQuery}",
-                    Sku = "BDG-" + multiAgentRequest.ProductQuery.Replace(" ", "").ToUpper(),
-                    Price = 39.99m,
-                    InStock = false,
-                    Location = "Aisle 12",
-                    Aisle = 12,
-                    Section = "C"
-                }
-            },
-            NavigationInstructions = includeLocation ? new NavigationInstructions
-            {
-                StartLocation = $"Entrance ({latitude:F4}, {longitude:F4})",
-                EstimatedTime = "4-6 minutes",
-                Steps = new[]
-                {
-                    new NavigationStep
-                    {
-                        Direction = "Head straight",
-                        Description = "Walk towards the main hardware section",
-                        Landmark = "Customer Service Desk on your right"
-                    },
-                    new NavigationStep
-                    {
-                        Direction = "Turn left",
-                        Description = "Enter Aisle 5 for premium options",
-                        Landmark = "Power Tools display"
-                    },
-                    new NavigationStep
-                    {
-                        Direction = "Continue to Aisle 7",
-                        Description = "Find standard options in section B",
-                        Landmark = "Paint mixing station"
-                    },
-                    new NavigationStep
-                    {
-                        Direction = "End at Aisle 12",
-                        Description = "Check budget alternatives (may be out of stock)",
-                        Landmark = "Garden center entrance"
-                    }
-                }
-            } : null
-        };
-    }
-
-    private class MultiAgentRequest
-    {
-        public string UserId { get; set; } = string.Empty;
-        public string ProductQuery { get; set; } = string.Empty;
-        public Location? Location { get; set; }
-    }
-
-    private class Location
-    {
-        public double Lat { get; set; }
-        public double Lon { get; set; }
-    }
-
-    private class MultiAgentResponse
-    {
-        public string OrchestrationId { get; set; } = string.Empty;
-        public AgentStep[] Steps { get; set; } = Array.Empty<AgentStep>();
-        public ProductAlternative[] Alternatives { get; set; } = Array.Empty<ProductAlternative>();
-        public NavigationInstructions? NavigationInstructions { get; set; }
-    }
-
-    private class AgentStep
-    {
-        public string Agent { get; set; } = string.Empty;
-        public string Action { get; set; } = string.Empty;
-        public string Result { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    }
-
-    private class ProductAlternative
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Sku { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public bool InStock { get; set; }
-        public string Location { get; set; } = string.Empty;
-        public int Aisle { get; set; }
-        public string Section { get; set; } = string.Empty;
-    }
-
-    private class NavigationInstructions
-    {
-        public string StartLocation { get; set; } = string.Empty;
-        public NavigationStep[] Steps { get; set; } = Array.Empty<NavigationStep>();
-        public string EstimatedTime { get; set; } = string.Empty;
-    }
-
-    private class NavigationStep
-    {
-        public string Direction { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Landmark { get; set; } = string.Empty;
     }
 }

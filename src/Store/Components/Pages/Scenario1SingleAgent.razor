@@ -1,6 +1,6 @@
 @page "/scenario1-single-agent"
-@using System.Text.Json
-@inject HttpClient Http
+@using Store.Services
+@inject ISingleAgentService SingleAgentService
 @inject ILogger<Scenario1SingleAgent> Logger
 
 <PageTitle>Scenario 1 - Single Agent Demo</PageTitle>
@@ -159,8 +159,8 @@
 </div>
 
 @code {
-    private AnalysisRequest analysisRequest = new();
-    private AnalysisResult? analysisResult;
+    private SingleAgentAnalysisRequest analysisRequest = new();
+    private SingleAgentAnalysisResponse? analysisResult;
     private IBrowserFile? selectedFile;
     private bool isSubmitting = false;
     private string errorMessage = string.Empty;
@@ -197,103 +197,22 @@
 
         try
         {
-            using var content = new MultipartFormDataContent();
+            analysisRequest.Image = selectedFile;
+            analysisResult = await SingleAgentService.AnalyzeAsync(analysisRequest);
             
-            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024)); // 5MB limit
-            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
-            content.Add(fileContent, "image", selectedFile.Name);
-            
-            content.Add(new StringContent(analysisRequest.Prompt), "prompt");
-            content.Add(new StringContent(analysisRequest.CustomerId), "customerId");
-
-            // Attempt to call the actual service first, then fallback to demo data
-            var response = await Http.PostAsync("http://localhost:5002/api/single-agent/analyze", content);
-            
-            if (response.IsSuccessStatusCode)
+            if (analysisResult == null)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                analysisResult = JsonSerializer.Deserialize<AnalysisResult>(json, new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
-                });
-            }
-            else
-            {
-                // Fallback to demo data for development
-                await Task.Delay(2000); // Simulate processing time
-                analysisResult = CreateDemoResult();
+                errorMessage = "Analysis service is currently unavailable. Please try again later.";
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error calling single agent service");
-            // Fallback to demo data
-            await Task.Delay(2000);
-            analysisResult = CreateDemoResult();
+            errorMessage = "An error occurred while analyzing your project. Please try again.";
         }
         finally
         {
             isSubmitting = false;
         }
-    }
-
-    private AnalysisResult CreateDemoResult()
-    {
-        return new AnalysisResult
-        {
-            Analysis = $"Analysis of your project: {analysisRequest.Prompt}. The image shows a room that requires surface preparation and painting work.",
-            ReusableTools = new[] { "measuring tape", "screwdriver", "hammer" },
-            RecommendedTools = new[]
-            {
-                new ToolRecommendation 
-                { 
-                    Name = "Paint Roller Set", 
-                    Sku = "PAINT-ROLLER-9IN", 
-                    IsAvailable = true, 
-                    Price = 12.99m, 
-                    Description = "9-inch paint roller with tray for smooth wall coverage" 
-                },
-                new ToolRecommendation 
-                { 
-                    Name = "Brush Set (3-piece)", 
-                    Sku = "BRUSH-SET-3PC", 
-                    IsAvailable = true, 
-                    Price = 24.99m, 
-                    Description = "Professional brush set for edges and detail work" 
-                },
-                new ToolRecommendation 
-                { 
-                    Name = "Drop Cloth", 
-                    Sku = "DROP-CLOTH-9X12", 
-                    IsAvailable = false, 
-                    Price = 8.99m, 
-                    Description = "Plastic drop cloth for floor protection" 
-                }
-            },
-            Reasoning = $"Based on your project '{analysisRequest.Prompt}' and the image analysis, you'll need painting tools to complement your existing basic tools. The recommended items will ensure professional results for your painting project."
-        };
-    }
-
-    private class AnalysisRequest
-    {
-        public string Prompt { get; set; } = string.Empty;
-        public string CustomerId { get; set; } = string.Empty;
-    }
-
-    private class AnalysisResult
-    {
-        public string Analysis { get; set; } = string.Empty;
-        public string[] ReusableTools { get; set; } = Array.Empty<string>();
-        public ToolRecommendation[] RecommendedTools { get; set; } = Array.Empty<ToolRecommendation>();
-        public string Reasoning { get; set; } = string.Empty;
-    }
-
-    private class ToolRecommendation
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Sku { get; set; } = string.Empty;
-        public bool IsAvailable { get; set; }
-        public decimal Price { get; set; }
-        public string Description { get; set; } = string.Empty;
     }
 }
