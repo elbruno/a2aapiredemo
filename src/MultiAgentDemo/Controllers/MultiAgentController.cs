@@ -91,7 +91,7 @@ public class MultiAgentController : ControllerBase
             
             var resultDescription = $"Found {result.TotalCount} products matching '{productQuery}': {string.Join(", ", result.ProductsFound.Select(p => p.Name))}";
 
-            return new SharedEntities.AgentStep
+            return new AgentStep
             {
                 Agent = "InventoryAgent",
                 Action = $"Search inventory for '{productQuery}'",
@@ -103,7 +103,7 @@ public class MultiAgentController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Inventory agent failed, using fallback");
-            return new SharedEntities.AgentStep
+            return new AgentStep
             {
                 Agent = "InventoryAgent",
                 Action = $"Search inventory for '{productQuery}'",
