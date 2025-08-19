@@ -16,16 +16,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddKernel();
 
 // Register service layer implementations for multi-agent external services
-builder.Services.AddHttpClient<InventoryAgentService>(
+builder.Services.AddHttpClient<IInventoryAgentService, InventoryAgentService>(
     client => client.BaseAddress = new("https+http://inventoryservice"));
 
-builder.Services.AddHttpClient<MatchmakingAgentService>(
+builder.Services.AddHttpClient<IMatchmakingAgentService, MatchmakingAgentService>(
     client => client.BaseAddress = new Uri("https+http://matchmakingservice"));
 
-builder.Services.AddHttpClient<LocationAgentService>(
+builder.Services.AddHttpClient<ILocationAgentService, LocationAgentService>(
     client => client.BaseAddress = new Uri("https+http://locationservice"));
 
-builder.Services.AddHttpClient<NavigationAgentService>(
+builder.Services.AddHttpClient<INavigationAgentService, NavigationAgentService>(
     client => client.BaseAddress = new Uri("https+http://navigationservice"));
 
 var app = builder.Build();

@@ -2,7 +2,7 @@ using SharedEntities;
 
 namespace MultiAgentDemo.Services;
 
-public class MatchmakingAgentService
+public class MatchmakingAgentService : IMatchmakingAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<MatchmakingAgentService> _logger;

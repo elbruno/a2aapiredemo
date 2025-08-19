@@ -33,6 +33,16 @@ var toolReasoningService = builder.AddProject<Projects.ToolReasoningService>("to
 var inventoryService = builder.AddProject<Projects.InventoryService>("inventoryservice")
     .WithExternalHttpEndpoints();
 
+// Add new multi-agent specific services
+var matchmakingService = builder.AddProject<Projects.MatchmakingService>("matchmakingservice")
+    .WithExternalHttpEndpoints();
+
+var locationService = builder.AddProject<Projects.LocationService>("locationservice")
+    .WithExternalHttpEndpoints();
+
+var navigationService = builder.AddProject<Projects.NavigationService>("navigationservice")
+    .WithExternalHttpEndpoints();
+
 // Add new agent demo services
 var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("singleagentdemo")
     .WithReference(analyzePhotoService)
@@ -50,6 +60,12 @@ var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multiagentdemo
     .WithReference(toolReasoningService)
     .WaitFor(inventoryService)
     .WithReference(inventoryService)
+    .WaitFor(matchmakingService)
+    .WithReference(matchmakingService)
+    .WaitFor(locationService)
+    .WithReference(locationService)
+    .WaitFor(navigationService)
+    .WithReference(navigationService)
     .WithExternalHttpEndpoints();
 
 var store = builder.AddProject<Projects.Store>("store")
@@ -87,6 +103,9 @@ if (builder.ExecutionContext.IsPublishMode)
     customerInformationService.WithReference(appInsights);
     toolReasoningService.WithReference(appInsights);
     inventoryService.WithReference(appInsights);
+    matchmakingService.WithReference(appInsights);
+    locationService.WithReference(appInsights);
+    navigationService.WithReference(appInsights);
 
     singleAgentDemo.WithReference(appInsights)
         .WithExternalHttpEndpoints();
@@ -113,6 +132,12 @@ customerInformationService.WithReference(openai)
 toolReasoningService.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 inventoryService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+matchmakingService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+locationService.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+navigationService.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 singleAgentDemo.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);

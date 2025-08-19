@@ -11,18 +11,18 @@ public class MultiAgentController : ControllerBase
 {
     private readonly ILogger<MultiAgentController> _logger;
     private readonly Kernel _kernel;
-    private readonly InventoryAgentService _inventoryAgentService;
-    private readonly MatchmakingAgentService _matchmakingAgentService;
-    private readonly LocationAgentService _locationAgentService;
-    private readonly NavigationAgentService _navigationAgentService;
+    private readonly IInventoryAgentService _inventoryAgentService;
+    private readonly IMatchmakingAgentService _matchmakingAgentService;
+    private readonly ILocationAgentService _locationAgentService;
+    private readonly INavigationAgentService _navigationAgentService;
 
     public MultiAgentController(
         ILogger<MultiAgentController> logger,
         Kernel kernel,
-        InventoryAgentService inventoryAgentService,
-        MatchmakingAgentService matchmakingAgentService,
-        LocationAgentService locationAgentService,
-        NavigationAgentService navigationAgentService)
+        IInventoryAgentService inventoryAgentService,
+        IMatchmakingAgentService matchmakingAgentService,
+        ILocationAgentService locationAgentService,
+        INavigationAgentService navigationAgentService)
     {
         _logger = logger;
         _kernel = kernel;
@@ -57,9 +57,6 @@ public class MultiAgentController : ControllerBase
             // Step 4: Navigation Agent - Generate in-store directions
             NavigationInstructions? navigation = null;
             if (request.Location != null)
-            {
-                navigation = await _navigationAgentService.GenerateDirectionsAsync(request.Location, locationStep.ToString() ?? "Product Section");
-            }
             {
                 var navigationStep = await RunNavigationAgentAsync(request.Location, request.ProductQuery);
                 steps.Add(navigationStep);
@@ -217,5 +214,89 @@ public class MultiAgentController : ControllerBase
                 Section = "C"
             }
         };
+    }
+
+    private async Task<AgentStep> RunNavigationAgentAsync(Location? location, string productQuery)
+    {
+        try
+        {
+            if (location == null)
+            {
+                return new SharedEntities.AgentStep
+                {
+                    Agent = "NavigationAgent",
+                    Action = "Generate navigation instructions",
+                    Result = "No starting location provided",
+                    Timestamp = DateTime.UtcNow
+                };
+            }
+
+            // Create destination location based on product type
+            var destination = new Location { Lat = 0, Lon = 0 };
+            var result = await _navigationAgentService.GenerateDirectionsAsync(location, destination);
+            
+            var resultDescription = $"Generated {result.Steps.Length} navigation steps to {productQuery} section";
+
+            return new SharedEntities.AgentStep
+            {
+                Agent = "NavigationAgent",
+                Action = "Generate navigation instructions",
+                Result = resultDescription,
+                Data = result,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Navigation agent failed, using fallback");
+            return new SharedEntities.AgentStep
+            {
+                Agent = "NavigationAgent",
+                Action = "Generate navigation instructions",
+                Result = "Provided general directions to product area",
+                Timestamp = DateTime.UtcNow
+            };
+        }
+    }
+
+    private async Task<NavigationInstructions> GenerateNavigationInstructionsAsync(Location? location, string productQuery)
+    {
+        try
+        {
+            if (location == null)
+            {
+                return new NavigationInstructions
+                {
+                    Steps = new[]
+                    {
+                        new NavigationStep
+                        {
+                            Direction = "Start",
+                            Description = "Enter the store and head to customer service for directions",
+                            Landmark = null
+                        }
+                    }
+                };
+            }
+
+            var destination = new Location { Lat = 0, Lon = 0 };
+            return await _navigationAgentService.GenerateDirectionsAsync(location, destination);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to generate navigation instructions");
+            return new NavigationInstructions
+            {
+                Steps = new[]
+                {
+                    new NavigationStep
+                    {
+                        Direction = "General",
+                        Description = $"Head to the area where {productQuery} is typically located",
+                        Landmark = null
+                    }
+                }
+            };
+        }
     }
 }

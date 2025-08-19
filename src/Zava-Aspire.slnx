@@ -22,7 +22,10 @@
     <Project Path="AnalyzePhotoService/AnalyzePhotoService.csproj" />
     <Project Path="CustomerInformationService/CustomerInformationService.csproj" />
     <Project Path="InventoryService/InventoryService.csproj" />
+    <Project Path="LocationService/LocationService.csproj" />
+    <Project Path="MatchmakingService/MatchmakingService.csproj" />
     <Project Path="MultiAgentDemo/MultiAgentDemo.csproj" />
+    <Project Path="NavigationService/NavigationService.csproj" />
     <Project Path="SingleAgentDemo/SingleAgentDemo.csproj" />
     <Project Path="ToolReasoningService/ToolReasoningService.csproj" />
   </Folder>

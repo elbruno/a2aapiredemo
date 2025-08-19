@@ -2,7 +2,7 @@ using SharedEntities;
 
 namespace MultiAgentDemo.Services;
 
-public class InventoryAgentService
+public class InventoryAgentService : IInventoryAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<InventoryAgentService> _logger;

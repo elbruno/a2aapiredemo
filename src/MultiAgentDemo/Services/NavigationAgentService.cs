@@ -2,7 +2,7 @@ using SharedEntities;
 
 namespace MultiAgentDemo.Services;
 
-public class NavigationAgentService
+public class NavigationAgentService : INavigationAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<NavigationAgentService> _logger;
@@ -60,7 +60,7 @@ public class NavigationAgentService
                 {
                     Direction = "Arrive",
                     Description = $"You will find your destination at {toLocation}",
-                    Landmark = Location
+                    Landmark = toLocation
                 }
             }
         };
