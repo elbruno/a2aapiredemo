@@ -1,0 +1,339 @@
+@page "/scenario2-multi-agent"
+@using Store.Models
+@using Store.Services
+@using SharedEntities
+@inject MultiAgentService MultiAgentService
+@inject ILogger<Scenario2MultiAgent> Logger
+
+<PageTitle>Scenario 2 - Multi-Agent Demo</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <span class="bi bi-people me-2"></span>
+                Scenario 2: Multi-Agent Orchestration
+            </h1>
+            <p class="lead text-muted">
+                Search for products and get coordinated assistance from multiple AI agents for inventory, alternatives, location, and navigation.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <span class="bi bi-search me-2"></span>
+                        Product Search
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@multiAgentRequest" OnValidSubmit="@SubmitRequest">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="userId" class="form-label">User ID</label>
+                            <InputText @bind-Value="multiAgentRequest.UserId" class="form-control" id="userId" 
+                                placeholder="e.g., 123" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="productQuery" class="form-label">Product Search</label>
+                            <InputText @bind-Value="multiAgentRequest.ProductQuery" class="form-control" id="productQuery" 
+                                placeholder="e.g., paint sprayer, drill, ladder" />
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" @bind="includeLocation" id="includeLocation">
+                                <label class="form-check-label" for="includeLocation">
+                                    Include my location for navigation
+                                </label>
+                            </div>
+                        </div>
+
+                        @if (includeLocation)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Current Location</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <InputNumber @bind-Value="latitude" class="form-control" placeholder="Latitude" step="0.0001" />
+                                    </div>
+                                    <div class="col-6">
+                                        <InputNumber @bind-Value="longitude" class="form-control" placeholder="Longitude" step="0.0001" />
+                                    </div>
+                                </div>
+                                <div class="form-text">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="UseDefaultLocation">
+                                        Use Sample Location
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        <button type="submit" class="btn btn-primary w-100" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Processing...</span>
+                            }
+                            else
+                            {
+                                <span class="bi bi-robot me-2"></span>
+                                <span>Start Multi-Agent Search</span>
+                            }
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            @if (orchestrationResult != null)
+            {
+                <div class="row g-3">
+                    <!-- Agent Steps -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <span class="bi bi-diagram-3 me-2"></span>
+                                    Agent Orchestration Steps
+                                    <small class="text-muted ms-2">ID: @orchestrationResult.OrchestrationId</small>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    @foreach (var step in orchestrationResult.Steps)
+                                    {
+                                        <div class="timeline-item mb-3">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0">
+                                                    <span class="badge @GetAgentBadgeClass(step.Agent) rounded-pill">
+                                                        @step.Agent
+                                                    </span>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-1">@step.Action</h6>
+                                                    <p class="mb-1 text-muted">@step.Result</p>
+                                                    <small class="text-muted">@step.Timestamp.ToString("HH:mm:ss")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Alternatives -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <span class="bi bi-box-seam me-2"></span>
+                                    Product Alternatives
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    @foreach (var product in orchestrationResult.Alternatives)
+                                    {
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <h6 class="card-title mb-0">@product.Name</h6>
+                                                        <span class="badge @(product.InStock ? "bg-success" : "bg-danger")">
+                                                            @(product.InStock ? "In Stock" : "Out of Stock")
+                                                        </span>
+                                                    </div>
+                                                    <p class="card-text">
+                                                        <small class="text-muted">SKU: @product.Sku</small><br>
+                                                        <strong class="text-primary">$@product.Price.ToString("F2")</strong>
+                                                    </p>
+                                                    <div class="mt-auto">
+                                                        <small class="text-muted">
+                                                            <span class="bi bi-geo-alt me-1"></span>
+                                                            @product.Location, Section @product.Section
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Instructions -->
+                    @if (orchestrationResult.NavigationInstructions != null)
+                    {
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span class="bi bi-signpost me-2"></span>
+                                        In-Store Navigation
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>From:</strong> @orchestrationResult.NavigationInstructions.StartLocation<br>
+                                        <strong>Estimated Time:</strong> @orchestrationResult.NavigationInstructions.EstimatedTime
+                                    </div>
+                                    
+                                    <div class="navigation-steps">
+                                        @for (int i = 0; i < orchestrationResult.NavigationInstructions.Steps.Length; i++)
+                                        {
+                                            var step = orchestrationResult.NavigationInstructions.Steps[i];
+                                            <div class="d-flex mb-2">
+                                                <div class="flex-shrink-0">
+                                                    <span class="badge bg-primary rounded-circle">@(i + 1)</span>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <strong>@step.Direction</strong> - @step.Description
+                                                    @{
+                                                        var landmarkText = step.Landmark?.ToString();
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(landmarkText))
+                                                    {
+                                                        <br><small class="text-muted">Landmark: @landmarkText</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading">
+                        <span class="bi bi-exclamation-triangle me-2"></span>
+                        Error
+                    </h6>
+                    @errorMessage
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center text-muted">
+                        <span class="bi bi-robot display-1 d-block mb-3"></span>
+                        <p>Enter your search criteria to see multiple AI agents working together to find products, alternatives, and navigation.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-item {
+        position: relative;
+    }
+    
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 50px;
+        width: 2px;
+        height: calc(100% - 20px);
+        background-color: #dee2e6;
+    }
+    
+    .navigation-steps .badge {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+@code {
+    private MultiAgentRequest multiAgentRequest = new() { UserId = "123" };
+    private MultiAgentResponse? orchestrationResult;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private bool includeLocation = false;
+    private double latitude = 0.0;
+    private double longitude = 0.0;
+
+    private void UseDefaultLocation()
+    {
+        latitude = 47.6062;
+        longitude = -122.3321; // Seattle coordinates as example
+    }
+
+    private string GetAgentBadgeClass(string agentName)
+    {
+        return agentName switch
+        {
+            "InventoryAgent" => "bg-primary",
+            "MatchmakingAgent" => "bg-success",
+            "LocationAgent" => "bg-info",
+            "NavigationAgent" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+
+    private async Task SubmitRequest()
+    {
+        if (string.IsNullOrWhiteSpace(multiAgentRequest.ProductQuery))
+        {
+            errorMessage = "Please provide a product search query.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(multiAgentRequest.UserId))
+        {
+            errorMessage = "Please provide a user ID.";
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        orchestrationResult = null;
+
+        try
+        {
+            // Set location if included
+            if (includeLocation && (latitude != 0.0 || longitude != 0.0))
+            {
+                multiAgentRequest.Location = new Location { Lat = latitude, Lon = longitude };
+            }
+            else
+            {
+                multiAgentRequest.Location = null;
+            }
+
+            orchestrationResult = await MultiAgentService.AssistAsync(multiAgentRequest);
+            
+            if (orchestrationResult == null)
+            {
+                errorMessage = "Multi-agent service is currently unavailable. Please try again later.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error calling multi-agent service");
+            errorMessage = "An error occurred while processing your request. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

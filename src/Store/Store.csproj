@@ -11,8 +11,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataEntities\DataEntities.csproj" />
-    <ProjectReference Include="..\eShopServiceDefaults\eShopServiceDefaults.csproj" />
+    <ProjectReference Include="..\ZavaServiceDefaults\ZavaServiceDefaults.csproj" />
     <ProjectReference Include="..\SearchEntities\SearchEntities.csproj" />
     <ProjectReference Include="..\CartEntities\CartEntities.csproj" />
+    <ProjectReference Include="..\SharedEntities\SharedEntities.csproj" />
   </ItemGroup>
 </Project>

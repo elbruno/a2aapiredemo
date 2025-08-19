@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Store.Services;
 
-public class CheckoutService : ICheckoutService
+public class CheckoutService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
     private readonly ILogger<CheckoutService> _logger;
