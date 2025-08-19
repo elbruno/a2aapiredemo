@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Store.Services;
 
-public class CartService : ICartService
+public class CartService
 {
     private readonly IProductService _productService;
     private readonly ProtectedSessionStorage _sessionStorage;

@@ -21,27 +21,27 @@ var products = builder.AddProject<Projects.Products>("products")
 
 
 // Add new microservices for agent functionality
-var analyzePhotoService = builder.AddProject<Projects.AnalyzePhotoService>("analyze-photo-service")
+var analyzePhotoService = builder.AddProject<Projects.AnalyzePhotoService>("analyzephotoservice")
     .WithExternalHttpEndpoints();
 
-var customerInformationService = builder.AddProject<Projects.CustomerInformationService>("customer-information-service")
+var customerInformationService = builder.AddProject<Projects.CustomerInformationService>("customerinformationservice")
     .WithExternalHttpEndpoints();
 
-var toolReasoningService = builder.AddProject<Projects.ToolReasoningService>("tool-reasoning-service")
+var toolReasoningService = builder.AddProject<Projects.ToolReasoningService>("toolreasoningservice")
     .WithExternalHttpEndpoints();
 
-var inventoryService = builder.AddProject<Projects.InventoryService>("inventory-service")
+var inventoryService = builder.AddProject<Projects.InventoryService>("inventoryservice")
     .WithExternalHttpEndpoints();
 
 // Add new agent demo services
-var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("single-agent-demo")
+var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("singleagentdemo")
     .WithReference(analyzePhotoService)
     .WithReference(customerInformationService)
     .WithReference(toolReasoningService)
     .WithReference(inventoryService)
     .WithExternalHttpEndpoints();
 
-var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multi-agent-demo")
+var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multiagentdemo")
     .WithExternalHttpEndpoints();
 
 var store = builder.AddProject<Projects.Store>("store")

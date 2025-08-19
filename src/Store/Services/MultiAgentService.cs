@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Store.Services;
 
-public class MultiAgentService : IMultiAgentService
+public class MultiAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<MultiAgentService> _logger;
