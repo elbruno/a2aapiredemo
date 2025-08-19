@@ -44,7 +44,7 @@ public class NavigationController : ControllerBase
         {
             Direction = "Start",
             Description = $"Begin your journey from {from}",
-            Landmark = from
+            Landmark = new NavigationLandmark { Location = from }
         });
 
         // Add intermediate steps based on locations
@@ -62,7 +62,7 @@ public class NavigationController : ControllerBase
             {
                 Direction = "Turn Right",
                 Description = "Turn right at the customer service desk",
-                Landmark = null
+                Landmark = new NavigationLandmark { Description = "Customer Service Desk" }
             });
 
             steps.Add(new NavigationStep
@@ -78,7 +78,7 @@ public class NavigationController : ControllerBase
         {
             Direction = "Arrive",
             Description = $"You have arrived at {to}",
-            Landmark = to
+            Landmark = new NavigationLandmark { Location = to }
         });
 
         return steps.ToArray();

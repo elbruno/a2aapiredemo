@@ -18,20 +18,20 @@ public class MultiAgentService
     {
         try
         {
-            _logger.LogInformation("Calling multi-agent service for user {UserId} with query {ProductQuery}", 
+            _logger.LogInformation("Calling multi-agent service for user {UserId} with query {ProductQuery}",
                 request.UserId, request.ProductQuery);
-            
+
             var response = await _httpClient.PostAsJsonAsync("/api/multi-agent/assist", request);
             var responseText = await response.Content.ReadAsStringAsync();
 
-            _logger.LogInformation("Multi-agent service response - Status: {StatusCode}, Content: {Content}", 
+            _logger.LogInformation("Multi-agent service response - Status: {StatusCode}, Content: {Content}",
                 response.StatusCode, responseText);
-            
+
             if (response.IsSuccessStatusCode)
             {
-                var result = JsonSerializer.Deserialize<MultiAgentResponse>(responseText, new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
+                var result = JsonSerializer.Deserialize<MultiAgentResponse>(responseText, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
                 });
                 return result;
             }
@@ -130,25 +130,25 @@ public class MultiAgentService
                     {
                         Direction = "Head straight",
                         Description = "Walk towards the main hardware section",
-                        Landmark = "Customer Service Desk on your right"
+                        Landmark = new NavigationLandmark { Description = "Customer Service Desk on your right" }
                     },
                     new NavigationStep
                     {
                         Direction = "Turn left",
                         Description = "Enter Aisle 5 for premium options",
-                        Landmark = "Power Tools display"
+                        Landmark = new NavigationLandmark { Description = "Power Tools display" }
                     },
                     new NavigationStep
                     {
                         Direction = "Continue to Aisle 7",
                         Description = "Find standard options in section B",
-                        Landmark = "Paint mixing station"
+                        Landmark = new NavigationLandmark { Description = "Paint mixing station" }
                     },
                     new NavigationStep
                     {
                         Direction = "End at Aisle 12",
                         Description = "Check budget alternatives (may be out of stock)",
-                        Landmark = "Garden center entrance"
+                        Landmark = new NavigationLandmark { Description = "Garden center entrance" }
                     }
                 }
             } : null

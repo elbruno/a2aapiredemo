@@ -19,15 +19,15 @@ public class NavigationAgentService : INavigationAgentService
         {
             var request = new { From = fromLocation, To = toLocation };
             var response = await _httpClient.PostAsJsonAsync("/api/navigation/directions", request);
-            
+
             _logger.LogInformation($"NavigationAgentService HTTP status code: {response.StatusCode}");
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<NavigationInstructions>();
                 return result ?? CreateFallbackNavigationInstructions(fromLocation, toLocation);
             }
-            
+
             _logger.LogWarning("NavigationAgentService returned non-success status: {StatusCode}", response.StatusCode);
         }
         catch (Exception ex)
@@ -48,7 +48,7 @@ public class NavigationAgentService : INavigationAgentService
                 {
                     Direction = "Start",
                     Description = $"Head towards {toLocation} from {fromLocation}",
-                    Landmark = null
+                    Landmark = new NavigationLandmark { Location = fromLocation }
                 },
                 new NavigationStep
                 {
@@ -60,7 +60,7 @@ public class NavigationAgentService : INavigationAgentService
                 {
                     Direction = "Arrive",
                     Description = $"You will find your destination at {toLocation}",
-                    Landmark = toLocation
+                    Landmark = new NavigationLandmark { Location = toLocation }
                 }
             }
         };

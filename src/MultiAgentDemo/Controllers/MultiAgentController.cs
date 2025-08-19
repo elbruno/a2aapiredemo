@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
-using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-// using Microsoft.SemanticKernel; // kernel removed - not used by controller
+using Microsoft.SemanticKernel;
 using MultiAgentDemo.Services;
 using SharedEntities;
 
@@ -17,6 +15,7 @@ namespace MultiAgentDemo.Controllers
     public class MultiAgentController : ControllerBase
     {
         private readonly ILogger<MultiAgentController> _logger;
+        private readonly Kernel _kernel;
         private readonly IInventoryAgentService _inventoryAgentService;
         private readonly IMatchmakingAgentService _matchmakingAgentService;
         private readonly ILocationAgentService _locationAgentService;
@@ -24,17 +23,22 @@ namespace MultiAgentDemo.Controllers
 
         public MultiAgentController(
             ILogger<MultiAgentController> logger,
+                Kernel kernel,
             IInventoryAgentService inventoryAgentService,
             IMatchmakingAgentService matchmakingAgentService,
             ILocationAgentService locationAgentService,
             INavigationAgentService navigationAgentService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _kernel = kernel ?? throw new ArgumentNullException(nameof(kernel));
             _inventoryAgentService = inventoryAgentService ?? throw new ArgumentNullException(nameof(inventoryAgentService));
             _matchmakingAgentService = matchmakingAgentService ?? throw new ArgumentNullException(nameof(matchmakingAgentService));
             _locationAgentService = locationAgentService ?? throw new ArgumentNullException(nameof(locationAgentService));
             _navigationAgentService = navigationAgentService ?? throw new ArgumentNullException(nameof(navigationAgentService));
         }
+
+        // Strongly-typed kernel instance injected via DI.
+        // Use `_kernel` directly for any operations that require Semantic Kernel functionality.
 
         [HttpPost("assist")]
         public async Task<ActionResult<MultiAgentResponse>> AssistAsync([FromBody] MultiAgentRequest? request)
@@ -149,7 +153,7 @@ namespace MultiAgentDemo.Controllers
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "GenerateNavigationInstructions failed");
-                return new NavigationInstructions { Steps = new[] { new NavigationStep { Direction = "General", Description = $"Head to the area where {productQuery} is typically located", Landmark = string.Empty } }, StartLocation = string.Empty, EstimatedTime = string.Empty };
+                return new NavigationInstructions { Steps = new[] { new NavigationStep { Direction = "General", Description = $"Head to the area where {productQuery} is typically located", Landmark = new NavigationLandmark { Description = "General area" } } }, StartLocation = string.Empty, EstimatedTime = string.Empty };
             }
         }
 
