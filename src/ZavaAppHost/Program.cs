@@ -24,8 +24,25 @@ var store = builder.AddProject<Projects.Store>("store")
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
+// Add new microservices for agent functionality
+var analyzePhotoService = builder.AddProject<Projects.AnalyzePhotoService>("analyze-photo-service")
+    .WithExternalHttpEndpoints();
+
+var customerInformationService = builder.AddProject<Projects.CustomerInformationService>("customer-information-service")
+    .WithExternalHttpEndpoints();
+
+var toolReasoningService = builder.AddProject<Projects.ToolReasoningService>("tool-reasoning-service")
+    .WithExternalHttpEndpoints();
+
+var inventoryService = builder.AddProject<Projects.InventoryService>("inventory-service")
+    .WithExternalHttpEndpoints();
+
 // Add new agent demo services
 var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("single-agent-demo")
+    .WithReference(analyzePhotoService)
+    .WithReference(customerInformationService)
+    .WithReference(toolReasoningService)
+    .WithReference(inventoryService)
     .WithExternalHttpEndpoints();
 
 var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multi-agent-demo")
@@ -51,6 +68,12 @@ if (builder.ExecutionContext.IsPublishMode)
     store.WithReference(appInsights)
         .WithExternalHttpEndpoints();
 
+    // Add Application Insights to microservices
+    analyzePhotoService.WithReference(appInsights);
+    customerInformationService.WithReference(appInsights);
+    toolReasoningService.WithReference(appInsights);
+    inventoryService.WithReference(appInsights);
+
     singleAgentDemo.WithReference(appInsights)
         .WithExternalHttpEndpoints();
 
@@ -68,11 +91,14 @@ products.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
-// Configure OpenAI for agent demo services
+// Configure OpenAI for agent demo services and reasoning service
 singleAgentDemo.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 
 multiAgentDemo.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
+
+toolReasoningService.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName);
 
 builder.Build().Run();

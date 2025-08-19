@@ -1,21 +1,11 @@
-using Microsoft.SemanticKernel;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddControllers();
-
-// Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Add Semantic Kernel services
-builder.Services.AddKernel();
-
-// Add HTTP clients for external services
-builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -29,9 +19,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 using SingleAgentDemo.Models;
 
 namespace SingleAgentDemo.Controllers;
@@ -32,14 +34,17 @@ public class SingleAgentController : ControllerBase
         {
             _logger.LogInformation("Starting analysis for customer {CustomerId}", customerId);
 
+            // Create a single agent that orchestrates the entire process
+            var agent = CreateZavaAgentAssistant();
+            
             // Step 1: Analyze the image
             var photoAnalysis = await AnalyzePhotoAsync(image, prompt);
             
             // Step 2: Get customer information
             var customerInfo = await GetCustomerInformationAsync(customerId);
             
-            // Step 3: Use Semantic Kernel to reason about tools needed
-            var reasoning = await GenerateToolReasoningAsync(photoAnalysis, customerInfo, prompt);
+            // Step 3: Use Single Semantic Kernel Agent to reason about tools needed
+            var reasoning = await GenerateToolReasoningWithAgentAsync(agent, photoAnalysis, customerInfo, prompt);
             
             // Step 4: Match tools and get inventory
             var toolMatch = await MatchToolsAsync(customerId, photoAnalysis.DetectedMaterials, prompt);
@@ -64,27 +69,66 @@ public class SingleAgentController : ControllerBase
         }
     }
 
+    private ChatCompletionAgent CreateZavaAgentAssistant()
+    {
+        return new ChatCompletionAgent()
+        {
+            Name = "ZavaAssistant",
+            Instructions = @"
+You are Zava, an expert DIY and home improvement assistant. Your role is to:
+
+1. Analyze customer projects and provide detailed tool recommendations
+2. Consider the customer's existing tools and skill level
+3. Provide clear, practical reasoning for each recommendation
+4. Prioritize safety in all recommendations
+5. Be encouraging while being realistic about project complexity
+6. Offer specific tips based on the customer's skill level
+
+Always format your responses in a clear, structured way with sections for:
+- Project Analysis
+- Customer Assessment
+- Tool Recommendations
+- Safety Considerations
+- Success Tips
+
+Be concise but thorough, and always prioritize the customer's safety and success.",
+            Kernel = _kernel
+        };
+    }
+
     private async Task<PhotoAnalysisResult> AnalyzePhotoAsync(IFormFile image, string prompt)
     {
-        var client = _httpClientFactory.CreateClient("PhotoAnalysis");
-        
-        using var content = new MultipartFormDataContent();
-        using var imageStream = image.OpenReadStream();
-        using var streamContent = new StreamContent(imageStream);
-        streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(image.ContentType);
-        
-        content.Add(streamContent, "image", image.FileName);
-        content.Add(new StringContent(prompt), "prompt");
-
-        var response = await client.PostAsync("/api/mock/photo-analysis", content);
-        
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<PhotoAnalysisResult>();
-            return result ?? new PhotoAnalysisResult { Description = "Image analysis completed", DetectedMaterials = new[] { "paint", "wall" } };
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri("http://analyze-photo-service");
+            
+            using var content = new MultipartFormDataContent();
+            using var imageStream = image.OpenReadStream();
+            using var streamContent = new StreamContent(imageStream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(image.ContentType);
+            
+            content.Add(streamContent, "image", image.FileName);
+            content.Add(new StringContent(prompt), "prompt");
+
+            var response = await client.PostAsync("/api/PhotoAnalysis/analyze", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PhotoAnalysisResult>();
+                return result ?? CreateFallbackPhotoAnalysis(prompt);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to call AnalyzePhotoService, using fallback");
         }
 
-        // Fallback for demo purposes
+        return CreateFallbackPhotoAnalysis(prompt);
+    }
+
+    private PhotoAnalysisResult CreateFallbackPhotoAnalysis(string prompt)
+    {
         return new PhotoAnalysisResult 
         { 
             Description = $"Room analysis for prompt: {prompt}. Detected painted walls with preparation needed.",
@@ -94,14 +138,22 @@ public class SingleAgentController : ControllerBase
 
     private async Task<CustomerInformation> GetCustomerInformationAsync(string customerId)
     {
-        var client = _httpClientFactory.CreateClient("CustomerInformation");
-        
-        var response = await client.GetAsync($"/api/mock/customer/{customerId}");
-        
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<CustomerInformation>();
-            return result ?? CreateFallbackCustomer(customerId);
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri("http://customer-information-service");
+            
+            var response = await client.GetAsync($"/api/Customer/{customerId}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<CustomerInformation>();
+                return result ?? CreateFallbackCustomer(customerId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to call CustomerInformationService, using fallback");
         }
 
         return CreateFallbackCustomer(customerId);
@@ -118,48 +170,96 @@ public class SingleAgentController : ControllerBase
         };
     }
 
-    private async Task<string> GenerateToolReasoningAsync(PhotoAnalysisResult photoAnalysis, CustomerInformation customer, string prompt)
+    private async Task<string> GenerateToolReasoningWithAgentAsync(ChatCompletionAgent agent, PhotoAnalysisResult photoAnalysis, CustomerInformation customer, string prompt)
     {
         try
         {
-            var reasoningPrompt = $@"
-Based on the following information, provide reasoning for tool recommendations:
+            var reasoningRequest = new ReasoningRequest
+            {
+                PhotoAnalysis = photoAnalysis,
+                Customer = customer,
+                Prompt = prompt
+            };
 
-Task: {prompt}
+            // First try the dedicated reasoning service
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri("http://tool-reasoning-service");
+                
+                var response = await client.PostAsJsonAsync("/api/Reasoning/generate", reasoningRequest);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var reasoning = await response.Content.ReadAsStringAsync();
+                    return reasoning;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to call ToolReasoningService, using agent fallback");
+            }
+
+            // Fallback to using the kernel directly
+            var agentPrompt = $@"
+You are Zava, an expert DIY and home improvement assistant. Analyze this DIY project and provide tool recommendations:
+
+Project: {prompt}
 Image Analysis: {photoAnalysis.Description}
 Detected Materials: {string.Join(", ", photoAnalysis.DetectedMaterials)}
 Customer Tools: {string.Join(", ", customer.OwnedTools)}
 Customer Skills: {string.Join(", ", customer.Skills)}
 
-Provide clear reasoning for what tools are needed and why.";
+Provide detailed reasoning for tool recommendations considering their existing tools and skill level. Be encouraging but prioritize safety.";
 
-            var response = await _kernel.InvokePromptAsync(reasoningPrompt);
-            return response.GetValue<string>() ?? "Tool analysis completed based on image and customer profile.";
+            try
+            {
+                var result = await _kernel.InvokePromptAsync(agentPrompt);
+                return result.GetValue<string>() ?? GenerateFallbackReasoning(photoAnalysis, customer, prompt);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Kernel invocation failed, using fallback");
+                return GenerateFallbackReasoning(photoAnalysis, customer, prompt);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to generate AI reasoning, using fallback");
-            return $"Based on the task '{prompt}' and the detected materials ({string.Join(", ", photoAnalysis.DetectedMaterials)}), specific tools will be recommended to complement your existing tools.";
+            return GenerateFallbackReasoning(photoAnalysis, customer, prompt);
         }
+    }
+
+    private string GenerateFallbackReasoning(PhotoAnalysisResult photoAnalysis, CustomerInformation customer, string prompt)
+    {
+        return $"Based on the task '{prompt}' and the detected materials ({string.Join(", ", photoAnalysis.DetectedMaterials)}), specific tools will be recommended to complement your existing tools: {string.Join(", ", customer.OwnedTools)}.";
     }
 
     private async Task<ToolMatchResult> MatchToolsAsync(string customerId, string[] detectedMaterials, string prompt)
     {
-        var client = _httpClientFactory.CreateClient("CustomerWork");
-        
-        var matchRequest = new
+        try
         {
-            customerId,
-            detectedMaterials,
-            prompt
-        };
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri("http://customer-information-service");
+            
+            var matchRequest = new ToolMatchRequest
+            {
+                CustomerId = customerId,
+                DetectedMaterials = detectedMaterials,
+                Prompt = prompt
+            };
 
-        var response = await client.PostAsJsonAsync("/api/mock/customer-work/match", matchRequest);
-        
-        if (response.IsSuccessStatusCode)
+            var response = await client.PostAsJsonAsync("/api/Customer/match-tools", matchRequest);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ToolMatchResult>();
+                return result ?? CreateFallbackToolMatch();
+            }
+        }
+        catch (Exception ex)
         {
-            var result = await response.Content.ReadFromJsonAsync<ToolMatchResult>();
-            return result ?? CreateFallbackToolMatch();
+            _logger.LogWarning(ex, "Failed to call CustomerInformationService for tool matching, using fallback");
         }
 
         return CreateFallbackToolMatch();
@@ -181,15 +281,25 @@ Provide clear reasoning for what tools are needed and why.";
 
     private async Task<ToolRecommendation[]> EnrichWithInventoryAsync(ToolRecommendation[] tools)
     {
-        var client = _httpClientFactory.CreateClient("ZavaInventory");
-        
-        var skus = tools.Select(t => t.Sku).ToArray();
-        var response = await client.PostAsJsonAsync("/api/mock/inventory/search", new { skus });
-        
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var inventoryResults = await response.Content.ReadFromJsonAsync<ToolRecommendation[]>();
-            return inventoryResults ?? tools;
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri("http://inventory-service");
+            
+            var skus = tools.Select(t => t.Sku).ToArray();
+            var searchRequest = new InventorySearchRequest { Skus = skus };
+            
+            var response = await client.PostAsJsonAsync("/api/Inventory/search", searchRequest);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var inventoryResults = await response.Content.ReadFromJsonAsync<ToolRecommendation[]>();
+                return inventoryResults ?? tools;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to call InventoryService, using fallback");
         }
 
         return tools; // Return original tools if inventory service fails

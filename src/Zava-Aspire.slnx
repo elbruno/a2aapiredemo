@@ -1,9 +1,9 @@
 <Solution>
   <Folder Name="/1 Aspire/">
-    <Project Path="eShopAppHost/eShopAppHost.csproj" />
-    <Project Path="eShopServiceDefaults/eShopServiceDefaults.csproj" />
+    <Project Path="ZavaAppHost/ZavaAppHost.csproj" />
+    <Project Path="ZavaServiceDefaults/ZavaServiceDefaults.csproj" />
   </Folder>
-  <Folder Name="/2 eShoplite/">
+  <Folder Name="/2 Zava Store/">
     <Project Path="Products/Products.csproj" />
     <Project Path="Store/Store.csproj" />
   </Folder>
@@ -16,6 +16,12 @@
   <Folder Name="/4 Tests/">
     <Project Path="Products.Tests/Products.Tests.csproj" />
     <Project Path="Store.Tests/Store.Tests.csproj" />
+  </Folder>
+  <Folder Name="/5 Agent Services/">
+    <Project Path="AnalyzePhotoService/AnalyzePhotoService.csproj" />
+    <Project Path="CustomerInformationService/CustomerInformationService.csproj" />
+    <Project Path="ToolReasoningService/ToolReasoningService.csproj" />
+    <Project Path="InventoryService/InventoryService.csproj" />
   </Folder>
   <Project Path="MultiAgentDemo/MultiAgentDemo.csproj" />
   <Project Path="SingleAgentDemo/SingleAgentDemo.csproj" />

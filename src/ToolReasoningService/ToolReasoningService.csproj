@@ -7,14 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.61.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.61.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ZavaServiceDefaults\ZavaServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\Models\AnalysisModels.cs" Link="Models\AnalysisModels.cs" />
   </ItemGroup>
 
 </Project>
