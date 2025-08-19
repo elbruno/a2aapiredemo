@@ -1,9 +1,9 @@
-using Store.Models;
+using SharedEntities;
 using System.Text.Json;
 
 namespace Store.Services;
 
-public class MultiAgentService
+public class MultiAgentService : IMultiAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<MultiAgentService> _logger;

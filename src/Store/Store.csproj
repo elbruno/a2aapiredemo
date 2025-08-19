@@ -10,10 +10,10 @@
     <PackageReference Include="System.Text.Json" Version="9.0.8" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AgentModels\AgentModels.csproj" />
     <ProjectReference Include="..\DataEntities\DataEntities.csproj" />
     <ProjectReference Include="..\ZavaServiceDefaults\ZavaServiceDefaults.csproj" />
     <ProjectReference Include="..\SearchEntities\SearchEntities.csproj" />
     <ProjectReference Include="..\CartEntities\CartEntities.csproj" />
+    <ProjectReference Include="..\SharedEntities\SharedEntities.csproj" />
   </ItemGroup>
 </Project>

@@ -14,6 +14,7 @@
     <Project Path="DataEntities/DataEntities.csproj" />
     <Project Path="SearchEntities/SearchEntities.csproj" />
     <Project Path="VectorEntities/VectorEntities.csproj" />
+    <Project Path="SharedEntities/SharedEntities.csproj" />
   </Folder>
   <Folder Name="/4 Tests/">
     <Project Path="Products.Tests/Products.Tests.csproj" />

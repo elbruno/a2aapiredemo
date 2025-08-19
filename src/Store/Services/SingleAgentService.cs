@@ -1,9 +1,9 @@
-using Store.Models;
+using SharedEntities;
 using System.Text.Json;
 
 namespace Store.Services;
 
-public class SingleAgentService
+public class SingleAgentService : ISingleAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<SingleAgentService> _logger;
@@ -20,9 +20,16 @@ public class SingleAgentService
         {
             using var content = new MultipartFormDataContent();
             
-            var fileContent = new StreamContent(request.Image.OpenReadStream(5 * 1024 * 1024)); // 5MB limit
-            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(request.Image.ContentType);
-            content.Add(fileContent, "image", request.Image.Name);
+            // Handle the image data from the shared entity
+            if (request.ImageData != null)
+            {
+                var fileContent = new ByteArrayContent(request.ImageData);
+                if (!string.IsNullOrEmpty(request.ImageContentType))
+                {
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(request.ImageContentType);
+                }
+                content.Add(fileContent, "image", request.ImageFileName ?? "image");
+            }
             
             content.Add(new StringContent(request.Prompt), "prompt");
             content.Add(new StringContent(request.CustomerId), "customerId");

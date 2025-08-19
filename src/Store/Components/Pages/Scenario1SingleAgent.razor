@@ -1,8 +1,8 @@
 @page "/scenario1-single-agent"
 @using Store.Models
 @using Store.Services
-sing Store.Services
-@inject SingleAgentService SingleAgentService
+@using SharedEntities
+@inject ISingleAgentService SingleAgentService
 @inject ILogger<Scenario1SingleAgent> Logger
 
 <PageTitle>Scenario 1 - Single Agent Demo</PageTitle>
@@ -161,7 +161,7 @@ sing Store.Services
 </div>
 
 @code {
-    private SingleAgentAnalysisRequest analysisRequest = new();
+    private SingleAgentAnalysisRequestModel analysisRequest = new();
     private SingleAgentAnalysisResponse? analysisResult;
     private IBrowserFile? selectedFile;
     private bool isSubmitting = false;
@@ -200,7 +200,8 @@ sing Store.Services
         try
         {
             analysisRequest.Image = selectedFile;
-            analysisResult = await SingleAgentService.AnalyzeAsync(analysisRequest);
+            var sharedRequest = await analysisRequest.ToSharedEntityAsync();
+            analysisResult = await SingleAgentService.AnalyzeAsync(sharedRequest);
             
             if (analysisResult == null)
             {
