@@ -1,4 +1,5 @@
 using Microsoft.SemanticKernel;
+using MultiAgentDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,26 +15,18 @@ builder.Services.AddSwaggerGen();
 // Add Semantic Kernel services
 builder.Services.AddKernel();
 
-// Add HTTP clients for external services (multi-agent system)
-builder.Services.AddHttpClient("InventoryAgent", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010");
-});
+// Register service layer implementations for multi-agent external services
+builder.Services.AddHttpClient<IInventoryAgentService, InventoryAgentService>(
+    client => client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010"));
 
-builder.Services.AddHttpClient("MatchmakingAgent", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010");
-});
+builder.Services.AddHttpClient<IMatchmakingAgentService, MatchmakingAgentService>(
+    client => client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010"));
 
-builder.Services.AddHttpClient("LocationAgent", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010");
-});
+builder.Services.AddHttpClient<ILocationAgentService, LocationAgentService>(
+    client => client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010"));
 
-builder.Services.AddHttpClient("NavigationAgent", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010");
-});
+builder.Services.AddHttpClient<INavigationAgentService, NavigationAgentService>(
+    client => client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("MockServices") ?? "http://localhost:5010"));
 
 var app = builder.Build();
 

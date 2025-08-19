@@ -3,6 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SingleAgentDemo.Models;
+using SingleAgentDemo.Services;
 using SharedEntities;
 
 namespace SingleAgentDemo.Controllers;
@@ -13,16 +14,25 @@ public class SingleAgentController : ControllerBase
 {
     private readonly ILogger<SingleAgentController> _logger;
     private readonly Kernel _kernel;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IAnalyzePhotoService _analyzePhotoService;
+    private readonly ICustomerInformationService _customerInformationService;
+    private readonly IToolReasoningService _toolReasoningService;
+    private readonly IInventoryService _inventoryService;
 
     public SingleAgentController(
         ILogger<SingleAgentController> logger,
         Kernel kernel,
-        IHttpClientFactory httpClientFactory)
+        IAnalyzePhotoService analyzePhotoService,
+        ICustomerInformationService customerInformationService,
+        IToolReasoningService toolReasoningService,
+        IInventoryService inventoryService)
     {
         _logger = logger;
         _kernel = kernel;
-        _httpClientFactory = httpClientFactory;
+        _analyzePhotoService = analyzePhotoService;
+        _customerInformationService = customerInformationService;
+        _toolReasoningService = toolReasoningService;
+        _inventoryService = inventoryService;
     }
 
     [HttpPost("analyze")]
@@ -39,19 +49,19 @@ public class SingleAgentController : ControllerBase
             var agent = CreateZavaAgentAssistant();
             
             // Step 1: Analyze the image
-            var photoAnalysis = await AnalyzePhotoAsync(image, prompt);
+            var photoAnalysis = await _analyzePhotoService.AnalyzePhotoAsync(image, prompt);
             
             // Step 2: Get customer information
-            var customerInfo = await GetCustomerInformationAsync(customerId);
+            var customerInfo = await _customerInformationService.GetCustomerInformationAsync(customerId);
             
             // Step 3: Use Single Semantic Kernel Agent to reason about tools needed
             var reasoning = await GenerateToolReasoningWithAgentAsync(agent, photoAnalysis, customerInfo, prompt);
             
             // Step 4: Match tools and get inventory
-            var toolMatch = await MatchToolsAsync(customerId, photoAnalysis.DetectedMaterials, prompt);
+            var toolMatch = await _customerInformationService.MatchToolsAsync(customerId, photoAnalysis.DetectedMaterials, prompt);
             
             // Step 5: Enrich with inventory information
-            var enrichedTools = await EnrichWithInventoryAsync(toolMatch.MissingTools);
+            var enrichedTools = await _inventoryService.EnrichWithInventoryAsync(toolMatch.MissingTools);
 
             var response = new SharedEntities.SingleAgentAnalysisResponse
             {
@@ -102,82 +112,6 @@ Always format your responses in a clear, structured way with sections for:
 Be concise but thorough, and always prioritize the customer's safety and success.",
             Kernel = _kernel
         };
-    }
-
-    private async Task<PhotoAnalysisResult> AnalyzePhotoAsync(IFormFile image, string prompt)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri("http://analyze-photo-service");
-            
-            using var content = new MultipartFormDataContent();
-            using var imageStream = image.OpenReadStream();
-            using var streamContent = new StreamContent(imageStream);
-            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(image.ContentType);
-            
-            content.Add(streamContent, "image", image.FileName);
-            content.Add(new StringContent(prompt), "prompt");
-
-            var response = await client.PostAsync("/api/PhotoAnalysis/analyze", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<PhotoAnalysisResult>();
-                return result ?? CreateFallbackPhotoAnalysis(prompt);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to call AnalyzePhotoService, using fallback");
-        }
-
-        return CreateFallbackPhotoAnalysis(prompt);
-    }
-
-    private PhotoAnalysisResult CreateFallbackPhotoAnalysis(string prompt)
-    {
-        return new PhotoAnalysisResult 
-        { 
-            Description = $"Room analysis for prompt: {prompt}. Detected painted walls with preparation needed.",
-            DetectedMaterials = new[] { "paint", "wall", "surface preparation" }
-        };
-    }
-
-    private async Task<CustomerInformation> GetCustomerInformationAsync(string customerId)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri("http://customer-information-service");
-            
-            var response = await client.GetAsync($"/api/Customer/{customerId}");
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<CustomerInformation>();
-                return result ?? CreateFallbackCustomer(customerId);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to call CustomerInformationService, using fallback");
-        }
-
-        return CreateFallbackCustomer(customerId);
-    }
-
-    private CustomerInformation CreateFallbackCustomer(string customerId)
-    {
-        return new CustomerInformation
-        {
-            Id = customerId,
-            Name = $"Customer {customerId}",
-            OwnedTools = new[] { "hammer", "screwdriver", "measuring tape" },
-            Skills = new[] { "basic DIY", "painting" }
-        };
-    }
-
     private async Task<string> GenerateToolReasoningWithAgentAsync(ChatCompletionAgent agent, PhotoAnalysisResult photoAnalysis, CustomerInformation customer, string prompt)
     {
         try
@@ -192,16 +126,8 @@ Be concise but thorough, and always prioritize the customer's safety and success
             // First try the dedicated reasoning service
             try
             {
-                var client = _httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri("http://tool-reasoning-service");
-                
-                var response = await client.PostAsJsonAsync("/api/Reasoning/generate", reasoningRequest);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var reasoning = await response.Content.ReadAsStringAsync();
-                    return reasoning;
-                }
+                var reasoning = await _toolReasoningService.GenerateReasoningAsync(reasoningRequest);
+                return reasoning;
             }
             catch (Exception ex)
             {
@@ -241,75 +167,5 @@ Provide detailed reasoning for tool recommendations considering their existing t
     private string GenerateFallbackReasoning(PhotoAnalysisResult photoAnalysis, CustomerInformation customer, string prompt)
     {
         return $"Based on the task '{prompt}' and the detected materials ({string.Join(", ", photoAnalysis.DetectedMaterials)}), specific tools will be recommended to complement your existing tools: {string.Join(", ", customer.OwnedTools)}.";
-    }
-
-    private async Task<ToolMatchResult> MatchToolsAsync(string customerId, string[] detectedMaterials, string prompt)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri("http://customer-information-service");
-            
-            var matchRequest = new ToolMatchRequest
-            {
-                CustomerId = customerId,
-                DetectedMaterials = detectedMaterials,
-                Prompt = prompt
-            };
-
-            var response = await client.PostAsJsonAsync("/api/Customer/match-tools", matchRequest);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<ToolMatchResult>();
-                return result ?? CreateFallbackToolMatch();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to call CustomerInformationService for tool matching, using fallback");
-        }
-
-        return CreateFallbackToolMatch();
-    }
-
-    private ToolMatchResult CreateFallbackToolMatch()
-    {
-        return new ToolMatchResult
-        {
-            ReusableTools = new[] { "measuring tape", "screwdriver" },
-            MissingTools = new[]
-            {
-                new InternalToolRecommendation { Name = "Paint Roller", Sku = "PAINT-ROLLER-9IN", IsAvailable = true, Price = 12.99m, Description = "9-inch paint roller for smooth walls" },
-                new InternalToolRecommendation { Name = "Paint Brush Set", Sku = "BRUSH-SET-3PC", IsAvailable = true, Price = 24.99m, Description = "3-piece brush set for detail work" },
-                new InternalToolRecommendation { Name = "Drop Cloth", Sku = "DROP-CLOTH-9X12", IsAvailable = true, Price = 8.99m, Description = "Plastic drop cloth protection" }
-            }
-        };
-    }
-
-    private async Task<InternalToolRecommendation[]> EnrichWithInventoryAsync(InternalToolRecommendation[] tools)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri("http://inventory-service");
-            
-            var skus = tools.Select(t => t.Sku).ToArray();
-            var searchRequest = new InventorySearchRequest { Skus = skus };
-            
-            var response = await client.PostAsJsonAsync("/api/Inventory/search", searchRequest);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var inventoryResults = await response.Content.ReadFromJsonAsync<InternalToolRecommendation[]>();
-                return inventoryResults ?? tools;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to call InventoryService, using fallback");
-        }
-
-        return tools; // Return original tools if inventory service fails
     }
 }

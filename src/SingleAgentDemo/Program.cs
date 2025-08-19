@@ -1,4 +1,5 @@
 using Microsoft.SemanticKernel;
+using SingleAgentDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +15,18 @@ builder.Services.AddSwaggerGen();
 // Add Semantic Kernel services
 builder.Services.AddKernel();
 
-// Add HTTP clients for external services
-builder.Services.AddHttpClient();
+// Register service layer implementations for external services
+builder.Services.AddHttpClient<IAnalyzePhotoService, AnalyzePhotoService>(
+    client => client.BaseAddress = new Uri("http://analyze-photo-service"));
+
+builder.Services.AddHttpClient<ICustomerInformationService, CustomerInformationService>(
+    client => client.BaseAddress = new Uri("http://customer-information-service"));
+
+builder.Services.AddHttpClient<IToolReasoningService, ToolReasoningService>(
+    client => client.BaseAddress = new Uri("http://tool-reasoning-service"));
+
+builder.Services.AddHttpClient<IInventoryService, InventoryService>(
+    client => client.BaseAddress = new Uri("http://inventory-service"));
 
 var app = builder.Build();
 

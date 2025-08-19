@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using MultiAgentDemo.Models;
+using MultiAgentDemo.Services;
 using SharedEntities;
 
 namespace MultiAgentDemo.Controllers;
@@ -11,16 +12,25 @@ public class MultiAgentController : ControllerBase
 {
     private readonly ILogger<MultiAgentController> _logger;
     private readonly Kernel _kernel;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IInventoryAgentService _inventoryAgentService;
+    private readonly IMatchmakingAgentService _matchmakingAgentService;
+    private readonly ILocationAgentService _locationAgentService;
+    private readonly INavigationAgentService _navigationAgentService;
 
     public MultiAgentController(
         ILogger<MultiAgentController> logger,
         Kernel kernel,
-        IHttpClientFactory httpClientFactory)
+        IInventoryAgentService inventoryAgentService,
+        IMatchmakingAgentService matchmakingAgentService,
+        ILocationAgentService locationAgentService,
+        INavigationAgentService navigationAgentService)
     {
         _logger = logger;
         _kernel = kernel;
-        _httpClientFactory = httpClientFactory;
+        _inventoryAgentService = inventoryAgentService;
+        _matchmakingAgentService = matchmakingAgentService;
+        _locationAgentService = locationAgentService;
+        _navigationAgentService = navigationAgentService;
     }
 
     [HttpPost("assist")]
@@ -49,6 +59,9 @@ public class MultiAgentController : ControllerBase
             NavigationInstructions? navigation = null;
             if (request.Location != null)
             {
+                navigation = await _navigationAgentService.GenerateDirectionsAsync(request.Location, locationStep.Data?.ToString() ?? "Product Section");
+            }
+            {
                 var navigationStep = await RunNavigationAgentAsync(request.Location, request.ProductQuery);
                 steps.Add(navigationStep);
                 navigation = await GenerateNavigationInstructionsAsync(request.Location, request.ProductQuery);
@@ -76,21 +89,18 @@ public class MultiAgentController : ControllerBase
 
     private async Task<AgentStep> RunInventoryAgentAsync(string productQuery)
     {
-        var client = _httpClientFactory.CreateClient("InventoryAgent");
-        
         try
         {
-            var response = await client.PostAsJsonAsync("/api/mock/inventory/search", new { query = productQuery });
+            var result = await _inventoryAgentService.SearchProductsAsync(productQuery);
             
-            var result = response.IsSuccessStatusCode ? 
-                await response.Content.ReadAsStringAsync() : 
-                $"Found 3 products matching '{productQuery}'";
+            var resultDescription = $"Found {result.TotalCount} products matching '{productQuery}': {string.Join(", ", result.ProductsFound.Select(p => p.Name))}";
 
             return new SharedEntities.AgentStep
             {
                 Agent = "InventoryAgent",
                 Action = $"Search inventory for '{productQuery}'",
-                Result = result,
+                Result = resultDescription,
+                Data = result,
                 Timestamp = DateTime.UtcNow
             };
         }
@@ -109,21 +119,18 @@ public class MultiAgentController : ControllerBase
 
     private async Task<AgentStep> RunMatchmakingAgentAsync(string productQuery, string userId)
     {
-        var client = _httpClientFactory.CreateClient("MatchmakingAgent");
-        
         try
         {
-            var response = await client.PostAsJsonAsync("/api/mock/matchmaking/alternatives", new { query = productQuery, userId });
+            var result = await _matchmakingAgentService.FindAlternativesAsync(productQuery, userId);
             
-            var result = response.IsSuccessStatusCode ? 
-                await response.Content.ReadAsStringAsync() : 
-                $"Found 2 alternative products for '{productQuery}'";
+            var resultDescription = $"Found {result.Alternatives.Length} alternatives and {result.SimilarProducts.Length} similar products for '{productQuery}'";
 
             return new SharedEntities.AgentStep
             {
                 Agent = "MatchmakingAgent",
                 Action = $"Find alternatives for '{productQuery}'",
-                Result = result,
+                Result = resultDescription,
+                Data = result,
                 Timestamp = DateTime.UtcNow
             };
         }
@@ -142,21 +149,21 @@ public class MultiAgentController : ControllerBase
 
     private async Task<AgentStep> RunLocationAgentAsync(string productQuery)
     {
-        var client = _httpClientFactory.CreateClient("LocationAgent");
-        
         try
         {
-            var response = await client.PostAsJsonAsync("/api/mock/location/find", new { query = productQuery });
+            var result = await _locationAgentService.FindProductLocationAsync(productQuery);
             
-            var result = response.IsSuccessStatusCode ? 
-                await response.Content.ReadAsStringAsync() : 
-                $"Products located in Aisle 5 and Aisle 12";
+            var locationInfo = result.StoreLocations.FirstOrDefault();
+            var resultDescription = locationInfo != null ? 
+                $"Products located in {locationInfo.Section}, {locationInfo.Aisle}" : 
+                $"Products located in store for '{productQuery}'";
 
             return new SharedEntities.AgentStep
             {
                 Agent = "LocationAgent",
-                Action = $"Locate '{productQuery}' in store",
-                Result = result,
+                Action = $"Find location for '{productQuery}'",
+                Result = resultDescription,
+                Data = locationInfo?.Section,
                 Timestamp = DateTime.UtcNow
             };
         }
@@ -166,42 +173,8 @@ public class MultiAgentController : ControllerBase
             return new SharedEntities.AgentStep
             {
                 Agent = "LocationAgent",
-                Action = $"Locate '{productQuery}' in store",
-                Result = $"Found '{productQuery}' in multiple aisles with current stock levels",
-                Timestamp = DateTime.UtcNow
-            };
-        }
-    }
-
-    private async Task<AgentStep> RunNavigationAgentAsync(Location userLocation, string productQuery)
-    {
-        var client = _httpClientFactory.CreateClient("NavigationAgent");
-        
-        try
-        {
-            var request = new { userLocation, destination = productQuery };
-            var response = await client.PostAsJsonAsync("/api/mock/navigation/route", request);
-            
-            var result = response.IsSuccessStatusCode ? 
-                await response.Content.ReadAsStringAsync() : 
-                "Generated optimal route to product locations";
-
-            return new SharedEntities.AgentStep
-            {
-                Agent = "NavigationAgent",
-                Action = $"Generate route to '{productQuery}'",
-                Result = result,
-                Timestamp = DateTime.UtcNow
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Navigation agent failed, using fallback");
-            return new SharedEntities.AgentStep
-            {
-                Agent = "NavigationAgent",
-                Action = $"Generate route to '{productQuery}'",
-                Result = "Calculated efficient path through store to reach all product locations",
+                Action = $"Find location for '{productQuery}'",
+                Result = $"Products located in Aisle 5 and Aisle 12",
                 Timestamp = DateTime.UtcNow
             };
         }
@@ -243,39 +216,6 @@ public class MultiAgentController : ControllerBase
                 Location = "Aisle 12",
                 Aisle = 12,
                 Section = "C"
-            }
-        };
-    }
-
-    private async Task<NavigationInstructions> GenerateNavigationInstructionsAsync(Location userLocation, string productQuery)
-    {
-        // Simulate navigation generation
-        await Task.Delay(50);
-
-        return new SharedEntities.NavigationInstructions
-        {
-            StartLocation = $"Current position ({userLocation.Lat:F4}, {userLocation.Lon:F4})",
-            EstimatedTime = "3-4 minutes",
-            Steps = new SharedEntities.NavigationStep[]
-            {
-                new SharedEntities.NavigationStep
-                {
-                    Direction = "Head east",
-                    Description = "Walk towards the hardware section",
-                    Landmark = "Customer Service Desk"
-                },
-                new SharedEntities.NavigationStep
-                {
-                    Direction = "Turn right",
-                    Description = "Enter Aisle 5",
-                    Landmark = "Paint Display"
-                },
-                new SharedEntities.NavigationStep
-                {
-                    Direction = "Continue straight",
-                    Description = $"Find {productQuery} in section A",
-                    Landmark = "End of aisle"
-                }
             }
         };
     }
