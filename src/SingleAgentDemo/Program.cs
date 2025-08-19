@@ -17,16 +17,16 @@ builder.Services.AddKernel();
 
 // Register service layer implementations for external services
 builder.Services.AddHttpClient<IAnalyzePhotoService, AnalyzePhotoService>(
-    client => client.BaseAddress = new Uri("http://analyze-photo-service"));
+    client => client.BaseAddress = new Uri("https+http://analyzephotoservice"));
 
 builder.Services.AddHttpClient<ICustomerInformationService, CustomerInformationService>(
-    client => client.BaseAddress = new Uri("http://customer-information-service"));
+    client => client.BaseAddress = new Uri("https+http://customerinformationservice"));
 
 builder.Services.AddHttpClient<IToolReasoningService, ToolReasoningService>(
-    client => client.BaseAddress = new Uri("http://tool-reasoning-service"));
+    client => client.BaseAddress = new Uri("https+http://toolreasoningservice"));
 
 builder.Services.AddHttpClient<IInventoryService, InventoryService>(
-    client => client.BaseAddress = new Uri("http://inventory-service"));
+    client => client.BaseAddress = new Uri("https+http://inventoryservice"));
 
 var app = builder.Build();
 

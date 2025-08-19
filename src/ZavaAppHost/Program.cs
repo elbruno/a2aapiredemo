@@ -42,6 +42,14 @@ var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("singleagentd
     .WithExternalHttpEndpoints();
 
 var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multiagentdemo")
+    .WaitFor(analyzePhotoService)
+    .WithReference(analyzePhotoService)
+    .WaitFor(customerInformationService)
+    .WithReference(customerInformationService)
+    .WaitFor(toolReasoningService)
+    .WithReference(toolReasoningService)
+    .WaitFor(inventoryService)
+    .WithReference(inventoryService)
     .WithExternalHttpEndpoints();
 
 var store = builder.AddProject<Projects.Store>("store")

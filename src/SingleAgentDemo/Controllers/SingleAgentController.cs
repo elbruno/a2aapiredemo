@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 using SingleAgentDemo.Models;
 using SingleAgentDemo.Services;
-using SharedEntities;
-
 namespace SingleAgentDemo.Controllers;
 
 [ApiController]

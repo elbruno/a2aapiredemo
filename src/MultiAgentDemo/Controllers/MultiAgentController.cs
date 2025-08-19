@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
-using MultiAgentDemo.Models;
 using MultiAgentDemo.Services;
 using SharedEntities;
 
@@ -12,18 +11,18 @@ public class MultiAgentController : ControllerBase
 {
     private readonly ILogger<MultiAgentController> _logger;
     private readonly Kernel _kernel;
-    private readonly IInventoryAgentService _inventoryAgentService;
-    private readonly IMatchmakingAgentService _matchmakingAgentService;
-    private readonly ILocationAgentService _locationAgentService;
-    private readonly INavigationAgentService _navigationAgentService;
+    private readonly InventoryAgentService _inventoryAgentService;
+    private readonly MatchmakingAgentService _matchmakingAgentService;
+    private readonly LocationAgentService _locationAgentService;
+    private readonly NavigationAgentService _navigationAgentService;
 
     public MultiAgentController(
         ILogger<MultiAgentController> logger,
         Kernel kernel,
-        IInventoryAgentService inventoryAgentService,
-        IMatchmakingAgentService matchmakingAgentService,
-        ILocationAgentService locationAgentService,
-        INavigationAgentService navigationAgentService)
+        InventoryAgentService inventoryAgentService,
+        MatchmakingAgentService matchmakingAgentService,
+        LocationAgentService locationAgentService,
+        NavigationAgentService navigationAgentService)
     {
         _logger = logger;
         _kernel = kernel;
@@ -59,7 +58,7 @@ public class MultiAgentController : ControllerBase
             NavigationInstructions? navigation = null;
             if (request.Location != null)
             {
-                navigation = await _navigationAgentService.GenerateDirectionsAsync(request.Location, locationStep.Data?.ToString() ?? "Product Section");
+                navigation = await _navigationAgentService.GenerateDirectionsAsync(request.Location, locationStep.ToString() ?? "Product Section");
             }
             {
                 var navigationStep = await RunNavigationAgentAsync(request.Location, request.ProductQuery);
