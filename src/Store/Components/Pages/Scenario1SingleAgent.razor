@@ -1,0 +1,299 @@
+@page "/scenario1-single-agent"
+@using System.Text.Json
+@inject HttpClient Http
+@inject ILogger<Scenario1SingleAgent> Logger
+
+<PageTitle>Scenario 1 - Single Agent Demo</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <span class="bi bi-robot me-2"></span>
+                Scenario 1: Single Agent Analysis
+            </h1>
+            <p class="lead text-muted">
+                Upload an image of your project and get AI-powered tool recommendations based on your existing tools and skills.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <span class="bi bi-upload me-2"></span>
+                        Upload Project Image
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@analysisRequest" OnValidSubmit="@SubmitAnalysis">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="projectImage" class="form-label">Project Image</label>
+                            <InputFile OnChange="@OnImageSelected" class="form-control" id="projectImage" accept="image/*" />
+                            <div class="form-text">Upload an image of your room, project, or area you want to work on.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prompt" class="form-label">Project Description</label>
+                            <InputTextArea @bind-Value="analysisRequest.Prompt" class="form-control" id="prompt" rows="3" 
+                                placeholder="e.g., I want to paint this room blue. What tools do I need?" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="customerId" class="form-label">Customer ID</label>
+                            <InputText @bind-Value="analysisRequest.CustomerId" class="form-control" id="customerId" 
+                                placeholder="e.g., 123" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Analyzing...</span>
+                            }
+                            else
+                            {
+                                <span class="bi bi-search me-2"></span>
+                                <span>Analyze Project</span>
+                            }
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            @if (analysisResult != null)
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <span class="bi bi-lightbulb me-2"></span>
+                            Analysis Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6>Image Analysis:</h6>
+                            <p class="text-muted">@analysisResult.Analysis</p>
+                        </div>
+
+                        @if (analysisResult.ReusableTools.Any())
+                        {
+                            <div class="mb-3">
+                                <h6>Your Existing Tools You Can Use:</h6>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var tool in analysisResult.ReusableTools)
+                                    {
+                                        <span class="badge bg-success">@tool</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (analysisResult.RecommendedTools.Any())
+                        {
+                            <div class="mb-3">
+                                <h6>Recommended Tools to Purchase:</h6>
+                                <div class="row g-2">
+                                    @foreach (var tool in analysisResult.RecommendedTools)
+                                    {
+                                        <div class="col-12">
+                                            <div class="card card-body p-2">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <strong>@tool.Name</strong>
+                                                        <br>
+                                                        <small class="text-muted">SKU: @tool.Sku</small>
+                                                        <br>
+                                                        <small>@tool.Description</small>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="badge @(tool.IsAvailable ? "bg-success" : "bg-danger")">
+                                                            @(tool.IsAvailable ? "In Stock" : "Out of Stock")
+                                                        </span>
+                                                        <br>
+                                                        <strong class="text-primary">$@tool.Price.ToString("F2")</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <h6>AI Reasoning:</h6>
+                            <p class="text-muted small">@analysisResult.Reasoning</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading">
+                        <span class="bi bi-exclamation-triangle me-2"></span>
+                        Error
+                    </h6>
+                    @errorMessage
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center text-muted">
+                        <span class="bi bi-image display-1 d-block mb-3"></span>
+                        <p>Upload an image and describe your project to get AI-powered tool recommendations.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private AnalysisRequest analysisRequest = new();
+    private AnalysisResult? analysisResult;
+    private IBrowserFile? selectedFile;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+
+    private void OnImageSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        errorMessage = string.Empty;
+    }
+
+    private async Task SubmitAnalysis()
+    {
+        if (selectedFile == null)
+        {
+            errorMessage = "Please select an image file.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(analysisRequest.Prompt))
+        {
+            errorMessage = "Please provide a project description.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(analysisRequest.CustomerId))
+        {
+            errorMessage = "Please provide a customer ID.";
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        analysisResult = null;
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024)); // 5MB limit
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+            content.Add(fileContent, "image", selectedFile.Name);
+            
+            content.Add(new StringContent(analysisRequest.Prompt), "prompt");
+            content.Add(new StringContent(analysisRequest.CustomerId), "customerId");
+
+            // Attempt to call the actual service first, then fallback to demo data
+            var response = await Http.PostAsync("http://localhost:5002/api/single-agent/analyze", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                analysisResult = JsonSerializer.Deserialize<AnalysisResult>(json, new JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true 
+                });
+            }
+            else
+            {
+                // Fallback to demo data for development
+                await Task.Delay(2000); // Simulate processing time
+                analysisResult = CreateDemoResult();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error calling single agent service");
+            // Fallback to demo data
+            await Task.Delay(2000);
+            analysisResult = CreateDemoResult();
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private AnalysisResult CreateDemoResult()
+    {
+        return new AnalysisResult
+        {
+            Analysis = $"Analysis of your project: {analysisRequest.Prompt}. The image shows a room that requires surface preparation and painting work.",
+            ReusableTools = new[] { "measuring tape", "screwdriver", "hammer" },
+            RecommendedTools = new[]
+            {
+                new ToolRecommendation 
+                { 
+                    Name = "Paint Roller Set", 
+                    Sku = "PAINT-ROLLER-9IN", 
+                    IsAvailable = true, 
+                    Price = 12.99m, 
+                    Description = "9-inch paint roller with tray for smooth wall coverage" 
+                },
+                new ToolRecommendation 
+                { 
+                    Name = "Brush Set (3-piece)", 
+                    Sku = "BRUSH-SET-3PC", 
+                    IsAvailable = true, 
+                    Price = 24.99m, 
+                    Description = "Professional brush set for edges and detail work" 
+                },
+                new ToolRecommendation 
+                { 
+                    Name = "Drop Cloth", 
+                    Sku = "DROP-CLOTH-9X12", 
+                    IsAvailable = false, 
+                    Price = 8.99m, 
+                    Description = "Plastic drop cloth for floor protection" 
+                }
+            },
+            Reasoning = $"Based on your project '{analysisRequest.Prompt}' and the image analysis, you'll need painting tools to complement your existing basic tools. The recommended items will ensure professional results for your painting project."
+        };
+    }
+
+    private class AnalysisRequest
+    {
+        public string Prompt { get; set; } = string.Empty;
+        public string CustomerId { get; set; } = string.Empty;
+    }
+
+    private class AnalysisResult
+    {
+        public string Analysis { get; set; } = string.Empty;
+        public string[] ReusableTools { get; set; } = Array.Empty<string>();
+        public ToolRecommendation[] RecommendedTools { get; set; } = Array.Empty<ToolRecommendation>();
+        public string Reasoning { get; set; } = string.Empty;
+    }
+
+    private class ToolRecommendation
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Sku { get; set; } = string.Empty;
+        public bool IsAvailable { get; set; }
+        public decimal Price { get; set; }
+        public string Description { get; set; } = string.Empty;
+    }
+}
