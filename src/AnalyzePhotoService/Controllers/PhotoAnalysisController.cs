@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.SemanticKernel;
 using Shared.Models;
+using ZavaSemanticKernelProvider;
 
 namespace AnalyzePhotoService.Controllers;
 
@@ -8,10 +10,12 @@ namespace AnalyzePhotoService.Controllers;
 public class PhotoAnalysisController : ControllerBase
 {
     private readonly ILogger<PhotoAnalysisController> _logger;
+    private readonly Kernel _kernel;
 
-    public PhotoAnalysisController(ILogger<PhotoAnalysisController> logger)
+    public PhotoAnalysisController(ILogger<PhotoAnalysisController> logger, SemanticKernelProvider semanticKernelProvider)
     {
         _logger = logger;
+        _kernel = semanticKernelProvider.GetKernel();
     }
 
     [HttpPost("analyze")]

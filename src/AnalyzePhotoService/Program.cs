@@ -1,3 +1,5 @@
+using ZavaSemanticKernelProvider;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -6,6 +8,11 @@ builder.AddServiceDefaults();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var openAiConnection = builder.Configuration.GetValue<string>("ConnectionStrings:openai");
+var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "gpt-5-mini";
+builder.Services.AddSingleton(sp =>
+    new SemanticKernelProvider(openAiConnection, chatDeploymentName));
 
 var app = builder.Build();
 
