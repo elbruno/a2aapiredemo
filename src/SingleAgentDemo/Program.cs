@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var openAiConnection = builder.Configuration.GetValue<string>("ConnectionStrings:openai");
+var openAiConnection = builder.Configuration.GetValue<string>("ConnectionStrings:aifoundry");
 var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "gpt-5-mini";
 builder.Services.AddSingleton(sp =>
     new SemanticKernelProvider(openAiConnection, chatDeploymentName));

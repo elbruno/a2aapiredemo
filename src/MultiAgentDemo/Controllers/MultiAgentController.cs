@@ -19,7 +19,6 @@ namespace MultiAgentDemo.Controllers
 
         public MultiAgentController(
             ILogger<MultiAgentController> logger,
-                Kernel kernel,
             InventoryAgentService inventoryAgentService,
             MatchmakingAgentService matchmakingAgentService,
             LocationAgentService locationAgentService,
