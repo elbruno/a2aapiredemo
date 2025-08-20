@@ -24,7 +24,10 @@ POV interior photograph of a living room from the customer's perspective: neutra
 
 Suggested image placeholder (replace after generation):
 
-`![Living room repaint placeholder](./scenario01-01livingroom.png)
+<!-- Updated: replaced generic placeholder with existing preview images in this folder -->
+<!-- Updated: switched to smaller preview images (for faster repo previews) -->
+![Living room repaint preview 1](./scenario01-01livingroom-01-small.png)
+![Living room repaint preview 2](./scenario01-01livingroom-02-small.png)
 
 ---
 
@@ -42,7 +45,10 @@ POV interior photograph of a bathroom from the homeowner's perspective: eye-leve
 
 Suggested image placeholder (replace after generation):
 
-`![Bathroom mirror replacement placeholder](./scenario01-02bathroom.png)
+<!-- Updated: replaced generic placeholder with existing preview images in this folder -->
+<!-- Updated: switched to smaller preview images (for faster repo previews) -->
+![Bathroom mirror preview 1](./scenario01-02bathroom-01-small.png)
+![Bathroom mirror preview 2](./scenario01-02bathroom-02-small.png)
 
 ---
 
@@ -60,7 +66,10 @@ POV interior photograph of a kitchen from the user's perspective: eye-level view
 
 Suggested image placeholder (replace after generation):
 
-`![Kitchen backsplash update placeholder](./scenario01-03kitchen.png)
+<!-- Updated: replaced generic placeholder with existing preview images in this folder -->
+<!-- Updated: switched to smaller preview images (for faster repo previews) -->
+![Kitchen backsplash preview 1](./scenario01-03kitchen-01-small.png)
+![Kitchen backsplash preview 2](./scenario01-03kitchen-02-small.png)
 
 ---
 
