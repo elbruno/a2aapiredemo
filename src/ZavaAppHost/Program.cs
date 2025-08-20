@@ -19,7 +19,6 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
     .WaitFor(productsDb);
 
-
 // Add new microservices for agent functionality
 var analyzePhotoService = builder.AddProject<Projects.AnalyzePhotoService>("analyzephotoservice")
     .WithExternalHttpEndpoints();

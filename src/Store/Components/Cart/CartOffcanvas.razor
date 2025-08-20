@@ -2,6 +2,7 @@
 @using Store.Services
 @inject CartService CartService
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
 @rendermode InteractiveServer
 
 <!-- Offcanvas Cart -->
@@ -14,10 +15,14 @@
         @if (cart.Items.Any())
         {
             <div class="flex-grow-1">
+                @{ var productsBase = Configuration["ProductsBaseUrl"] ?? ""; }
                 @foreach (var item in cart.Items)
                 {
+                    var imgSrc = string.IsNullOrEmpty(productsBase)
+                        ? $"/images/{item.ImageUrl}"
+                        : $"{productsBase.TrimEnd('/')}/images/{item.ImageUrl}";
                     <div class="cart-item d-flex align-items-center mb-3 p-2 border rounded">
-                        <img src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@item.ImageUrl" 
+                        <img src="@imgSrc" 
                              alt="@item.Name" class="cart-item-image me-3" style="width: 50px; height: 50px; object-fit: cover;" />
                         <div class="flex-grow-1">
                             <h6 class="mb-1">@item.Name</h6>

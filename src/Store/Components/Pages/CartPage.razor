@@ -4,6 +4,7 @@
 @using Store.Components.Cart
 @inject CartService CartService
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
 
@@ -38,8 +39,13 @@ else if (shoppingCart.Items.Any())
                     {
                         <div class="row align-items-center mb-3 pb-3 border-bottom">
                             <div class="col-md-2">
-                                <img src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@item.ImageUrl" 
-                                     alt="@item.Name" class="img-fluid rounded" style="max-height: 100px;" />
+                                @{
+                                    var productsBase = Configuration["ProductsBaseUrl"] ?? "";
+                                    var imgSrc = string.IsNullOrEmpty(productsBase)
+                                        ? $"/images/{item.ImageUrl}"
+                                        : $"{productsBase.TrimEnd('/')}/images/{item.ImageUrl}";
+                                }
+                                <img src="@imgSrc" alt="@item.Name" class="img-fluid rounded" style="max-height: 100px;" />
                             </div>
                             <div class="col-md-4">
                                 <h6 class="mb-1">@item.Name</h6>

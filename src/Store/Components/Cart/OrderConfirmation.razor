@@ -1,4 +1,5 @@
 @using CartEntities
+@inject IConfiguration Configuration
 
 <div class="order-confirmation">
     <div class="text-center mb-4">
@@ -52,23 +53,27 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{ var productsBase = Configuration["ProductsBaseUrl"] ?? ""; }
                         @foreach (var item in order.Items)
                         {
+                            var imgSrc = string.IsNullOrEmpty(productsBase)
+                                ? $"/images/{item.ImageUrl}"
+                                : $"{productsBase.TrimEnd('/')}/images/{item.ImageUrl}";
                             <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@item.ImageUrl" 
-                                             alt="@item.Name" class="me-2" style="width: 40px; height: 40px; object-fit: cover;" />
-                                        <div>
-                                            <div class="fw-medium">@item.Name</div>
-                                            <small class="text-muted">@item.Description</small>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="@imgSrc" 
+                                                 alt="@item.Name" class="me-2" style="width: 40px; height: 40px; object-fit: cover;" />
+                                            <div>
+                                                <div class="fw-medium">@item.Name</div>
+                                                <small class="text-muted">@item.Description</small>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>@item.Quantity</td>
-                                <td>@item.Price.ToString("C")</td>
-                                <td class="text-end">@item.Total.ToString("C")</td>
-                            </tr>
+                                    </td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.Price.ToString("C")</td>
+                                    <td class="text-end">@item.Total.ToString("C")</td>
+                                </tr>
                         }
                     </tbody>
                     <tfoot>
