@@ -27,6 +27,9 @@
     <Project Path="Products/Products.csproj" />
     <Project Path="ToolReasoningService/ToolReasoningService.csproj" />
   </Folder>
+  <Folder Name="/6 Support/">
+    <Project Path="ZavaSemanticKernelProvider/ZavaSemanticKernelProvider.csproj" Id="d61cff59-07e4-4184-bc7d-98c294c39149" />
+  </Folder>
   <Folder Name="/9 Tests/">
     <Project Path="Products.Tests/Products.Tests.csproj" />
     <Project Path="Store.Tests/Store.Tests.csproj" />

@@ -61,6 +61,7 @@ namespace Microsoft.Extensions.Hosting
 
             // enable AI telemetry
             AppContext.SetSwitch("OpenAI.Experimental.EnableOpenTelemetry", true);
+            AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics", true);
             AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
             AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
 

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Shared.Models;
+using ZavaSemanticKernelProvider;
 
 namespace ToolReasoningService.Controllers;
 
@@ -11,10 +12,10 @@ public class ReasoningController : ControllerBase
     private readonly ILogger<ReasoningController> _logger;
     private readonly Kernel _kernel;
 
-    public ReasoningController(ILogger<ReasoningController> logger, Kernel kernel)
+    public ReasoningController(ILogger<ReasoningController> logger, SemanticKernelProvider semanticKernelProvider)
     {
         _logger = logger;
-        _kernel = kernel;
+        _kernel = semanticKernelProvider.GetKernel();
     }
 
     [HttpPost("generate")]

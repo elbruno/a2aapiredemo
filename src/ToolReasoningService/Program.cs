@@ -1,4 +1,4 @@
-using Microsoft.SemanticKernel;
+using ZavaSemanticKernelProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +9,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add Semantic Kernel
-builder.Services.AddKernel();
+var openAiConnection = builder.Configuration.GetValue<string>("ConnectionStrings:openai");
+if (!string.IsNullOrEmpty(openAiConnection))
+{
+    builder.Services.AddSingleton(sp =>
+        new SemanticKernelProvider(openAiConnection));
+}
 
 var app = builder.Build();
 
