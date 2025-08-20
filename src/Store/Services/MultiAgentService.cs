@@ -21,7 +21,7 @@ public class MultiAgentService
             _logger.LogInformation("Calling multi-agent service for user {UserId} with query {ProductQuery}",
                 request.UserId, request.ProductQuery);
 
-            var response = await _httpClient.PostAsJsonAsync("/api/multi-agent/assist", request);
+            var response = await _httpClient.PostAsJsonAsync("/api/multiagent/assist", request);
             var responseText = await response.Content.ReadAsStringAsync();
 
             _logger.LogInformation("Multi-agent service response - Status: {StatusCode}, Content: {Content}",

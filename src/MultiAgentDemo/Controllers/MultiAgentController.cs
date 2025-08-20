@@ -11,7 +11,7 @@ using SharedEntities;
 namespace MultiAgentDemo.Controllers
 {
     [ApiController]
-    [Route("api/multi-agent")]
+    [Route("api/[controller]")]
     public class MultiAgentController : ControllerBase
     {
         private readonly ILogger<MultiAgentController> _logger;
@@ -29,12 +29,12 @@ namespace MultiAgentDemo.Controllers
             ILocationAgentService locationAgentService,
             INavigationAgentService navigationAgentService)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _kernel = kernel ?? throw new ArgumentNullException(nameof(kernel));
-            _inventoryAgentService = inventoryAgentService ?? throw new ArgumentNullException(nameof(inventoryAgentService));
-            _matchmakingAgentService = matchmakingAgentService ?? throw new ArgumentNullException(nameof(matchmakingAgentService));
-            _locationAgentService = locationAgentService ?? throw new ArgumentNullException(nameof(locationAgentService));
-            _navigationAgentService = navigationAgentService ?? throw new ArgumentNullException(nameof(navigationAgentService));
+            _logger = logger;
+            _kernel = kernel;
+            _inventoryAgentService = inventoryAgentService;
+            _matchmakingAgentService = matchmakingAgentService;
+            _locationAgentService = locationAgentService;
+            _navigationAgentService = navigationAgentService;
         }
 
         // Strongly-typed kernel instance injected via DI.
