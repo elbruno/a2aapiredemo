@@ -5,7 +5,7 @@
 @inject MultiAgentService MultiAgentService
 @inject ILogger<Scenario2MultiAgent> Logger
 
-<PageTitle>Scenario 2 - Multi-Agent Demo</PageTitle>
+<PageTitle>Zava Store - Multi-Agent Orchestration</PageTitle>
 
 <div class="container-fluid">
     <div class="row">
@@ -15,7 +15,7 @@
                 Scenario 2: Multi-Agent Orchestration
             </h1>
             <p class="lead text-muted">
-                Search for products and get coordinated assistance from multiple AI agents for inventory, alternatives, location, and navigation.
+                Upload images and search for products with coordinated assistance from multiple AI agents for inventory, alternatives, location, and navigation.
             </p>
         </div>
     </div>
@@ -26,7 +26,7 @@
                 <div class="card-header">
                     <h5 class="card-title mb-0">
                         <span class="bi bi-search me-2"></span>
-                        Product Search
+                        Product Search & Image
                     </h5>
                 </div>
                 <div class="card-body">
@@ -35,9 +35,15 @@
                         <ValidationSummary />
 
                         <div class="mb-3">
+                            <label for="projectImage" class="form-label">Product Image (Optional)</label>
+                            <InputFile OnChange="@OnImageSelected" class="form-control" id="projectImage" accept="image/*" />
+                            <div class="form-text">Upload an image to help identify or search for products.</div>
+                        </div>
+
+                        <div class="mb-3">
                             <label for="userId" class="form-label">User ID</label>
                             <InputText @bind-Value="multiAgentRequest.UserId" class="form-control" id="userId" 
-                                placeholder="e.g., 123" />
+                                placeholder="e.g., USER-001" />
                         </div>
 
                         <div class="mb-3">
@@ -263,13 +269,21 @@
 </style>
 
 @code {
-    private MultiAgentRequest multiAgentRequest = new() { UserId = "123" };
+    private MultiAgentRequestModel multiAgentRequest = new() { UserId = "USER-001" };
     private MultiAgentResponse? orchestrationResult;
+    private IBrowserFile? selectedFile;
     private bool isSubmitting = false;
     private string errorMessage = string.Empty;
     private bool includeLocation = false;
     private double latitude = 0.0;
     private double longitude = 0.0;
+
+    private void OnImageSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        multiAgentRequest.Image = selectedFile;
+        errorMessage = string.Empty;
+    }
 
     private void UseDefaultLocation()
     {
@@ -319,7 +333,8 @@
                 multiAgentRequest.Location = null;
             }
 
-            orchestrationResult = await MultiAgentService.AssistAsync(multiAgentRequest);
+            var sharedRequest = await multiAgentRequest.ToSharedEntityAsync();
+            orchestrationResult = await MultiAgentService.AssistAsync(sharedRequest);
             
             if (orchestrationResult == null)
             {
