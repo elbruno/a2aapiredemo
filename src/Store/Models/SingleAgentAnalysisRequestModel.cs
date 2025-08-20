@@ -20,7 +20,7 @@ public class SingleAgentAnalysisRequestModel
         using var stream = Image.OpenReadStream(5 * 1024 * 1024); // 5MB limit
         using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream);
-        
+
         return new SingleAgentAnalysisRequest
         {
             Prompt = Prompt,

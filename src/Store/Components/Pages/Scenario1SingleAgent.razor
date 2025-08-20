@@ -1,9 +1,14 @@
 @page "/scenario1-single-agent"
 @using Store.Models
 @using Store.Services
+@using Microsoft.AspNetCore.Components.Web
 @using SharedEntities
 @inject SingleAgentService SingleAgentService
 @inject ILogger<Scenario1SingleAgent> Logger
+
+@attribute [StreamRendering(true)]
+@rendermode InteractiveServer
+
 
 <PageTitle>Zava Store - Single Agent Analysis</PageTitle>
 
@@ -15,7 +20,8 @@
                 Scenario 1: Single Agent Analysis
             </h1>
             <p class="lead text-muted">
-                Upload an image of your project and get AI-powered tool recommendations based on your existing tools and skills.
+                Upload an image of your project and get AI-powered tool recommendations based on your existing tools and
+                skills.
             </p>
         </div>
     </div>
@@ -30,29 +36,41 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <EditForm Model="@analysisRequest" OnValidSubmit="@SubmitAnalysis">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-
+                    <div>
                         <div class="mb-3">
                             <label for="projectImage" class="form-label">Project Image</label>
-                            <InputFile OnChange="@OnImageSelected" class="form-control" id="projectImage" accept="image/*" />
-                            <div class="form-text">Upload an image of your room, project, or area you want to work on.</div>
+                            <InputFile OnChange="@OnImageSelected" class="form-control" id="projectImage"
+                                accept="image/*" />
+                            <div class="form-text">Upload an image of your room, project, or area you want to work on.
+                            </div>
+                            @if (imagePreviewUrl != null)
+                            {
+                                <div class="mt-3 text-center">
+                                    <img src="@imagePreviewUrl" alt="Image Preview" class="img-fluid rounded border"
+                                        style="max-height: 250px;" />
+                                </div>
+                            }
                         </div>
 
                         <div class="mb-3">
                             <label for="prompt" class="form-label">Project Description</label>
-                            <InputTextArea @bind-Value="analysisRequest.Prompt" class="form-control" id="prompt" rows="3" 
-                                placeholder="e.g., I want to paint this room blue. What tools do I need?" />
+                            <div class="input-group">
+                                <InputTextArea @bind-Value="analysisRequest.Prompt" class="form-control" id="prompt"
+                                    rows="3"
+                                    placeholder="e.g., I want to paint this room blue. What tools do I need?" />
+                                <button type="button" class="btn btn-outline-secondary" @onclick="SetDefaultPrompt">Use
+                                    Default</button>
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="customerId" class="form-label">Customer ID</label>
-                            <InputText @bind-Value="analysisRequest.CustomerId" class="form-control" id="customerId" 
+                            <InputText @bind-Value="analysisRequest.CustomerId" class="form-control" id="customerId"
                                 placeholder="e.g., CUST-001" />
                         </div>
 
-                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                        <button id="btnAnalyze" class="btn btn-primary" @onclick="SubmitAnalysis"
+                            disabled="@isSubmitting" type="submit">
                             @if (isSubmitting)
                             {
                                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -64,7 +82,7 @@
                                 <span>Analyze Project</span>
                             }
                         </button>
-                    </EditForm>
+                    </div>
                 </div>
             </div>
         </div>
@@ -161,19 +179,39 @@
 </div>
 
 @code {
-    private SingleAgentAnalysisRequestModel analysisRequest = new() { CustomerId = "CUST-001" };
+    private SingleAgentAnalysisRequestModel analysisRequest = new() { CustomerId = "CUST-001", Prompt = string.Empty };
+    private const string DefaultPrompt = "I want to paint this room blue. What tools do I need?";
+    private void SetDefaultPrompt()
+    {
+        analysisRequest.Prompt = DefaultPrompt;
+        StateHasChanged();
+    }
     private SingleAgentAnalysisResponse? analysisResult;
     private IBrowserFile? selectedFile;
+    private string? imagePreviewUrl;
     private bool isSubmitting = false;
     private string errorMessage = string.Empty;
 
-    private void OnImageSelected(InputFileChangeEventArgs e)
+    private async void OnImageSelected(InputFileChangeEventArgs e)
     {
         selectedFile = e.File;
         errorMessage = string.Empty;
+
+        // Generate image preview
+        if (selectedFile != null)
+        {
+            var buffer = new byte[selectedFile.Size];
+            await selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).ReadAsync(buffer);
+            imagePreviewUrl = $"data:{selectedFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        }
+        else
+        {
+            imagePreviewUrl = null;
+        }
+        StateHasChanged();
     }
 
-    private async Task SubmitAnalysis()
+    private async Task SubmitAnalysis(MouseEventArgs e)
     {
         if (selectedFile == null)
         {
@@ -181,6 +219,7 @@
             return;
         }
 
+        // Fix: Ensure Prompt is not null and trim whitespace
         if (string.IsNullOrWhiteSpace(analysisRequest.Prompt))
         {
             errorMessage = "Please provide a project description.";
@@ -196,13 +235,20 @@
         isSubmitting = true;
         errorMessage = string.Empty;
         analysisResult = null;
+        // Optionally clear preview after submit
+        // imagePreviewUrl = null;
 
         try
         {
             analysisRequest.Image = selectedFile;
+            // Defensive: Ensure Prompt is not null or whitespace before sending
+            if (string.IsNullOrWhiteSpace(analysisRequest.Prompt))
+            {
+                analysisRequest.Prompt = DefaultPrompt;
+            }
             var sharedRequest = await analysisRequest.ToSharedEntityAsync();
             analysisResult = await SingleAgentService.AnalyzeAsync(sharedRequest);
-            
+
             if (analysisResult == null)
             {
                 errorMessage = "Analysis service is currently unavailable. Please try again later.";
