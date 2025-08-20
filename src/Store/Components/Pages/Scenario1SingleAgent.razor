@@ -5,7 +5,7 @@
 @inject SingleAgentService SingleAgentService
 @inject ILogger<Scenario1SingleAgent> Logger
 
-<PageTitle>Scenario 1 - Single Agent Demo</PageTitle>
+<PageTitle>Zava Store - Single Agent Analysis</PageTitle>
 
 <div class="container-fluid">
     <div class="row">
@@ -49,7 +49,7 @@
                         <div class="mb-3">
                             <label for="customerId" class="form-label">Customer ID</label>
                             <InputText @bind-Value="analysisRequest.CustomerId" class="form-control" id="customerId" 
-                                placeholder="e.g., 123" />
+                                placeholder="e.g., CUST-001" />
                         </div>
 
                         <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
@@ -161,7 +161,7 @@
 </div>
 
 @code {
-    private SingleAgentAnalysisRequestModel analysisRequest = new();
+    private SingleAgentAnalysisRequestModel analysisRequest = new() { CustomerId = "CUST-001" };
     private SingleAgentAnalysisResponse? analysisResult;
     private IBrowserFile? selectedFile;
     private bool isSubmitting = false;
