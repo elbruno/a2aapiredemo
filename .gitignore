@@ -417,3 +417,10 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Playwright test artifacts (keep test scripts, exclude results)
+pwtests/node_modules/
+pwtests/package-lock.json
+pwtests/test-results/
+pwtests/screenshots/
+pwtests/playwright-report/
