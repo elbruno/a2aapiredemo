@@ -36,7 +36,7 @@ public class SingleAgentService
 
             _logger.LogInformation("Calling single agent service for customer {CustomerId}", request.CustomerId);
             
-            var response = await _httpClient.PostAsync("/api/single-agent/analyze", content);
+            var response = await _httpClient.PostAsync("/api/analyze", content);
             var responseText = await response.Content.ReadAsStringAsync();
 
             _logger.LogInformation("Single agent service response - Status: {StatusCode}, Content: {Content}", 

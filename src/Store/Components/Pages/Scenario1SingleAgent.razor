@@ -39,7 +39,7 @@
                     <div>
                         <div class="mb-3">
                             <label for="projectImage" class="form-label">Project Image</label>
-                            <InputFile class="form-control" id="projectImage" accept="image/*" />
+                            <InputFile class="form-control" id="projectImage" accept="image/*" OnChange="@OnImageSelected" />
                             <div class="form-text">Upload an image of your room, project, or area you want to work on.
                             </div>
                             @if (imagePreviewUrl != null)
@@ -190,6 +190,11 @@
     private string? imagePreviewUrl;
     private bool isSubmitting = false;
     private string errorMessage = string.Empty;
+
+    private void OnImageSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
 
     private async void SubmitAnalysis()
     {
