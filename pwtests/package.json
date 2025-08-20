@@ -1,0 +1,29 @@
+{
+  "name": "zava-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for Zava AI-powered eCommerce scenarios",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:scenario1": "playwright test scenario1.spec.js",
+    "test:scenario2": "playwright test scenario2.spec.js",
+    "install-browsers": "playwright install",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "ai",
+    "ecommerce",
+    "blazor"
+  ],
+  "author": "Zava Team",
+  "license": "MIT"
+}
