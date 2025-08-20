@@ -2,7 +2,7 @@ using SingleAgentDemo.Models;
 
 namespace SingleAgentDemo.Services;
 
-public class InventoryService : IInventoryService
+public class InventoryService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<InventoryService> _logger;

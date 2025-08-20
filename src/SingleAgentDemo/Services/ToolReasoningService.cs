@@ -2,7 +2,7 @@ using SingleAgentDemo.Models;
 
 namespace SingleAgentDemo.Services;
 
-public class ToolReasoningService : IToolReasoningService
+public class ToolReasoningService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ToolReasoningService> _logger;

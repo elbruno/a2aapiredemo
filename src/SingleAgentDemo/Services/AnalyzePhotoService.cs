@@ -2,7 +2,7 @@ using SingleAgentDemo.Models;
 
 namespace SingleAgentDemo.Services;
 
-public class AnalyzePhotoService : IAnalyzePhotoService
+public class AnalyzePhotoService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AnalyzePhotoService> _logger;

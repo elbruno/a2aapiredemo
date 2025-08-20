@@ -2,7 +2,7 @@ using SharedEntities;
 
 namespace MultiAgentDemo.Services;
 
-public class NavigationAgentService : INavigationAgentService
+public class NavigationAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<NavigationAgentService> _logger;

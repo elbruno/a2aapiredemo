@@ -8,15 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.61.0" />
-  <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.61.0" />
-  <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.61.0" />
-  <!-- Azure OpenAI connector for Semantic Kernel: used when a connection string named 'openai' is present -->
-  <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.61.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ZavaSemanticKernelProvider\ZavaSemanticKernelProvider.csproj" />
     <ProjectReference Include="..\ZavaServiceDefaults\ZavaServiceDefaults.csproj" />
     <ProjectReference Include="..\SharedEntities\SharedEntities.csproj" />
   </ItemGroup>

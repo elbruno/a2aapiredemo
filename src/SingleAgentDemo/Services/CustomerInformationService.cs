@@ -2,7 +2,7 @@ using SingleAgentDemo.Models;
 
 namespace SingleAgentDemo.Services;
 
-public class CustomerInformationService : ICustomerInformationService
+public class CustomerInformationService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<CustomerInformationService> _logger;

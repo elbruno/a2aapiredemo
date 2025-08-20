@@ -3,6 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using SingleAgentDemo.Models;
 using SingleAgentDemo.Services;
+using ZavaSemanticKernelProvider;
 namespace SingleAgentDemo.Controllers;
 
 [ApiController]
@@ -11,21 +12,21 @@ public class SingleAgentController : ControllerBase
 {
     private readonly ILogger<SingleAgentController> _logger;
     private readonly Kernel _kernel;
-    private readonly IAnalyzePhotoService _analyzePhotoService;
-    private readonly ICustomerInformationService _customerInformationService;
-    private readonly IToolReasoningService _toolReasoningService;
-    private readonly IInventoryService _inventoryService;
+    private readonly AnalyzePhotoService _analyzePhotoService;
+    private readonly CustomerInformationService _customerInformationService;
+    private readonly ToolReasoningService _toolReasoningService;
+    private readonly InventoryService _inventoryService;
 
     public SingleAgentController(
-        ILogger<SingleAgentController> logger,
-        Kernel kernel,
-        IAnalyzePhotoService analyzePhotoService,
-        ICustomerInformationService customerInformationService,
-        IToolReasoningService toolReasoningService,
-        IInventoryService inventoryService)
+        ILogger<SingleAgentController> logger,        
+        AnalyzePhotoService analyzePhotoService,
+        CustomerInformationService customerInformationService,
+        ToolReasoningService toolReasoningService,
+        InventoryService inventoryService,
+        SemanticKernelProvider semanticKernelProvider)
     {
         _logger = logger;
-        _kernel = kernel;
+        _kernel = semanticKernelProvider.GetKernel();
         _analyzePhotoService = analyzePhotoService;
         _customerInformationService = customerInformationService;
         _toolReasoningService = toolReasoningService;

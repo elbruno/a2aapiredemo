@@ -2,7 +2,7 @@ using SharedEntities;
 
 namespace MultiAgentDemo.Services;
 
-public class LocationAgentService : ILocationAgentService
+public class LocationAgentService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<LocationAgentService> _logger;

@@ -9,7 +9,9 @@ public class SemanticKernelProvider
 {
     private readonly Kernel _kernel;
 
-    public SemanticKernelProvider(string openAIConnection, string chatDeploymentName = "gpt-5-mini")
+    public SemanticKernelProvider(
+        string openAIConnection = "ConnectionStrings:aifoundry", 
+        string chatDeploymentName = "gpt-5-mini")
     {
         // Parse the connection string into endpoint + apiKey.
         var (endpoint, apiKey) = ParseAzureOpenAIConnection(openAIConnection);

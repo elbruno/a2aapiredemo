@@ -12,7 +12,9 @@ public class ReasoningController : ControllerBase
     private readonly ILogger<ReasoningController> _logger;
     private readonly Kernel _kernel;
 
-    public ReasoningController(ILogger<ReasoningController> logger, SemanticKernelProvider semanticKernelProvider)
+    public ReasoningController(
+        ILogger<ReasoningController> logger, 
+        SemanticKernelProvider semanticKernelProvider)
     {
         _logger = logger;
         _kernel = semanticKernelProvider.GetKernel();

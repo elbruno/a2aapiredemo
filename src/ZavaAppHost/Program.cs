@@ -81,7 +81,7 @@ if (builder.ExecutionContext.IsPublishMode)
 {
     // production code uses Azure services, so we need to add them here
     var appInsights = builder.AddAzureApplicationInsights("appInsights");
-    var aoai = builder.AddAzureOpenAI("openai");
+    var aoai = builder.AddAzureOpenAI("aifoundry");
 
     var gpt5mini = aoai.AddDeployment(name: chatDeploymentName,
             modelName: "gpt-5-mini",
@@ -116,7 +116,7 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 else
 {
-    openai = builder.AddConnectionString("openai");
+    openai = builder.AddConnectionString("aifoundry");
 }
 
 products.WithReference(openai)

@@ -1,5 +1,5 @@
-using Microsoft.SemanticKernel;
 using SingleAgentDemo.Services;
+using ZavaSemanticKernelProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,20 +12,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add Semantic Kernel services
-builder.Services.AddKernel();
+var openAiConnection = builder.Configuration.GetValue<string>("ConnectionStrings:openai");
+var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "gpt-5-mini";
+builder.Services.AddSingleton(sp =>
+    new SemanticKernelProvider(openAiConnection, chatDeploymentName));
 
 // Register service layer implementations for external services
-builder.Services.AddHttpClient<IAnalyzePhotoService, AnalyzePhotoService>(
+builder.Services.AddHttpClient<AnalyzePhotoService>(
     client => client.BaseAddress = new Uri("https+http://analyzephotoservice"));
 
-builder.Services.AddHttpClient<ICustomerInformationService, CustomerInformationService>(
+builder.Services.AddHttpClient<CustomerInformationService>(
     client => client.BaseAddress = new Uri("https+http://customerinformationservice"));
 
-builder.Services.AddHttpClient<IToolReasoningService, ToolReasoningService>(
+builder.Services.AddHttpClient<ToolReasoningService>(
     client => client.BaseAddress = new Uri("https+http://toolreasoningservice"));
 
-builder.Services.AddHttpClient<IInventoryService, InventoryService>(
+builder.Services.AddHttpClient<InventoryService>(
     client => client.BaseAddress = new Uri("https+http://inventoryservice"));
 
 var app = builder.Build();

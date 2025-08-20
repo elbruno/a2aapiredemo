@@ -1,12 +1,8 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using MultiAgentDemo.Services;
 using SharedEntities;
+using ZavaSemanticKernelProvider;
 
 namespace MultiAgentDemo.Controllers
 {
@@ -16,29 +12,27 @@ namespace MultiAgentDemo.Controllers
     {
         private readonly ILogger<MultiAgentController> _logger;
         private readonly Kernel _kernel;
-        private readonly IInventoryAgentService _inventoryAgentService;
-        private readonly IMatchmakingAgentService _matchmakingAgentService;
-        private readonly ILocationAgentService _locationAgentService;
-        private readonly INavigationAgentService _navigationAgentService;
+        private readonly InventoryAgentService _inventoryAgentService;
+        private readonly MatchmakingAgentService _matchmakingAgentService;
+        private readonly LocationAgentService _locationAgentService;
+        private readonly NavigationAgentService _navigationAgentService;
 
         public MultiAgentController(
             ILogger<MultiAgentController> logger,
                 Kernel kernel,
-            IInventoryAgentService inventoryAgentService,
-            IMatchmakingAgentService matchmakingAgentService,
-            ILocationAgentService locationAgentService,
-            INavigationAgentService navigationAgentService)
+            InventoryAgentService inventoryAgentService,
+            MatchmakingAgentService matchmakingAgentService,
+            LocationAgentService locationAgentService,
+            NavigationAgentService navigationAgentService,
+            SemanticKernelProvider semanticKernelProvider)
         {
             _logger = logger;
-            _kernel = kernel;
+            _kernel = semanticKernelProvider.GetKernel();
             _inventoryAgentService = inventoryAgentService;
             _matchmakingAgentService = matchmakingAgentService;
             _locationAgentService = locationAgentService;
             _navigationAgentService = navigationAgentService;
         }
-
-        // Strongly-typed kernel instance injected via DI.
-        // Use `_kernel` directly for any operations that require Semantic Kernel functionality.
 
         [HttpPost("assist")]
         public async Task<ActionResult<MultiAgentResponse>> AssistAsync([FromBody] MultiAgentRequest? request)
