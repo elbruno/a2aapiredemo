@@ -1,4 +1,4 @@
-name: Deploy eShopLite to Azure
+name: Deploy Zava to Azure
 
 on:
   push:
@@ -86,7 +86,7 @@ jobs:
         run: |
           export PATH="$HOME/.dotnet:$PATH"
           cd src
-          dotnet restore eShopAppHost/eShopAppHost.csproj
+          dotnet restore ZavaAppHost/ZavaAppHost.csproj
           dotnet restore Products/Products.csproj
           dotnet restore Search/Search.csproj
           dotnet restore Chat/Chat.csproj
@@ -96,7 +96,7 @@ jobs:
         run: |
           export PATH="$HOME/.dotnet:$PATH"
           cd src
-          dotnet build eShopAppHost/eShopAppHost.csproj --no-restore --configuration Release
+          dotnet build ZavaAppHost/ZavaAppHost.csproj --no-restore --configuration Release
           dotnet build Products/Products.csproj --no-restore --configuration Release
           dotnet build Search/Search.csproj --no-restore --configuration Release
           dotnet build Chat/Chat.csproj --no-restore --configuration Release
@@ -164,8 +164,8 @@ jobs:
           context: .
           file: dockerfiles/Dockerfile.${{ matrix.service }}
           tags: |
-            eshoplite/${{ matrix.service }}:latest
-            eshoplite/${{ matrix.service }}:${{ github.sha }}
+            zava/${{ matrix.service }}:latest
+            zava/${{ matrix.service }}:${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ matrix.service }}-image.tar
 
       - name: Upload Docker image
@@ -197,9 +197,9 @@ jobs:
       - name: Create Resource Group
         run: |
           az group create \
-            --name "rg-eshoplite-${{ needs.setup.outputs.environment }}" \
+            --name "rg-zava-${{ needs.setup.outputs.environment }}" \
             --location "${{ env.AZURE_REGION }}" \
-            --tags environment=${{ needs.setup.outputs.environment }} application=eshoplite
+            --tags environment=${{ needs.setup.outputs.environment }} application=zava
 
       - name: Deploy BICEP template
         id: deploy
@@ -209,7 +209,7 @@ jobs:
           
           # Deploy infrastructure
           az deployment group create \
-            --resource-group "rg-eshoplite-${{ needs.setup.outputs.environment }}" \
+            --resource-group "rg-zava-${{ needs.setup.outputs.environment }}" \
             --template-file "$TEMPLATE_FILE" \
             --parameters "@$PARAMETERS_FILE" \
             --parameters nlWebApiKey="${{ secrets.NLWEB_API_KEY }}" \
@@ -262,11 +262,11 @@ jobs:
           az acr login --name $ACR_NAME
           
           # Tag and push image
-          docker tag eshoplite/${{ matrix.service }}:latest $ACR_SERVER/eshoplite/${{ matrix.service }}:latest
-          docker tag eshoplite/${{ matrix.service }}:latest $ACR_SERVER/eshoplite/${{ matrix.service }}:${{ github.sha }}
+          docker tag zava/${{ matrix.service }}:latest $ACR_SERVER/zava/${{ matrix.service }}:latest
+          docker tag zava/${{ matrix.service }}:latest $ACR_SERVER/zava/${{ matrix.service }}:${{ github.sha }}
           
-          docker push $ACR_SERVER/eshoplite/${{ matrix.service }}:latest
-          docker push $ACR_SERVER/eshoplite/${{ matrix.service }}:${{ github.sha }}
+          docker push $ACR_SERVER/zava/${{ matrix.service }}:latest
+          docker push $ACR_SERVER/zava/${{ matrix.service }}:${{ github.sha }}
 
       - name: Update Container App (if using Container Apps)
         if: needs.setup.outputs.deployment-type == 'container-apps'
@@ -275,9 +275,9 @@ jobs:
           ACR_SERVER=$(az acr show --name $ACR_NAME --query loginServer --output tsv)
           
           az containerapp update \
-            --name "eshoplite-${{ needs.setup.outputs.environment }}-${{ matrix.service }}" \
+            --name "zava-${{ needs.setup.outputs.environment }}-${{ matrix.service }}" \
             --resource-group "${{ needs.deploy-infrastructure.outputs.resource-group-name }}" \
-            --image "$ACR_SERVER/eshoplite/${{ matrix.service }}:${{ github.sha }}"
+            --image "$ACR_SERVER/zava/${{ matrix.service }}:${{ github.sha }}"
 
       - name: Update App Service (if using App Services)
         if: needs.setup.outputs.deployment-type == 'app-services'
@@ -286,9 +286,9 @@ jobs:
           ACR_SERVER=$(az acr show --name $ACR_NAME --query loginServer --output tsv)
           
           az webapp config container set \
-            --name "eshoplite-${{ needs.setup.outputs.environment }}-${{ matrix.service }}" \
+            --name "zava-${{ needs.setup.outputs.environment }}-${{ matrix.service }}" \
             --resource-group "${{ needs.deploy-infrastructure.outputs.resource-group-name }}" \
-            --docker-custom-image-name "$ACR_SERVER/eshoplite/${{ matrix.service }}:${{ github.sha }}" \
+            --docker-custom-image-name "$ACR_SERVER/zava/${{ matrix.service }}:${{ github.sha }}" \
             --docker-registry-server-url "https://$ACR_SERVER"
 
   # Run deployment tests
@@ -362,7 +362,7 @@ jobs:
           echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🎯 Key Features Deployed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ eShopLite Store with enhanced UI" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Zava Store with enhanced UI" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ AI Chat Assistant with real-time messaging" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ NLWeb-powered search functionality" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Products API with full catalog" >> $GITHUB_STEP_SUMMARY

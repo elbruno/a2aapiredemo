@@ -1,5 +1,3 @@
-using Azure.Provisioning.CognitiveServices;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sql = builder.AddSqlServer("sql")
@@ -12,6 +10,7 @@ var productsDb = sql
     .AddDatabase("productsDb");
 
 IResourceBuilder<IResourceWithConnectionString>? openai;
+
 var chatDeploymentName = "gpt-5-mini";
 var embeddingsDeploymentName = "text-embedding-ada-002";
 
@@ -49,8 +48,9 @@ if (builder.ExecutionContext.IsPublishMode)
 else
 {
     openai = builder.AddConnectionString("openai");
-}
+    }
 
+// Configure OpenAI references for all services that need AI capabilities
 products.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
