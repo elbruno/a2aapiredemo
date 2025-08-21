@@ -9,9 +9,9 @@ var productsDb = sql
     .WithDataVolume()
     .AddDatabase("productsDb");
 
-IResourceBuilder<IResourceWithConnectionString>? openai;
+IResourceBuilder<IResourceWithConnectionString>? aifoundry;
 
-var chatDeploymentName = "gpt-5-mini";
+var chatDeploymentName = "gpt-4.1-mini";
 var embeddingsDeploymentName = "text-embedding-ada-002";
 
 var products = builder.AddProject<Projects.Products>("products")
@@ -27,11 +27,11 @@ if (builder.ExecutionContext.IsPublishMode)
 {
     // production code uses Azure services, so we need to add them here
     var appInsights = builder.AddAzureApplicationInsights("appInsights");
-    var aoai = builder.AddAzureOpenAI("openai");
+    var aoai = builder.AddAzureOpenAI("aifoundry");
 
     var gpt5mini = aoai.AddDeployment(name: chatDeploymentName,
-            modelName: "gpt-5-mini",
-            modelVersion: "2025-08-07");    
+            modelName: "gpt-4.1-mini",
+            modelVersion: "2025-04-14");
     gpt5mini.Resource.SkuName = "GlobalStandard";
 
     var embeddingsDeployment = aoai.AddDeployment(name: embeddingsDeploymentName,
@@ -43,15 +43,15 @@ if (builder.ExecutionContext.IsPublishMode)
     store.WithReference(appInsights)
         .WithExternalHttpEndpoints();
 
-    openai = aoai;
+    aifoundry = aoai;
 }
 else
 {
-    openai = builder.AddConnectionString("openai");
-    }
+    aifoundry = builder.AddConnectionString("aifoundry");
+}
 
 // Configure OpenAI references for all services that need AI capabilities
-products.WithReference(openai)
+products.WithReference(aifoundry)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 

@@ -19,11 +19,11 @@ resource openai 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
 }
 
 resource gpt_5_mini 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
-  name: 'gpt-5-mini'
+  name: 'gpt-4.1-mini'
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-5-mini'
+      name: 'gpt-4.1-mini'
       version: '2025-08-07'
     }
   }
