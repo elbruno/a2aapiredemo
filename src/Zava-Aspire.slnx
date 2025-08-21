@@ -6,6 +6,8 @@
   <Folder Name="/2 Zava/">
     <Project Path="Products/Products.csproj" />
     <Project Path="Store/Store.csproj" />
+    <Project Path="SingleAgentDemo/SingleAgentDemo.csproj" />
+    <Project Path="MultiAgentDemo/MultiAgentDemo.csproj" />
   </Folder>
   <Folder Name="/3 Models/">
     <Project Path="CartEntities/CartEntities.csproj" />

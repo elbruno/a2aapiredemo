@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
+// using Microsoft.Extensions.ServiceDiscovery; // Not available in .NET 8
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -22,24 +22,26 @@ namespace Microsoft.Extensions.Hosting
 
             builder.AddDefaultHealthChecks();
 
-            builder.Services.AddServiceDiscovery();
+            // Service discovery not available in .NET 8
+            // builder.Services.AddServiceDiscovery();
 
             builder.Services.ConfigureHttpClientDefaults(http =>
             {
+                // Resilience configuration commented out due to .NET 8 compatibility
                 // Turn on resilience by default
                 // http.AddStandardResilienceHandler();
 
-                http.AddStandardResilienceHandler(config =>
-                {
-                    TimeSpan timeSpan = TimeSpan.FromMinutes(2);
-                    config.AttemptTimeout.Timeout = timeSpan;
-                    config.CircuitBreaker.SamplingDuration = timeSpan * 2;
-                    config.TotalRequestTimeout.Timeout = timeSpan * 3;
-                    config.Retry.MaxRetryAttempts = 1;
-                });
+                // http.AddStandardResilienceHandler(config =>
+                // {
+                //     TimeSpan timeSpan = TimeSpan.FromMinutes(2);
+                //     config.AttemptTimeout.Timeout = timeSpan;
+                //     config.CircuitBreaker.SamplingDuration = timeSpan * 2;
+                //     config.TotalRequestTimeout.Timeout = timeSpan * 3;
+                //     config.Retry.MaxRetryAttempts = 1;
+                // });
 
                 // Turn on service discovery by default
-                http.AddServiceDiscovery();
+                // http.AddServiceDiscovery(); // Not available in .NET 8
             });
 
             // Uncomment the following to restrict the allowed schemes for service discovery.

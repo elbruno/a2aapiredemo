@@ -19,8 +19,14 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
     .WaitFor(productsDb);
 
+// Add new AI-powered demo services for single and multi-agent scenarios
+var singleAgentDemo = builder.AddProject<Projects.SingleAgentDemo>("singleagentdemo");
+var multiAgentDemo = builder.AddProject<Projects.MultiAgentDemo>("multiagentdemo");
+
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
+    .WithReference(singleAgentDemo)  // Store can reference the demo services
+    .WithReference(multiAgentDemo)
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
@@ -40,6 +46,8 @@ if (builder.ExecutionContext.IsPublishMode)
         modelVersion: "1");
 
     products.WithReference(appInsights);
+    singleAgentDemo.WithReference(appInsights);  // Add Application Insights to new services
+    multiAgentDemo.WithReference(appInsights);
 
     store.WithReference(appInsights)
         .WithExternalHttpEndpoints();
@@ -51,7 +59,17 @@ else
     openai = builder.AddConnectionString("openai");
 }
 
+// Configure OpenAI references for all services that need AI capabilities
 products.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
+    .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+// Add OpenAI references to new demo services with same configuration as Products
+singleAgentDemo.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
+    .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+multiAgentDemo.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
