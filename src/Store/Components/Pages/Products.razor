@@ -33,12 +33,13 @@ else
             {
                 <tr>
                     @{
-                        var productsBase = Configuration["ProductsBaseUrl"] ?? "";
-                        var imgSrc = string.IsNullOrEmpty(productsBase)
-                            ? $"/images/{product.ImageUrl}"
-                            : $"{productsBase.TrimEnd('/')}/images/{product.ImageUrl}";
+                        // Use local static files under Store/wwwroot/images. Configure ProductsBaseUrl as empty to ensure local hosting.
+                        var imgSrc = $"/images/{product.ImageUrl}";
                     }
-                    <td><img height="80" width="80" src="@imgSrc" alt="@product.Name" /></td>
+                    <td>
+                        <img height="80" width="80" src="@imgSrc" alt="@product.Name"
+                             onerror="this.onerror=null; this.src='/images/placeholder.svg';" />
+                    </td>
                     <td>@product.Name</td>
                     <td>@product.Description</td>
                     <td>@product.Price.ToString("C")</td>

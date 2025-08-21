@@ -46,14 +46,12 @@ else
             @foreach (var product in products)
                 {
                 <tr>
-                    <!-- Use local Products images or configured ProductsBaseUrl -->
-                    @{
-                        var productsBase = Configuration["ProductsBaseUrl"] ?? "";
-                        var imgSrc = string.IsNullOrEmpty(productsBase)
-                            ? $"/images/{product.ImageUrl}"
-                            : $"{productsBase.TrimEnd('/')}/images/{product.ImageUrl}";
-                    }
-                    <td><img height="80" width="80" src="@imgSrc" alt="@product.Name" /></td>
+                    <!-- Always use locally-hosted images under Store/wwwroot/images -->
+                    @{ var imgSrc = $"/images/{product.ImageUrl}"; }
+                    <td>
+                        <img height="80" width="80" src="@imgSrc" alt="@product.Name"
+                             onerror="this.onerror=null; this.src='/images/placeholder.svg';" />
+                    </td>
                     <td>@product.Name</td>
                     <td>@product.Description</td>
                     <td>@product.Price</td>
