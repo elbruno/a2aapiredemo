@@ -32,7 +32,6 @@ else
             @foreach (var product in products)
             {
                 <tr>
-                    <!-- Simulating images being hosted on a CDN -->
                     @{
                         var productsBase = Configuration["ProductsBaseUrl"] ?? "";
                         var imgSrc = string.IsNullOrEmpty(productsBase)
