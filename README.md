@@ -2,15 +2,9 @@
 
 ## Description
 
-**Zava - AI-Powered eCommerce Platform** is a reference .NET application implementing an eCommerce site with advanced Search features using Keyword Search, Semantic Search, and AI Agent demonstrations.
-
-**New in this version:**
-- **Single Agent Demo**: AI-powered tool recommendations based on image analysis and customer profiles
-- **Multi-Agent Orchestration**: Coordinated AI agents for inventory, product matching, location finding, and navigation
-- **Zava Branding**: Updated from eShopLite to Zava for modern presentation
+**eShopLite - Semantic Search** is a reference .NET application implementing an eCommerce site with Search features using Keyword Search and Semantic Search.
 
 - [Features](#features)
-- [AI Agent Demos](#ai-agent-demos)
 - [Architecture diagram](#architecture-diagram)
 - [Getting started](#getting-started)
 - [Deploying to Azure](#deploying)
@@ -31,45 +25,13 @@
 
 **GitHub CodeSpaces:** This project is designed to be opened in GitHub Codespaces as an easy way for anyone to deploy the solution entirely in the browser.
 
-This is the Zava Application running, performing a **Keyword Search**:
+This is the eShopLite Aplication running, performing a **Keyword Search**:
 
-![Zava Application running doing search using keyword search](./images/05eShopLite-SearchKeyWord.gif)
+![eShopLite Aplication running doing search using keyworkd search](./images/05eShopLite-SearchKeyWord.gif)
 
-This is the Zava Application running, performing a **Semantic Search**:
+This is the eShopLite Aplication running, performing a **Semantic Search**:
 
-![Zava Application running doing search using semantic search](./images/06eShopLite-SearchSemantic.gif)
-
-## AI Agent Demos
-
-**NEW**: Zava now includes two AI-powered demonstration scenarios:
-
-### Scenario 1: Single Agent Analysis
-- **Endpoint**: `/scenario1-single-agent`
-- **API**: `POST /api/single-agent/analyze`
-- **Features**:
-  - Upload project images for AI analysis
-  - Get tool recommendations based on your existing tools and skills
-  - Semantic Kernel integration for intelligent reasoning
-  - Real-time inventory checking and pricing
-  - Fallback demo data for development/testing
-
-### Scenario 2: Multi-Agent Orchestration  
-- **Endpoint**: `/scenario2-multi-agent`
-- **API**: `POST /api/multi-agent/assist`
-- **Features**:
-  - Coordinated AI agents working together
-  - Inventory Agent: Product search and availability
-  - Matchmaking Agent: Alternative product suggestions
-  - Location Agent: In-store product locations
-  - Navigation Agent: Step-by-step directions
-  - Real-time orchestration visualization
-  - Optional location-based navigation
-
-Both scenarios include:
-- Professional web UI with Bootstrap styling
-- Service discovery through .NET Aspire
-- Comprehensive error handling and fallback data
-- Integration with existing Zava store infrastructure
+![eShopLite Aplication running doing search using keyworkd search](./images/06eShopLite-SearchSemantic.gif)
 
 The Aspire Dashboard to check the running services:
 
@@ -86,39 +48,6 @@ The Azure Resource Group with all the deployed services:
 ## Getting Started
 
 The solution is in the `./src` folder, the main solution is **[eShopLite-Aspire.slnx](./src/eShopLite-Aspire.slnx)**.
-
-### New Services Added
-
-The solution now includes two additional AI agent services:
-
-1. **SingleAgentDemo** - `src/SingleAgentDemo/`
-   - Web API for single agent image analysis and tool recommendations
-   - Endpoints: `/api/single-agent/analyze`
-   - Technologies: ASP.NET Core, Semantic Kernel, Aspire integration
-
-2. **MultiAgentDemo** - `src/MultiAgentDemo/`  
-   - Web API for multi-agent orchestration scenarios
-   - Endpoints: `/api/multi-agent/assist`
-   - Technologies: ASP.NET Core, Semantic Kernel, Aspire integration
-
-3. **Enhanced Store UI** - `src/Store/`
-   - New demo pages: `/scenario1-single-agent` and `/scenario2-multi-agent`
-   - Updated branding from eShopLite to Zava
-   - Bootstrap-based responsive design
-
-### Required Environment Variables
-
-For AI functionality, you'll need:
-- `OPENAI_API_KEY` or configure Azure OpenAI connection strings
-- `AI_ChatDeploymentName` (default: "gpt-5-mini")
-- `AI_embeddingsDeploymentName` (default: "text-embedding-ada-002")
-
-### Running the AI Agent Demos
-
-1. Start the Aspire AppHost: `dotnet run --project src/eShopAppHost`
-2. Navigate to the Store application
-3. Use the new "Agent Demos" section in the navigation menu
-4. Try both single agent and multi-agent scenarios
 
 ## Deploying
 
