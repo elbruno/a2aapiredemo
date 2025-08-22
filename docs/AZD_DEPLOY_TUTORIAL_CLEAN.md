@@ -31,7 +31,7 @@ Follow these numbered steps to deploy the AI Foundry (Azure Cognitive Services /
     az deployment sub show --name main --query "properties.outputs" -o json
     ```
 
-    Copy the values for the account name and resource group from the JSON output (for example, `aifoundry-wdjty2jk3oiw2` and `rg-brunobrk44704`).
+    Copy the values for the account name and resource group from the JSON output (for example, `aifoundry-wdjty2jk3oiw2` and `rg-brk447demo`).
 
 1. List keys and print a full connection string
 
