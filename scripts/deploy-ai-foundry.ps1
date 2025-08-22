@@ -26,6 +26,12 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$DeploymentName = 'main'
+    ,
+    [Parameter(Mandatory = $false)]
+    [string]$ResourceGroup
+    ,
+    [Parameter(Mandatory = $false)]
+    [string]$AccountName
 )
 
 function Test-AzCommandAvailable {
@@ -44,7 +50,7 @@ if (-not (Test-AzCommandAvailable -Name 'az')) {
 Write-Host "Starting subscription deployment ($DeploymentName) in location $Location for environment $EnvironmentName..."
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = Resolve-Path "$scriptDir\.."
+$repoRoot = (Resolve-Path "$scriptDir\..").Path
 $template = Join-Path $repoRoot 'infra\main.bicep'
 
 if (-not (Test-Path $template)) {
@@ -53,11 +59,12 @@ if (-not (Test-Path $template)) {
 }
 
 # Create the deployment
+$paramString = "environmentName=$EnvironmentName location=$Location"
 $deployCmd = @(
     'deployment', 'sub', 'create',
     '--location', $Location,
     '--template-file', $template,
-    '--parameters', "environmentName=$EnvironmentName", 'location=' + $Location,
+    '--parameters', $paramString,
     '--name', $DeploymentName
 )
 
@@ -69,11 +76,21 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Query deployment outputs
-$show = az deployment sub show --name $DeploymentName --query "properties.outputs" -o json 2>$null | ConvertFrom-Json
-if ($null -eq $show) {
-    Write-Warning "No outputs found in the subscription deployment. Printing raw deployment show output to help debugging."
-    az deployment sub show --name $DeploymentName -o json
-    exit 5
+if ($ResourceGroup -and $AccountName) {
+    Write-Host "Using provided ResourceGroup: $ResourceGroup and AccountName: $AccountName"
+    $rg = $ResourceGroup
+    $account = $AccountName
+}
+else {
+    $show = az deployment sub show --name $DeploymentName --query "properties.outputs" -o json 2>$null | ConvertFrom-Json
+    if ($null -eq $show) {
+        Write-Warning "No outputs found in the subscription deployment. Printing raw deployment show output to help debugging."
+        az deployment sub show --name $DeploymentName -o json
+        exit 5
+    }
+
+    # Attempt to locate resourceGroup and accountName in outputs (common output names used in this repo)
+    # ...existing detection logic continues below
 }
 
 # Attempt to locate resourceGroup and accountName in outputs (common output names used in this repo)

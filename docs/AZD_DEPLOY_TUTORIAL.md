@@ -52,6 +52,12 @@ Important: before using Quick mode you MUST run `az login` (see above) so the sc
 From the repository root run:
 
 ```pwsh
+.\scripts\deploy-ai-foundry.ps1 -Location eastus2 -EnvironmentName brk447demo
+```
+
+or
+
+```pwsh
 pwsh -File scripts/deploy-ai-foundry.ps1 -Location eastus2 -EnvironmentName brk447demo
 ```
 
