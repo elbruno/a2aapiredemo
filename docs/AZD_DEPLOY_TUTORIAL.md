@@ -9,14 +9,16 @@ Prerequisites
 
 Quick deploy (subscription-scoped)
 
-Open a PowerShell prompt in the repository root and run:
+Open a PowerShell prompt in the repository root and run.
+
+Example (East US 2, environment name `brk447demo`):
 
 ```pwsh
 # Authenticate if needed
 az login
 
-# Deploy AI Foundry only. Replace <location> and <env>.
-az deployment sub create --location <location> --template-file infra/main.bicep --parameters environmentName=<env> location=<location>
+# Example deploy for East US 2 and env 'brk447demo'
+az deployment sub create --location eastus2 --template-file infra/main.bicep --parameters environmentName=brk447demo location=eastus2
 ```
 
 What this provisions
@@ -27,8 +29,16 @@ What this provisions
 Post-deploy: retrieve keys (if you plan to use key-based auth for demos)
 
 ```pwsh
-# Get the account name from the deployment outputs or list accounts in the resource group
-az cognitiveservices account keys list -g rg-<env> -n <accountName>
+# List keys for the Cognitive Services account. Replace <env> and <accountName>.
+az cognitiveservices account keys list -g rg-brk447demo -n <accountName>
+
+# Produce a full connection string in the format: [Endpoint=https://<resource>.openai.azure.com/;Key=<key>;]
+# Example: fetch the primary key and print the connection string (PowerShell)
+$accountName = '<accountName>'
+$rg = 'rg-brk447demo'
+$keys = az cognitiveservices account keys list -g $rg -n $accountName --query "{key:primaryKey}" -o tsv
+$endpoint = az cognitiveservices account show -g $rg -n $accountName --query "properties.endpoint" -o tsv
+"[Endpoint=$endpoint;Key=$keys;]"
 ```
 
 Notes and recommendations
