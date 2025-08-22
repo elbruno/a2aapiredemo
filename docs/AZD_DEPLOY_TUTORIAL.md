@@ -1,93 +1,89 @@
-## AZD deploy tutorial
+# AZD deploy tutorial
 
-This tutorial explains how to deploy the necessary cloud resources for this repository using the Azure Developer CLI (`azd`) and the `azd up` command from the `src\ZavaAppHost` folder.
+This tutorial explains how to provision the cloud resources required for this repository using the Azure Developer CLI (`azd`) from the `src\ZavaAppHost` folder. The recommended primary command for this demo is `azd provision` which creates resources only; deploying the application (`azd up`) is optional and documented as an extra step.
 
-Prerequisites
+## Prerequisites
 
 - Windows 10/11 or a supported OS
-- PowerShell (pwsh) or Windows PowerShell
-- .NET SDK 9.0.x installed
-- Visual Studio 2022/2023 with ASP.NET and web development workloads (or Visual Studio Code)
-- Azure Developer CLI (`azd`) installed and available in `PATH`
-- Docker Desktop installed and running (for containerized services)
-- An Azure subscription and appropriate permissions to create resources
-- Optional: `OPENAI_API_KEY` or other AI provider environment variables if you plan to enable AI features
+- PowerShell (pwsh) — install instructions: [Install PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)
+- .NET SDK 9.0.x (required) — download: [.NET 9 downloads](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- Visual Studio 2022 **Enterprise** or **Preview** (with ASP.NET and web development workload) — downloads:
+  - [Visual Studio 2022 Enterprise](https://visualstudio.microsoft.com/vs/enterprise/)
+  - [Visual Studio Preview](https://visualstudio.microsoft.com/vs/preview/)
+- Azure Developer CLI (`azd`) — install: [azd install docs](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- Docker Desktop (for containerized builds) — download: [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- An Azure subscription (create a free account if needed): [Azure free account](https://azure.microsoft.com/free/)
 
-Quick checklist
+## Quick checklist
 
 - Verify PowerShell: `pwsh --version` or `powershell --version`
 - Verify .NET SDK: `dotnet --version` (should start with `9.`)
 - Verify Azure Developer CLI: `azd version`
 - Verify Docker: `docker --version` and ensure Docker Desktop is running
 
-Prepare repository
+## Prepare repository
 
 1. Open a PowerShell terminal (pwsh) in the repository root.
 2. Ensure you are on the correct branch and the repo is up to date.
 
-Deploy with `azd up`
+## Provision resources (primary step)
 
-1. Change directory to the AppHost folder that contains the deployment manifest:
+1. Change directory to the AppHost folder that contains the `azd` project configuration:
 
    ```powershell
    cd src\ZavaAppHost
    ```
 
-2. Run the Azure Developer CLI command to provision and deploy resources:
+2. Run the Azure Developer CLI command to provision cloud resources (creates resource group, storage, container registry, etc., but does not deploy the application code):
 
    ```powershell
-   azd up
+   azd provision
    ```
 
-3. Follow interactive prompts from `azd up`. The command will:
+3. Follow the interactive prompts. `azd provision` will:
 
 - Create or select an Azure subscription and resource group
-- Provision required resources (App Service, Storage, Container Registry, etc.)
-- Build and deploy the application
+- Provision required cloud resources for the demo (App Service, Storage, Container Registry, Key Vault, etc., depending on the template)
 
-Environment variables and secrets
+Note: `azd provision` prepares infrastructure only; it does not build or deploy application artifacts.
 
-- If the application requires AI keys or other secrets set these before running `azd up` or provide them through the Azure Key Vault integration that `azd` configures. Example environment variables you may need locally before running the app:
+## Optional: deploy the application
 
-  ```powershell
-  $env:OPENAI_API_KEY = "<your-openai-key>"
-  $env:AI_ChatDeploymentName = "<chat-deployment-name>"
-  $env:AI_embeddingsDeploymentName = "<embeddings-deployment-name>"
-  ```
+If you want to build and deploy the demo application after provisioning, run the following (optional):
 
-Verification and smoke tests
+```powershell
+azd up
+```
 
-- After `azd up` completes, note the endpoints and connection strings printed by the CLI.
-- Test the main AppHost endpoint (example):
+`azd up` will build container images or .NET projects and deploy them into the provisioned resources — use this only when you want a full end-to-end deploy.
 
-   ```powershell
-   Invoke-RestMethod -Uri http://localhost:5000/health
-   ```
+## Troubleshooting
 
-- If services are deployed to Azure, open the provided App Service URL in your browser and call the same health endpoint.
-
-Troubleshooting
-
-- `azd` asks for login: run `az login` before `azd up` to authenticate.
+- `azd` asks for login: run `az login` before `azd provision` to authenticate.
 - Insufficient permissions: ensure your Azure account can create resources or use a service principal with required role assignments.
 - Docker not running: start Docker Desktop before running if `azd` needs to build container images.
-- .NET SDK mismatch: ensure `dotnet --version` prints a version starting with `9.` to match repository `global.json`.
+- .NET SDK mismatch: ensure `dotnet --version` prints a version starting with `9.` to match the repository requirement.
 
-Notes and best practices
+## Notes and best practices
 
 - Keep secrets out of source control. Use Azure Key Vault and `azd` secret management.
-- For CI, add a pipeline step to run `azd` in non-interactive mode with service principal credentials.
-- If you add new services, update `src\ZavaAppHost/Program.cs` to register them with the Aspire orchestrator and update any deployment manifests used by `azd`.
+- For CI, run `azd` in non-interactive mode using a service principal and provide required inputs through environment variables or pipeline secrets.
+- If you add new services, update `src\ZavaAppHost/Program.cs` to register them with the Aspire orchestrator and update any `azd` manifests used by the project.
 
-Next steps
+## Next steps
 
-- Run `azd up` from `src\ZavaAppHost` and follow the output.
-- After successful deploy, run smoke tests against the `/api/single-agent/analyze` and `/api/multi-agent/assist` endpoints if those services are included.
+- Run `azd provision` from `src\ZavaAppHost` to create required cloud resources.
+- Optionally run `azd up` to build and deploy the application artifacts into the provisioned resources.
 
-References
+## References
 
-- Azure Developer CLI: <https://learn.microsoft.com/azure/developer/azure-developer-cli>
-- Docker Desktop: <https://www.docker.com/products/docker-desktop>
+- Azure Developer CLI (azd) install & docs: [azd docs](https://learn.microsoft.com/azure/developer/azure-developer-cli)
+- PowerShell install: [Install PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)
+- .NET 9 downloads: [.NET 9 downloads](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- Visual Studio 2022 Enterprise: [Visual Studio 2022 Enterprise](https://visualstudio.microsoft.com/vs/enterprise/)
+- Visual Studio Preview: [Visual Studio Preview](https://visualstudio.microsoft.com/vs/preview/)
+- Docker Desktop: [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Create an Azure free account: [Azure free account](https://azure.microsoft.com/free/)
 
 --
-Tutorial created for this repository. If you want a CI/CD pipeline or a non-interactive `azd` workflow, I can add an example GitHub Actions workflow next.
+Tutorial updated for this repository. If you want, I can add a non-interactive CI example that runs `azd provision` with a service principal and then `azd deploy` in a separate step.
