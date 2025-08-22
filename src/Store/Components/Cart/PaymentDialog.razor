@@ -1,0 +1,156 @@
+@using CartEntities
+@using Store.Services.Payment
+
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-credit-card me-2"></i>
+                    Payment Information
+                </h5>
+                <button type="button" class="btn-close" @onclick="Cancel"></button>
+            </div>
+            <div class="modal-body">
+                @if (isProcessing)
+                {
+                    <div class="text-center py-4">
+                        <div class="spinner-border mb-3" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <h6>Processing Payment</h6>
+                        <p class="text-muted">Please wait while we process your payment...</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-4">
+                        <h6>Order Summary</h6>
+                        <div class="border rounded p-3 bg-light">
+                            <div class="d-flex justify-content-between">
+                                <span>Total Amount:</span>
+                                <strong>@Cart.Total.ToString("C")</strong>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted">
+                                <small>Items: @Cart.ItemCount</small>
+                                <small>Tax: @Cart.Tax.ToString("C")</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Payment Method</label>
+                        <div class="list-group">
+                            @foreach (var method in paymentMethods)
+                            {
+                                <label class="list-group-item list-group-item-action d-flex align-items-center">
+                                    <input type="radio" name="paymentMethod" value="@method.Value" 
+                                           @onchange="@((e) => selectedPaymentMethod = method.Value)"
+                                           checked="@(selectedPaymentMethod == method.Value)" 
+                                           class="form-check-input me-3" />
+                                    <div>
+                                        <i class="@method.Icon me-2"></i>
+                                        <strong>@method.Name</strong>
+                                        <br />
+                                        <small class="text-muted">@method.Description</small>
+                                    </div>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            @errorMessage
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Cancel" disabled="@isProcessing">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" @onclick="ProcessPayment" disabled="@(isProcessing || string.IsNullOrEmpty(selectedPaymentMethod))">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Pay @Cart.Total.ToString("C")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CartEntities.Cart Cart { get; set; } = new();
+    [Parameter, EditorRequired] public Customer Customer { get; set; } = new();
+    [Parameter] public EventCallback<string> OnPaymentSuccess { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private bool isProcessing = false;
+    private string selectedPaymentMethod = "Visa ****1234";
+    private string? errorMessage;
+
+    private readonly List<PaymentMethodOption> paymentMethods = new()
+    {
+        new PaymentMethodOption { Value = "Visa ****1234", Name = "Visa Card", Description = "Ending in 1234", Icon = "bi bi-credit-card" },
+        new PaymentMethodOption { Value = "MasterCard ****5678", Name = "MasterCard", Description = "Ending in 5678", Icon = "bi bi-credit-card-2-front" },
+        new PaymentMethodOption { Value = "PayPal", Name = "PayPal", Description = "Use your PayPal account", Icon = "bi bi-paypal" },
+        new PaymentMethodOption { Value = "Apple Pay", Name = "Apple Pay", Description = "Quick and secure", Icon = "bi bi-apple" }
+    };
+
+    protected override void OnInitialized()
+    {
+        // Default to first payment method
+        selectedPaymentMethod = paymentMethods.First().Value;
+    }
+
+    private async Task ProcessPayment()
+    {
+        if (string.IsNullOrEmpty(selectedPaymentMethod))
+        {
+            errorMessage = "Please select a payment method";
+            return;
+        }
+
+        try
+        {
+            isProcessing = true;
+            errorMessage = null;
+
+            // Simulate payment processing delay for demo
+            await Task.Delay(2000);
+
+            // For demo purposes, we'll simulate a successful payment
+            // In a real implementation, this would call the PaymentsClient
+            await OnPaymentSuccess.InvokeAsync(selectedPaymentMethod);
+        }
+        catch (Exception)
+        {
+            errorMessage = "Payment processing failed. Please try again.";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        if (!isProcessing)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    private class PaymentMethodOption
+    {
+        public string Value { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+    }
+}

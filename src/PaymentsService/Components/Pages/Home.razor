@@ -1,0 +1,100 @@
+@page "/"
+@attribute [StreamRendering(true)]
+
+<PageTitle>Payments Service</PageTitle>
+
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+            <div class="container">
+                <h1 class="display-4">
+                    <i class="bi bi-credit-card me-3"></i>
+                    Payments Service
+                </h1>
+                <p class="lead">Mock payment processing service for Zava-Aspire demo applications</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-list-ul text-primary me-2"></i>
+                    View Payments
+                </h5>
+                <p class="card-text">Browse and search through all processed payments with detailed information.</p>
+                <a href="/payments" class="btn btn-primary">
+                    <i class="bi bi-arrow-right me-1"></i>View Payments
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-code-slash text-success me-2"></i>
+                    API Documentation
+                </h5>
+                <p class="card-text">Explore the REST API endpoints for payment processing and retrieval.</p>
+                <a href="/swagger" class="btn btn-success">
+                    <i class="bi bi-arrow-right me-1"></i>API Docs
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-heart-pulse text-info me-2"></i>
+                    Health Check
+                </h5>
+                <p class="card-text">Check the service health status and connectivity.</p>
+                <a href="/api/payments/health" class="btn btn-info">
+                    <i class="bi bi-arrow-right me-1"></i>Health Check
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Service Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>API Endpoints</h6>
+                        <ul class="list-unstyled">
+                            <li><code>POST /api/payments</code> - Process a new payment</li>
+                            <li><code>GET /api/payments</code> - List all payments (with pagination)</li>
+                            <li><code>GET /api/payments/{id}</code> - Get specific payment</li>
+                            <li><code>GET /api/payments/health</code> - Health check</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Features</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Mock payment processing</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>SQLite data persistence</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Aspire service discovery</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>RESTful API with Swagger docs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

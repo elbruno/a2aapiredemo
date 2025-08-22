@@ -1,9 +1,11 @@
 @page "/checkout"
 @using CartEntities
 @using Store.Services
+@using Store.Services.Payment
 @using Store.Components.Cart
 @inject ICartService CartService
 @inject ICheckoutService CheckoutService
+@inject IPaymentsClient PaymentsClient
 @inject NavigationManager Navigation
 @attribute [StreamRendering(true)]
 
@@ -98,11 +100,19 @@ else
     </div>
 }
 
+@if (showPaymentDialog)
+{
+    <PaymentDialog Cart="shoppingCart" Customer="customer" 
+                   OnPaymentSuccess="OnPaymentSuccess" 
+                   OnCancel="OnPaymentCancel" />
+}
+
 @code {
     private CartEntities.Cart shoppingCart = new();
     private Customer customer = new();
     private bool isLoading = true;
     private bool isProcessing = false;
+    private bool showPaymentDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,28 +140,78 @@ else
     {
         try
         {
-            isProcessing = true;
-            
             // Ensure shipping address is set correctly
             if (submittedCustomer.SameAsShipping)
             {
                 submittedCustomer.ShippingAddress = submittedCustomer.BillingAddress;
             }
 
-            // Process the order
-            var order = await CheckoutService.ProcessOrderAsync(submittedCustomer, shoppingCart);
-            
-            // Clear the cart
-            await CartService.ClearCartAsync();
-            
-            // Navigate to confirmation page
-            Navigation.NavigateTo($"/order-confirmation/{order.OrderNumber}");
+            customer = submittedCustomer;
+
+            // Show payment dialog instead of processing order directly
+            showPaymentDialog = true;
+        }
+        catch (Exception)
+        {
+            // Handle error - could show error message
+        }
+    }
+
+    private async Task OnPaymentSuccess(string paymentMethod)
+    {
+        try
+        {
+            isProcessing = true;
+            showPaymentDialog = false;
+
+            // Create payment request
+            var paymentRequest = new CreatePaymentRequest
+            {
+                UserId = customer.Email, // Use email as user ID for demo
+                CartId = Guid.NewGuid().ToString(), // Generate cart ID
+                Currency = "USD",
+                Amount = shoppingCart.Total,
+                PaymentMethod = paymentMethod,
+                Items = shoppingCart.Items.Select(item => new Store.Services.Payment.PaymentItem
+                {
+                    ProductId = item.ProductId.ToString(),
+                    Quantity = item.Quantity,
+                    UnitPrice = item.Price
+                }).ToList()
+            };
+
+            // Process payment through PaymentsService
+            var paymentResponse = await PaymentsClient.ProcessPaymentAsync(paymentRequest);
+
+            if (paymentResponse.Status == "Success")
+            {
+                // Process the order after successful payment
+                var order = await CheckoutService.ProcessOrderAsync(customer, shoppingCart);
+                
+                // Clear the cart
+                await CartService.ClearCartAsync();
+                
+                // Navigate to confirmation page with payment info
+                Navigation.NavigateTo($"/order-confirmation/{order.OrderNumber}?paymentId={paymentResponse.PaymentId}");
+            }
+            else
+            {
+                // Handle payment failure
+                isProcessing = false;
+                showPaymentDialog = true; // Show dialog again with error
+            }
         }
         catch (Exception)
         {
             // Handle error - could show error message
             isProcessing = false;
+            showPaymentDialog = true; // Show dialog again
         }
+    }
+
+    private void OnPaymentCancel()
+    {
+        showPaymentDialog = false;
     }
 
     private void BackToCart()
