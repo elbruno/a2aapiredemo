@@ -11,8 +11,8 @@ var productsDb = sql
 
 IResourceBuilder<IResourceWithConnectionString>? aifoundry;
 
-var chatDeploymentName = "chat";
-var embeddingsDeploymentName = "embeddings";
+var chatDeploymentName = "gpt-4.1-mini";
+var embeddingsDeploymentName = "text-embedding-ada-002";
 
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
@@ -36,7 +36,7 @@ if (builder.ExecutionContext.IsPublishMode)
 
     var embeddingsDeployment = aoai.AddDeployment(name: embeddingsDeploymentName,
         modelName: "text-embedding-ada-002",
-        modelVersion: "2");
+        modelVersion: "1");
 
     products.WithReference(appInsights);
 

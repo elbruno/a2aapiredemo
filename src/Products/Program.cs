@@ -21,8 +21,8 @@ builder.Services.AddProblemDetails();
 builder.AddSqlServerDbContext<Context>("productsDb");
 
 var azureOpenAIConnectionName = "aifoundry";
-var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "chat";
-var embeddingsDeploymentName = builder.Configuration["AI_embeddingsDeploymentName"] ?? "embeddings";
+var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "gpt-4.1-mini";
+var embeddingsDeploymentName = builder.Configuration["AI_embeddingsDeploymentName"] ?? "text-embedding-ada-002";
 
 builder.AddAzureOpenAIClient(connectionName: azureOpenAIConnectionName,
     configureSettings: settings =>

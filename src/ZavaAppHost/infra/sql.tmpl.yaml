@@ -25,9 +25,9 @@ properties:
         value: '{{ securedParameter "sql_password" }}'
   template:
     volumes:
-      - name: sql-zavaapphost2534ad4eb4sqldata
+      - name: sql-zavaapphostc8479139e4sqldata
         storageType: AzureFile
-        storageName: {{ .Env.SERVICE_SQL_VOLUME_ZAVAAPPHOST2534AD4EB4SQLDATA_NAME }} 
+        storageName: {{ .Env.SERVICE_SQL_VOLUME_ZAVAAPPHOSTC8479139E4SQLDATA_NAME }} 
     containers:
       - image: {{ .Image }}
         name: sql
@@ -39,7 +39,7 @@ properties:
           - name: MSSQL_SA_PASSWORD
             secretRef: mssql-sa-password
         volumeMounts:
-          - volumeName: sql-zavaapphost2534ad4eb4sqldata
+          - volumeName: sql-zavaapphostc8479139e4sqldata
             mountPath: /var/opt/mssql
     scale:
       minReplicas: 1

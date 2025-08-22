@@ -39,28 +39,28 @@ module resources 'resources.bicep' = {
   }
 }
 
-module aifoundry 'aifoundry/aifoundry.module.bicep' = {
-  name: 'aifoundry'
-  scope: rg
-  params: {
-    location: location
-  }
-}
-module aifoundry_roles 'aifoundry-roles/aifoundry-roles.module.bicep' = {
-  name: 'aifoundry-roles'
-  scope: rg
-  params: {
-    aifoundry_outputs_name: aifoundry.outputs.name
-    location: location
-    principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-    principalType: 'ServicePrincipal'
-  }
-}
 module appInsights 'appInsights/appInsights.module.bicep' = {
   name: 'appInsights'
   scope: rg
   params: {
     location: location
+  }
+}
+module openai 'openai/openai.module.bicep' = {
+  name: 'openai'
+  scope: rg
+  params: {
+    location: location
+  }
+}
+module openai_roles 'openai-roles/openai-roles.module.bicep' = {
+  name: 'openai-roles'
+  scope: rg
+  params: {
+    location: location
+    openai_outputs_name: openai.outputs.name
+    principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -73,7 +73,7 @@ output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-output SERVICE_SQL_VOLUME_ZAVAAPPHOST2534AD4EB4SQLDATA_NAME string = resources.outputs.SERVICE_SQL_VOLUME_ZAVAAPPHOST2534AD4EB4SQLDATA_NAME
+output SERVICE_SQL_VOLUME_ZAVAAPPHOSTC8479139E4SQLDATA_NAME string = resources.outputs.SERVICE_SQL_VOLUME_ZAVAAPPHOSTC8479139E4SQLDATA_NAME
 output AZURE_VOLUMES_STORAGE_ACCOUNT string = resources.outputs.AZURE_VOLUMES_STORAGE_ACCOUNT
-output AIFOUNDRY_CONNECTIONSTRING string = aifoundry.outputs.connectionString
 output APPINSIGHTS_APPINSIGHTSCONNECTIONSTRING string = appInsights.outputs.appInsightsConnectionString
+output OPENAI_CONNECTIONSTRING string = openai.outputs.connectionString

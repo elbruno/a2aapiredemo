@@ -62,9 +62,9 @@ resource storageVolumeFileService 'Microsoft.Storage/storageAccounts/fileService
   name: 'default'
 }
 
-resource sqlZavaapphost2534ad4eb4SqlDataFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2022-05-01' = {
+resource sqlZavaapphostC8479139e4SqlDataFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2022-05-01' = {
   parent: storageVolumeFileService
-  name: take('${toLower('sql')}-${toLower('zavaapphost2534ad4eb4sqldata')}', 60)
+  name: take('${toLower('sql')}-${toLower('zavaapphostc8479139e4sqldata')}', 60)
   properties: {
     shareQuota: 1024
     enabledProtocols: 'SMB'
@@ -98,12 +98,12 @@ resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-02-02-p
 
 }
 
-resource sqlZavaapphost2534ad4eb4SqlDataStore 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
+resource sqlZavaapphostC8479139e4SqlDataStore 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
   parent: containerAppEnvironment
-  name: take('${toLower('sql')}-${toLower('zavaapphost2534ad4eb4sqldata')}', 32)
+  name: take('${toLower('sql')}-${toLower('zavaapphostc8479139e4sqldata')}', 32)
   properties: {
     azureFile: {
-      shareName: sqlZavaapphost2534ad4eb4SqlDataFileShare.name
+      shareName: sqlZavaapphostC8479139e4SqlDataFileShare.name
       accountName: storageVolume.name
       accountKey: storageVolume.listKeys().keys[0].value
       accessMode: 'ReadWrite'
@@ -122,5 +122,5 @@ output AZURE_CONTAINER_REGISTRY_NAME string = containerRegistry.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = containerAppEnvironment.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = containerAppEnvironment.id
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = containerAppEnvironment.properties.defaultDomain
-output SERVICE_SQL_VOLUME_ZAVAAPPHOST2534AD4EB4SQLDATA_NAME string = sqlZavaapphost2534ad4eb4SqlDataStore.name
+output SERVICE_SQL_VOLUME_ZAVAAPPHOSTC8479139E4SQLDATA_NAME string = sqlZavaapphostC8479139e4SqlDataStore.name
 output AZURE_VOLUMES_STORAGE_ACCOUNT string = storageVolume.name
