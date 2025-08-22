@@ -53,7 +53,7 @@ Get the subscription deployment outputs to locate the resource group and account
 az deployment sub show --name main --query "properties.outputs" -o json
 ```
 
-Use the account name and resource group in the following snippet to print a connection string in the format `[Endpoint=...;Key=...;]`:
+Use the account name and resource group in the following snippet to print a connection string in the format `Endpoint=...;Key=...;`:
 
 ```pwsh
 $rg = 'rg-yourenv'
@@ -62,7 +62,7 @@ $accountName = 'aifoundry-xxxx'
 $keysJson = az cognitiveservices account keys list -g $rg -n $accountName -o json | ConvertFrom-Json
 if ($null -ne $keysJson.primaryKey) { $primaryKey = $keysJson.primaryKey } elseif ($null -ne $keysJson.key1) { $primaryKey = $keysJson.key1 } else { Write-Error 'No key found'; exit 1 }
 $endpoint = az cognitiveservices account show -g $rg -n $accountName --query "properties.endpoint" -o tsv
-Write-Output "[Endpoint=$endpoint;Key=$primaryKey;]"
+Write-Output "Endpoint=$endpoint;Key=$primaryKey;"
 ```
 
 There's a helper script at `infra/get-ai-connection.ps1` that automates the above steps and prints the connection string.
