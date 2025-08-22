@@ -45,5 +45,3 @@ Notes and recommendations
 
 - The infra module in `src/ZavaAppHost/infra/aifoundry/aifoundry.module.bicep` may enable local key-based authentication for demos (via `disableLocalAuth: false`). If you need to use key-based access in your containers or local code, provide the key as a secret (for example `AI_KEY`) to the deployment templates.
 - For production, prefer `disableLocalAuth: true` and use Azure AD (managed identity) to authenticate to the Cognitive Services resource. This avoids long-lived key management.
-
-If you want me to update the repo to enforce AAD-only auth (managed identity) and modify the products service to use `DefaultAzureCredential`, I can implement that end-to-end (Bicep + code + small smoke test).
