@@ -25,6 +25,11 @@ properties:
         value: '{{ .Env.APPINSIGHTS_APPINSIGHTSCONNECTIONSTRING }}'
       - name: connectionstrings--aifoundry
         value: '{{ .Env.AIFOUNDRY_CONNECTIONSTRING }}'
+      # Optional: Provide an AI key for local/demo deployments when the Cognitive
+      # Services resource allows key-based auth (disableLocalAuth: false).
+      # In production prefer AAD + managed identity and do NOT set this secret.
+      - name: ai-key
+        value: '{{ .Env.AI_KEY }}'
       - name: connectionstrings--productsdb
         value: Server=sql,1433;User ID=sa;Password={{ securedParameter "sql_password" }};TrustServerCertificate=true;Initial Catalog=productsDb
   template:
@@ -52,6 +57,9 @@ properties:
             secretRef: applicationinsights-connection-string
           - name: ConnectionStrings__aifoundry
             secretRef: connectionstrings--aifoundry
+          - name: AI_Key
+            # optional secret reference: when present the app may use key-based auth
+            secretRef: ai-key
           - name: ConnectionStrings__productsDb
             secretRef: connectionstrings--productsdb
     scale:

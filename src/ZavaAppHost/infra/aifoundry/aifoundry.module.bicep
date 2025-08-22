@@ -8,7 +8,12 @@ resource aifoundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   properties: {
     customSubDomainName: toLower(take(concat('aifoundry', uniqueString(resourceGroup().id)), 24))
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: true
+    // Allow key-based (local) authentication for demo and backwards compatibility.
+    // The Products project currently uses key-based calls to the embeddings endpoint
+    // (received HTTP 403 AuthenticationTypeDisabled). Set to false to enable
+    // key issuance. In production consider enforcing AAD-only auth and updating
+    // services to use managed identities.
+    disableLocalAuth: false
   }
   sku: {
     name: 'S0'
