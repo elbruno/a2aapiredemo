@@ -4,8 +4,8 @@ Follow these numbered steps to deploy the AI Foundry (Azure Cognitive Services /
 
 ## Prerequisites
 
-    - Install PowerShell (`pwsh`) and the Azure CLI (`az`) and ensure they are available in your PATH.
-    - Authenticate with Azure:
+- Install PowerShell (`pwsh`) and the Azure CLI (`az`) and ensure they are available in your PATH.
+- Authenticate with Azure:
 
     ```pwsh
     az login
