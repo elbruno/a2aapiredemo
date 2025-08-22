@@ -1,6 +1,11 @@
 # AZD deploy tutorial
 
-This tutorial explains how to provision the cloud resources required for this repository using the Azure Developer CLI (`azd`) from the `src\ZavaAppHost` folder. The recommended primary command for this demo is `azd provision` which creates resources only; deploying the application (`azd up`) is optional and documented as an extra step.
+This tutorial contains two main workflows:
+
+1. Deploy only the AI Foundry resources required for local session demos (recommended for local demo sessions). These Bicep files are located in the repository root `infra/` folder and provision only the AI Foundry Cognitive Services and required role assignments.
+2. Full solution provisioning (existing workflow) using `azd` from `src\ZavaAppHost` which provisions the entire demo infrastructure (containers, storage, app services, monitoring, etc.). Use this when you want the full cloud environment.
+
+Important: For local session demos you only need workflow #1 (AI Foundry resources). Proceed to the AI Foundry section below.
 
 ## Prerequisites
 
@@ -27,6 +32,35 @@ This tutorial explains how to provision the cloud resources required for this re
 2. Ensure you are on the correct branch and the repo is up to date.
 
 ## Provision resources (primary step)
+
+## AI Foundry-only provisioning (for local session demos)
+
+If you're running local session demos you only need to provision the AI Foundry Cognitive Services and related role assignments. The repository includes a minimal set of Bicep files under the repository root `infra/` folder which deploy only those resources.
+
+Steps:
+
+1. Open PowerShell (pwsh) and authenticate with Azure if needed:
+
+```powershell
+az login
+```
+
+1. From the repository root, run a subscription-scoped deployment that creates a resource group and the AI Foundry resources. Replace `<env>` and `<location>` appropriately (for example, `demo` and `eastus2`):
+
+```powershell
+cd <repo-root>
+az deployment sub create --location <location> --template-file infra/main.bicep --parameters environmentName=<env> location=<location>
+```
+
+This will:
+
+- Create a resource group named `rg-<env>`
+- Deploy an Azure Cognitive Services account configured for OpenAI (AI Foundry) and two deployments: `chat` and `embeddings`
+- Optionally assign a role to a principal if you provide `principalId` as a parameter
+
+After this completes you will have the AI Foundry resources ready for local demos. No other resources are required for running the session samples locally.
+
+Proceed to the full provisioning steps below only if you need the entire solution deployed to Azure.
 
 1. Change directory to the AppHost folder that contains the `azd` project configuration:
 
