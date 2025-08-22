@@ -11,8 +11,8 @@ var productsDb = sql
 
 IResourceBuilder<IResourceWithConnectionString>? aifoundry;
 
-var chatDeploymentName = "gpt-4.1-mini";
-var embeddingsDeploymentName = "text-embedding-ada-002";
+var chatDeploymentName = "chat";
+var embeddingsDeploymentName = "embeddings";
 
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
