@@ -39,9 +39,75 @@ $rg = 'rg-brk447demo'
 $keys = az cognitiveservices account keys list -g $rg -n $accountName --query "{key:primaryKey}" -o tsv
 $endpoint = az cognitiveservices account show -g $rg -n $accountName --query "properties.endpoint" -o tsv
 "[Endpoint=$endpoint;Key=$keys;]"
+
+Copy values from the deployment outputs
+
+
+After you run the subscription deployment, Azure returns a deployment record that includes `outputs` and `outputResources` which contain the resource group and the Cognitive Services account name. You can view them with:
+
+```pwsh
+# Show the subscription deployment named 'main' and its outputs (adjust name if different)
+az deployment sub show --name main --query "properties.outputs" -o json
+
+```
+
+- From the JSON output copy the resource group (for example `rg-brunobrk44704`) and the account name (for example `aifoundry-wdjty2jk3oiw2`).
+
+Example using the actual deployment output values
+
+```pwsh
+
+# Using values from the deployment output shown in your message
+$rg = 'rg-brunobrk44704'
+$accountName = 'aifoundry-wdjty2jk3oiw2'
+
+# Now list keys
+az cognitiveservices account keys list -g $rg -n $accountName
+
+# And print the formatted connection string (PowerShell)
+$primaryKey = az cognitiveservices account keys list -g $rg -n $accountName --query "primaryKey" -o tsv
+$endpoint = az cognitiveservices account show -g $rg -n $accountName --query "properties.endpoint" -o tsv
+"[Endpoint=$endpoint;Key=$primaryKey;]"
+
+```
+
+Important: do NOT type angle-bracket placeholders like `<accountName>` directly into PowerShell — PowerShell treats `<` as a redirection operator. Replace placeholders with the real names (as shown above) before running the commands.
+
 ```
 
 Notes and recommendations
 
 - The infra module in `src/ZavaAppHost/infra/aifoundry/aifoundry.module.bicep` may enable local key-based authentication for demos (via `disableLocalAuth: false`). If you need to use key-based access in your containers or local code, provide the key as a secret (for example `AI_KEY`) to the deployment templates.
 - For production, prefer `disableLocalAuth: true` and use Azure AD (managed identity) to authenticate to the Cognitive Services resource. This avoids long-lived key management.
+
+Cleanup (remove created resources)
+
+If you want to tear down the resources created by the subscription deployment, follow these steps. Deleting the resource group will remove the Cognitive Services account and its deployments. The examples below use the `rg-brunobrk44704` resource group created in the example output — replace with your actual resource group name.
+
+
+1. Delete the resource group (this deletes all resources inside it):
+
+```pwsh
+az group delete -n rg-brunobrk44704 --yes --no-wait
+```
+
+Use `--no-wait` to return immediately, or omit it to wait for the operation to complete. If you prefer to confirm the deletion interactively, remove `--yes`.
+
+1. Optionally remove the subscription-level deployment record (the deployment object named `main`):
+
+```pwsh
+az deployment sub delete --name main
+```
+
+1. If you created a role assignment earlier and want to remove it, first find the assignment and then delete it. Example (replace `<principalId>` and `<subscriptionId>`):
+
+```pwsh
+# List role assignments for the Cognitive Services account scope
+$scope = "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/rg-brunobrk44704/providers/Microsoft.CognitiveServices/accounts/aifoundry-wdjty2jk3oiw2"
+az role assignment list --scope $scope -o json
+
+# Then delete by role assignment id
+az role assignment delete --ids <roleAssignmentId>
+```
+
+Note: deleting the resource group is the simplest and most reliable cleanup method for demo resources. Be careful: this will permanently remove all resources in that resource group.
