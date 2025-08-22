@@ -84,6 +84,3 @@ azd up
 - Visual Studio Preview: [Visual Studio Preview](https://visualstudio.microsoft.com/vs/preview/)
 - Docker Desktop: [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - Create an Azure free account: [Azure free account](https://azure.microsoft.com/free/)
-
---
-Tutorial updated for this repository. If you want, I can add a non-interactive CI example that runs `azd provision` with a service principal and then `azd deploy` in a separate step.
