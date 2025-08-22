@@ -18,18 +18,17 @@ Ensure you have the following installed before continuing (official download pag
 - PowerShell (pwsh) — cross-platform shell: [https://learn.microsoft.com/powershell/](https://learn.microsoft.com/powershell/)
 - Azure CLI (`az`) — used for deployment and resource operations: [https://learn.microsoft.com/cli/azure/install-azure-cli](https://learn.microsoft.com/cli/azure/install-azure-cli)
 - .NET 9 SDK — required to build/run the .NET services in this repo: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-- Git — source control: [https://git-scm.com/downloads](https://git-scm.com/downloads)
-- Visual Studio Code (optional, lightweight editor): [https://code.visualstudio.com/](https://code.visualstudio.com/)
-
-Notes:
-
-- Recommended Azure CLI: 2.50+ (check with `az --version`).
-- .NET SDK should be 9.0.x (`dotnet --version` begins with `9.`).
-
+1
 Authenticate to Azure before running subscription-scoped deployments:
 
 ```pwsh
 az login
+```
+
+or for a specific tenant use:
+
+```pwsh
+az login --tenant <tenantid>
 ```
 
 ## Deploy AI Foundry (subscription-scoped)
