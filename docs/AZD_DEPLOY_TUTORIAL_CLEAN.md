@@ -2,7 +2,7 @@
 
 Follow these numbered steps to deploy the AI Foundry (Azure Cognitive Services / OpenAI) resources and retrieve keys for local demos. Replace the example values with the values shown in your deployment outputs.
 
-1. Prerequisites
+## Prerequisites
 
     - Install PowerShell (`pwsh`) and the Azure CLI (`az`) and ensure they are available in your PATH.
     - Authenticate with Azure:
@@ -10,6 +10,8 @@ Follow these numbered steps to deploy the AI Foundry (Azure Cognitive Services /
     ```pwsh
     az login
     ```
+
+## Deploy
 
 1. Deploy AI Foundry (subscription-scoped)
 
@@ -62,13 +64,13 @@ Follow these numbered steps to deploy the AI Foundry (Azure Cognitive Services /
 
 1. Cleanup (remove created resources)
 
-To remove the demo resources (delete the resource group and subscription deployment):
+    To remove the demo resources (delete the resource group and subscription deployment):
 
-```pwsh
-# Delete the resource group (this will remove the Cognitive Services account and deployments)
-$rg = 'rg-brk447demo'
-az group delete -n $rg --yes --no-wait
-```
+    ```pwsh
+    # Delete the resource group (this will remove the Cognitive Services account and deployments)
+    $rg = 'rg-brk447demo'
+    az group delete -n $rg --yes --no-wait
+    ```
 
 # Notes and recommendations
 
