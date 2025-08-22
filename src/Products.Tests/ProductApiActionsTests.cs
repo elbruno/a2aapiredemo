@@ -2,6 +2,11 @@
 using Products.Models;
 using DataEntities;
 using Products.Endpoints;
+using Products.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.AI;
+using Moq;
+using SearchEntities;
 
 namespace Products.Tests
 {
