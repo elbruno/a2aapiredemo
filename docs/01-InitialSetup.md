@@ -84,17 +84,11 @@ az role assignment create --assignee-object-id $principalId --role $roleDefiniti
 To remove the created resource group and deployment record:
 
 ```pwsh
+$rg = 'rg-yourenv'
 az group delete -n $rg --yes --no-wait
-az deployment sub delete --name main
 ```
 
 ## Notes and recommendations
 
 - For demo convenience the repo enables key-based auth in the Bicep templates; for production prefer `disableLocalAuth: true` and use managed identity (AAD).
 - If you plan to run or debug services locally, ensure Visual Studio 2022 or VS Code plus .NET 9 SDK are installed.
-
-If you'd like, I can parameterize `disableLocalAuth` in Bicep and/or add a post-deploy script to apply role assignments and inject the AI key into the Container App secret.
-
----
-
-Last edited: 2025-08-22
