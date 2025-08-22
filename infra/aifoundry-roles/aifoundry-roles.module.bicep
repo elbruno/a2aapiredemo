@@ -1,6 +1,3 @@
-@description('The location for the resource(s) to be deployed.')
-param location string = resourceGroup().location
-
 param aifoundry_outputs_name string
 
 param principalType string

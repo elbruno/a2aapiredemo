@@ -6,9 +6,12 @@ resource aifoundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   location: location
   kind: 'OpenAI'
   properties: {
-    customSubDomainName: toLower(take(concat('aifoundry', uniqueString(resourceGroup().id)), 24))
+    // Use string interpolation for readability and lint guidance.
+    customSubDomainName: toLower(take('aifoundry${uniqueString(resourceGroup().id)}', 24))
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: true
+    // Allow key-based (local) authentication for demo/backwards compatibility.
+    // Set to false to enable issuance and usage of keys in containers or local code.
+    disableLocalAuth: false
   }
   sku: {
     name: 'S0'

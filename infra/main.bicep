@@ -8,9 +8,6 @@ param environmentName string
 @description('The location used for deployed resources')
 param location string
 
-@description('Optional principal id (user or service principal) to assign roles to the AI Foundry resource')
-param principalId string = ''
-
 var tags = {
   'azd-env-name': environmentName
 }
@@ -29,18 +26,11 @@ module aifoundry 'aifoundry/aifoundry.module.bicep' = {
   }
 }
 
-module aifoundry_roles 'aifoundry-roles/aifoundry-roles.module.bicep' = {
-  name: 'aifoundry-roles'
-  scope: rg
-  params: {
-    aifoundry_outputs_name: aifoundry.outputs.name
-    location: location
-    principalId: principalId
-    principalType: 'ServicePrincipal'
-  }
-  // only deploy role assignment when a principalId is provided
-  if: principalId != ''
-}
+// Role assignment to grant a principal access to the AI Foundry account is
+// intentionally left out of the automatic deployment. If you need to assign a
+// role to a principal, run the optional post-deploy command shown in the
+// repository docs. This avoids conditional module/resource patterns that can
+// be problematic across different Bicep versions and resource types.
 
 output AIFOUNDRY_CONNECTIONSTRING string = aifoundry.outputs.connectionString
 output AIFOUNDRY_NAME string = aifoundry.outputs.name
