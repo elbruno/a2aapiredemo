@@ -32,6 +32,13 @@ param(
     ,
     [Parameter(Mandatory = $false)]
     [string]$AccountName
+    ,
+    [Parameter(Mandatory = $false)]
+    [switch]$WhatIfPreview,
+    [Parameter(Mandatory = $false)]
+    [switch]$VerboseOutput,
+    [Parameter(Mandatory = $false)]
+    [string]$LogDir = "$env:TEMP\aifoundry-logs"
 )
 
 function Test-AzCommandAvailable {
@@ -47,7 +54,7 @@ if (-not (Test-AzCommandAvailable -Name 'az')) {
     exit 2
 }
 
-Write-Host "Starting subscription deployment ($DeploymentName) in location $Location for environment $EnvironmentName..."
+Write-Output "Starting subscription deployment ($DeploymentName) in location $Location for environment $EnvironmentName..."
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = (Resolve-Path "$scriptDir\..").Path
@@ -68,16 +75,47 @@ $deployCmd = @(
     '--name', $DeploymentName
 )
 
-Write-Host "Running: az $($deployCmd -join ' ')"
-$deployResult = az @deployCmd 2>&1 | Out-String
+Write-Output "Running: az $($deployCmd -join ' ')"
+$azArgs = $deployCmd
+if ($WhatIfPreview) {
+    # Replace 'create' with 'what-if' subcommand
+    $azArgs = @('deployment', 'sub', 'what-if', '--location', $Location, '--template-file', $template, '--parameters', $paramString, '--name', $DeploymentName)
+    Write-Output "Running what-if preview..."
+}
+else {
+    Write-Output "Running deployment create..."
+}
+
+$deployResult = az @azArgs 2>&1 | Out-String
+
+# Write raw az output to a timestamped log when requested
+if ($VerboseOutput -or $PSBoundParameters.ContainsKey('VerboseOutput')) {
+    $timestamp = (Get-Date).ToString('yyyyMMdd-HHmmss')
+    if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
+    $logPath = Join-Path $LogDir ("az-output-$timestamp.log")
+    $deployResult | Out-File -FilePath $logPath -Encoding utf8
+    Write-Output "Wrote raw az output to: $logPath"
+}
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Deployment failed. az exit code: $LASTEXITCODE`n$deployResult"
     exit 4
 }
 
+# If running a What-If preview, print the result and exit (no outputs are created)
+if ($WhatIfPreview) {
+    Write-Output "What-if preview completed. Output:"
+    Write-Output $deployResult
+    exit 0
+}
+
+# When verbose requested, also print the az command output to console for easier debugging
+if ($VerboseOutput) {
+    Write-Output "az raw output:`n$deployResult"
+}
+
 # Query deployment outputs
 if ($ResourceGroup -and $AccountName) {
-    Write-Host "Using provided ResourceGroup: $ResourceGroup and AccountName: $AccountName"
+    Write-Output "Using provided ResourceGroup: $ResourceGroup and AccountName: $AccountName"
     $rg = $ResourceGroup
     $account = $AccountName
 }
@@ -137,14 +175,14 @@ if (-not $account) {
 
 if (-not $rg -or -not $account) {
     Write-Warning "Could not automatically determine resource group and account name from deployment outputs."
-    Write-Host "Deployment outputs:"
+    Write-Output "Deployment outputs:"
     $show | ConvertTo-Json -Depth 10
-    Write-Host "Please re-run the script with -ResourceGroup <rg> -AccountName <account> (this script will accept env overrides)."
+    Write-Output "Please re-run the script with -ResourceGroup <rg> -AccountName <account> (this script will accept env overrides)."
     exit 6
 }
 
-Write-Host "Found resource group: $rg"
-Write-Host "Found cognitive account name: $account"
+Write-Output "Found resource group: $rg"
+Write-Output "Found cognitive account name: $account"
 
 # Get the keys and endpoint
 $keysJson = az cognitiveservices account keys list -g $rg -n $account -o json 2>$null | ConvertFrom-Json
