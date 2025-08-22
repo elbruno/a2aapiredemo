@@ -5,9 +5,16 @@
   the minimal subscription-scoped deployment steps for demo usage.
 -->
 
+<!--
+  Canonical infra-only deployment guide for AI Foundry (Cognitive Services / OpenAI)
+  Created: 2025-08-22
+  This file provides prerequisites (including Visual Studio 2022 and Docker Desktop) and
+  the minimal subscription-scoped deployment steps for demo usage.
+-->
+
 # Infra-only deploy (AI Foundry) — step-by-step
 
-This document describes the prerequisites needed to run the demo and the subscription-scoped steps to deploy the AI Foundry (Azure Cognitive Services / OpenAI) resources used by the sample apps.
+This document describes the prerequisites needed to run the demo and the subscription-scoped steps to deploy the AI Foundry resources used by the sample apps.
 
 ## Prerequisites
 
@@ -18,8 +25,8 @@ Ensure you have the following installed before continuing (official download pag
 - PowerShell (pwsh) — cross-platform shell: [https://learn.microsoft.com/powershell/](https://learn.microsoft.com/powershell/)
 - Azure CLI (`az`) — used for deployment and resource operations: [https://learn.microsoft.com/cli/azure/install-azure-cli](https://learn.microsoft.com/cli/azure/install-azure-cli)
 - .NET 9 SDK — required to build/run the .NET services in this repo: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-1
-Authenticate to Azure before running subscription-scoped deployments:
+
+Authenticate to Azure before running subscription-scoped deployments (required for the quick-run script and manual steps):
 
 ```pwsh
 az login
@@ -30,6 +37,35 @@ or for a specific tenant use:
 ```pwsh
 az login --tenant <tenantid>
 ```
+
+## Modes (Quick vs Step-by-step)
+
+You have two ways to deploy the AI Foundry resources:
+
+- Quick mode (recommended): run the bundled PowerShell script which performs the deployment and prints a single-line connection string in the format `[Endpoint=<endpoint>;Key=<Key>;]`.
+- Step-by-step mode: run the `az` commands manually (the previous sections in this document show the step-by-step commands).
+
+Important: before using Quick mode you MUST run `az login` (see above) so the script can run subscription-scoped deployments and read outputs/keys.
+
+### Quick mode (run the script)
+
+From the repository root run:
+
+```pwsh
+pwsh -File scripts/deploy-ai-foundry.ps1 -Location eastus2 -EnvironmentName brk447demo
+```
+
+The script will:
+
+- Deploy `infra/main.bicep` at subscription scope.
+- Inspect the deployment outputs to find the resource group and Cognitive Services account.
+- Retrieve the key and endpoint and print a single-line connection string: `[Endpoint=<endpoint>;Key=<Key>;]`.
+
+If the script cannot auto-detect the outputs, it prints the raw deployment outputs and instructions to re-run with explicit values.
+
+### Step-by-step mode (manual)
+
+If you prefer to run each step manually, use the commands below.
 
 ## Deploy AI Foundry (subscription-scoped)
 
