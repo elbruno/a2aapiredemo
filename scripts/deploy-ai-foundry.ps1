@@ -39,6 +39,9 @@ param(
     [switch]$VerboseOutput,
     [Parameter(Mandatory = $false)]
     [string]$LogDir = "$env:TEMP\aifoundry-logs"
+    ,
+    [Parameter(Mandatory = $false)]
+    [int]$TimeoutMinutes = 5
 )
 
 function Test-AzCommandAvailable {
@@ -86,18 +89,68 @@ else {
     Write-Output "Running deployment create..."
 }
 
-$deployResult = az @azArgs 2>&1 | Out-String
+Write-Output "Spawning az process (streaming output). Timeout: $TimeoutMinutes minutes"
 
-# Write raw az output to a timestamped log when requested
-if ($VerboseOutput -or $PSBoundParameters.ContainsKey('VerboseOutput')) {
-    $timestamp = (Get-Date).ToString('yyyyMMdd-HHmmss')
-    if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
-    $logPath = Join-Path $LogDir ("az-output-$timestamp.log")
-    $deployResult | Out-File -FilePath $logPath -Encoding utf8
-    Write-Output "Wrote raw az output to: $logPath"
+# Ensure log dir exists
+if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
+$timestamp = (Get-Date).ToString('yyyyMMdd-HHmmss')
+$outFile = Join-Path $LogDir ("az-stream-out-$timestamp.log")
+$errFile = Join-Path $LogDir ("az-stream-err-$timestamp.log")
+
+# Start az process with redirected stdout/stderr
+$startInfo = @{FilePath = 'az'; ArgumentList = $azArgs; RedirectStandardOutput = $outFile; RedirectStandardError = $errFile; NoNewWindow = $true; PassThru = $true }
+try {
+    $proc = Start-Process @startInfo
 }
+catch {
+    Write-Error "Failed to start 'az' process: $_"
+    exit 4
+}
+
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$timeoutMs = $TimeoutMinutes * 60 * 1000
+Write-Output "az process started (PID: $($proc.Id)). Streaming logs to: $outFile and $errFile"
+
+# Stream incremental output to console so the user sees progress
+$lastRead = 0
+while (-not $proc.HasExited) {
+    Start-Sleep -Seconds 2
+    if (Test-Path $outFile) {
+        $all = Get-Content -Path $outFile -Raw -ErrorAction SilentlyContinue
+        if ($all) {
+            # print only new content
+            $len = $all.Length
+            if ($len -gt $lastRead) {
+                $new = $all.Substring($lastRead)
+                Write-Output $new
+                $lastRead = $len
+            }
+        }
+    }
+    if ($stopwatch.ElapsedMilliseconds -gt $timeoutMs) {
+        try { $proc.Kill() } catch { Write-Warning "Failed to kill az process: $_" }
+        Write-Error "az process timed out after $TimeoutMinutes minutes and was terminated. Check logs: $outFile, $errFile"
+        exit 124
+    }
+}
+
+# Process exited; gather outputs
+$proc | Wait-Process
+$deployStdOut = ''
+if (Test-Path $outFile) { $deployStdOut = Get-Content -Path $outFile -Raw -ErrorAction SilentlyContinue }
+$deployStdErr = ''
+if (Test-Path $errFile) { $deployStdErr = Get-Content -Path $errFile -Raw -ErrorAction SilentlyContinue }
+
+$deployResult = $deployStdOut + "`n" + $deployStdErr
+$LASTEXITCODE = $proc.ExitCode
+
+# Always write the combined output to a timestamped log for post-mortem
+$combinedLog = Join-Path $LogDir ("az-output-$timestamp.log")
+$deployResult | Out-File -FilePath $combinedLog -Encoding utf8
+Write-Output "Wrote combined az output to: $combinedLog"
+
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Deployment failed. az exit code: $LASTEXITCODE`n$deployResult"
+    Write-Error "Deployment failed. az exit code: $LASTEXITCODE`nSee logs: $combinedLog"
     exit 4
 }
 
