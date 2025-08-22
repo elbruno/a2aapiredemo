@@ -18,10 +18,19 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.8" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Store\Store.csproj" />
+    <ProjectReference Include="..\CartEntities\CartEntities.csproj" />
+    <ProjectReference Include="..\DataEntities\DataEntities.csproj" />
+    <ProjectReference Include="..\SearchEntities\SearchEntities.csproj" />
   </ItemGroup>
 
 </Project>
