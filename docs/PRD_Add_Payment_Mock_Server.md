@@ -1,7 +1,7 @@
 # PRD: Add Mock Payment Server / Payment Service to Zava-Aspire
 
 Date: 2025-08-22
-Author: Copilot (documentation draft)
+Author: Bruno Capuano & Copilot (documentation draft)
 
 This document describes a Product Requirements Document (PRD) for adding a mock payment processing capability to the Zava-Aspire solution located in `src/`.
 
