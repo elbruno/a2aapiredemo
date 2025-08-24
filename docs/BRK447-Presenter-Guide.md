@@ -42,20 +42,20 @@ All demos below reference the userguide files in the `docs/` folder. Links use f
 
 Summary timeline (aim to keep total between 40–45 minutes):
 
-- Introduction & Agenda — 3 min
-- Demo: Architecture / Zava Overview — 5 min  (`docs/brk447-02-Zava%20Overview-gen-01/brk447-02-Zava%20Overview-en-US-02-userguide.md`)
-- Demo: Copilot Features in Visual Studio — 6 min  (`docs/brk447-03-VS2022%20and%20GHCP%20Overview-gen-01/brk447-03-VS2022%20and%20GHCP%20Overview-en-US-02-userguide.md`)
-- Demo: AI Search & Unit Testing — 6 min  (`docs/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-gen-01/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-02-userguide.md`)
-- Demo: MCP Servers — 4 min  (`docs/brk447-05%20add%20mcp%20servers-gen-01/brk447-05%20add%20mcp%20servers-en-US-02-userguide.md`)
-- Demo: Querying Documentation (MCP) — 4 min  (`docs/brk447-06-query%20mcp%20ms%20learn-gen-01/brk447-06-query%20mcp%20ms%20learn-en-US-02-userguide.md`)
-- Demo: Issue-Driven Development with Agent — 6 min  (`docs/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-gen-01/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-02-userguide.md`)
-- Demo: Image-Based UI Updates — 4 min  (`docs/brk447-08-update%20ui%20using%20agent%20based%20on%20images-gen-01/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-02-userguide.md`)
+| Demo | Estimated Time | Description | Minimal MD |
+|---|---:|---|---|
+| Introduction & Agenda | 3 min | Brief session welcome and agenda. | `N/A` |
+| Architecture / Zava Overview | 5 min | High-level architecture and key components — keep to the big picture. | `docs/brk447-02-Zava Overview-gen-01/brk447-02-Zava Overview-en-US-01-minimal.md` |
+| Copilot Features in Visual Studio | 6 min | Quick tour of Ask vs Agent modes, completions, and quick edits inside Visual Studio. | `docs/brk447-03-VS2022 and GHCP Overview-gen-01/brk447-03-VS2022 and GHCP Overview-en-US-01-minimal.md` |
+| AI Search & Unit Testing | 6 min | Show TDD flow with Copilot scaffolding a unit test and validating results. | `docs/brk447-04 Add single unit Test for AI Search-gen-01/brk447-04 Add single unit Test for AI Search-en-US-01-minimal.md` |
+| MCP Servers | 4 min | Explain MCP server role and perform a quick verification check. | `docs/brk447-05 add mcp servers-gen-01/brk447-05 add mcp servers-en-US-01-minimal.md` |
+| Querying Documentation (MCP) | 4 min | Demonstrate the Agent consulting Microsoft Learn or docs to suggest code changes. | `docs/brk447-06-query mcp ms learn-gen-01/brk447-06-query mcp ms learn-en-US-01-minimal.md` |
+| Issue-Driven Development with Agent | 6 min | Show issue->Agent plan->patch workflow; use short prerecorded clip for long runs. | `docs/brk447-07-Implement unit tests using GH Issue-gen-01/brk447-07-Implement unit tests using GH Issue-en-US-01-minimal.md` |
+| Image-Based UI Updates | 4 min | Show before/after images and Agent suggestions for UI updates (use recorded clip if needed). | `docs/brk447-08-update ui using agent based on images-gen-01/brk447-08-update ui using agent based on images-en-US-01-minimal.md` |
 
 Total: 43 minutes  <!-- Rationale: sum fits 40–45 minute requirement -->
 
-For each demo, use the referenced userguide for talking points and follow a short 1–2 step demo flow.
-
-If a demo is fragile or long-running, follow Engagement Strategies below and play a recorded segment.
+For each demo, use the referenced minimal userguide for talking points and follow a short 1–2 step demo flow. If a demo is fragile or long-running, follow Engagement Strategies below and play a recorded segment.
 
 ### Demo 2 — Zava Architecture Overview (5 min)
 
