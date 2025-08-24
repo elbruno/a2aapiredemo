@@ -7,16 +7,18 @@ namespace Store.Services;
 public class CheckoutService : ICheckoutService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
+    private readonly IPaymentsClient _paymentsClient;
     private readonly ILogger<CheckoutService> _logger;
     private const string OrderSessionKey = "orders";
 
-    public CheckoutService(ProtectedSessionStorage sessionStorage, ILogger<CheckoutService> logger)
+    public CheckoutService(ProtectedSessionStorage sessionStorage, IPaymentsClient paymentsClient, ILogger<CheckoutService> logger)
     {
         _sessionStorage = sessionStorage;
+        _paymentsClient = paymentsClient;
         _logger = logger;
     }
 
-    public async Task<Order> ProcessOrderAsync(Customer customer, Cart cart)
+    public async Task<Order> ProcessOrderAsync(Customer customer, Cart cart, string paymentMethod)
     {
         try
         {
@@ -30,8 +32,43 @@ public class CheckoutService : ICheckoutService
                 Subtotal = cart.Subtotal,
                 Tax = cart.Tax,
                 Total = cart.Total,
-                Status = "Confirmed"
+                Status = "Processing"
             };
+
+            // Process payment via PaymentsService
+            var paymentRequest = new CreatePaymentRequest
+            {
+                StoreId = "zava-store",
+                UserId = customer.Email, // Use email as user identifier
+                CartId = order.OrderNumber, // Use order number as cart identifier
+                Currency = "USD",
+                Amount = cart.Total,
+                PaymentMethod = paymentMethod,
+                Items = cart.Items.Select(item => new PaymentItem
+                {
+                    ProductId = item.ProductId.ToString(),
+                    Quantity = item.Quantity,
+                    UnitPrice = item.Price
+                }).ToList(),
+                Metadata = new { OrderNumber = order.OrderNumber }
+            };
+
+            var paymentResult = await _paymentsClient.ProcessPaymentAsync(paymentRequest);
+
+            if (paymentResult.IsSuccess)
+            {
+                order.Status = "Confirmed";
+                order.PaymentId = paymentResult.PaymentId;
+                _logger.LogInformation("Payment successful for order {OrderNumber} with payment ID {PaymentId}", 
+                    order.OrderNumber, paymentResult.PaymentId);
+            }
+            else
+            {
+                order.Status = "Payment Failed";
+                _logger.LogWarning("Payment failed for order {OrderNumber}: {ErrorMessage}", 
+                    order.OrderNumber, paymentResult.ErrorMessage);
+                throw new InvalidOperationException($"Payment failed: {paymentResult.ErrorMessage}");
+            }
 
             await SaveOrderAsync(order);
             return order;
@@ -41,6 +78,12 @@ public class CheckoutService : ICheckoutService
             _logger.LogError(ex, "Error processing order");
             throw;
         }
+    }
+
+    // Keep the original method for backward compatibility
+    public async Task<Order> ProcessOrderAsync(Customer customer, Cart cart)
+    {
+        return await ProcessOrderAsync(customer, cart, "Cash");
     }
 
     public async Task<Order?> GetOrderAsync(string orderNumber)
@@ -95,6 +138,6 @@ public class CheckoutService : ICheckoutService
 
     private static string GenerateOrderNumber()
     {
-        return $"ESL-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+        return $"ZAV-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
     }
 }

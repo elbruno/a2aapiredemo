@@ -2,6 +2,7 @@
 @using CartEntities
 @using Store.Services
 @using Store.Components.Cart
+@using Store.Components.Payment
 @inject ICartService CartService
 @inject ICheckoutService CheckoutService
 @inject NavigationManager Navigation
@@ -34,7 +35,7 @@ else if (shoppingCart.Items.Any())
                     <h5 class="mb-0">Customer Information</h5>
                 </div>
                 <div class="card-body">
-                    <CheckoutForm customer="customer" OnValidSubmit="ProcessOrder" OnCancel="BackToCart" />
+                    <CheckoutForm customer="customer" OnValidSubmit="OnCustomerFormSubmit" OnCancel="BackToCart" />
                 </div>
             </div>
         </div>
@@ -98,11 +99,20 @@ else
     </div>
 }
 
+@if (showPaymentDialog)
+{
+    <MockPaymentDialog Amount="shoppingCart.Total" 
+                       ItemCount="shoppingCart.ItemCount"
+                       OnPaymentSuccess="OnPaymentSuccess" 
+                       OnCancel="OnPaymentCancel" />
+}
+
 @code {
     private CartEntities.Cart shoppingCart = new();
     private Customer customer = new();
     private bool isLoading = true;
     private bool isProcessing = false;
+    private bool showPaymentDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,20 +136,28 @@ else
         }
     }
 
-    private async Task ProcessOrder(Customer submittedCustomer)
+    private void OnCustomerFormSubmit(Customer submittedCustomer)
+    {
+        // Ensure shipping address is set correctly
+        if (submittedCustomer.SameAsShipping)
+        {
+            submittedCustomer.ShippingAddress = submittedCustomer.BillingAddress;
+        }
+
+        customer = submittedCustomer;
+        showPaymentDialog = true;
+    }
+
+    private async Task OnPaymentSuccess(string paymentMethod)
     {
         try
         {
+            showPaymentDialog = false;
             isProcessing = true;
-            
-            // Ensure shipping address is set correctly
-            if (submittedCustomer.SameAsShipping)
-            {
-                submittedCustomer.ShippingAddress = submittedCustomer.BillingAddress;
-            }
+            StateHasChanged();
 
-            // Process the order
-            var order = await CheckoutService.ProcessOrderAsync(submittedCustomer, shoppingCart);
+            // Process the order with payment information
+            var order = await CheckoutService.ProcessOrderAsync(customer, shoppingCart, paymentMethod);
             
             // Clear the cart
             await CartService.ClearCartAsync();
@@ -151,7 +169,14 @@ else
         {
             // Handle error - could show error message
             isProcessing = false;
+            showPaymentDialog = true; // Show payment dialog again to retry
+            StateHasChanged();
         }
+    }
+
+    private void OnPaymentCancel()
+    {
+        showPaymentDialog = false;
     }
 
     private void BackToCart()

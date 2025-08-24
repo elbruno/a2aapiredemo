@@ -13,4 +13,5 @@ public class Order
     public decimal Tax { get; set; }
     public decimal Total { get; set; }
     public string Status { get; set; } = "Confirmed";
+    public Guid? PaymentId { get; set; } // Link to payment record in PaymentsService
 }
