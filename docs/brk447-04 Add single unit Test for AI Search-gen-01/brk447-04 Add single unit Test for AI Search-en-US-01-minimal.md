@@ -1,12 +1,17 @@
-1. Identify endpoints missing unit tests (AI search and formal search) in the solution workspace. [00:00:02.400]  
-2. Switch Copilot to agent mode and create a new chat session. [00:00:41.560]  
-3. Select the AI search context in the chat and choose the GPT-5 model. [00:00:41.560]  
-4. Trigger the task by typing a hashtag plus the task name and select the "implement unit tests" quick action for AI search. [00:01:09.560]  
-5. Allow Copilot to read the solution, generate test code, and perform iterative builds. [00:01:21.105]  
-6. Wait for Copilot to modify dependencies and rebuild until the build completes. [00:01:21.105]  
-7. Review and accept Copilot’s generated unit test changes. [00:02:56.040]  
-8. Open the Test Explorer and run the tests, verifying the new "products AI test" cases are present and passing. [00:02:56.040]  
-9. Request a broader solution-wide check for missing unit tests if needed. [00:03:58.600]
+# Video: [brk447-04 Add single unit Test for AI Search.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:04:02
+
+1. State the task to implement unit tests for the AI search endpoints. [00:00:02.400]
+2. Inspect the codebase and identify missing tests and affected endpoints (AI search and formal search). [00:00:13.120]
+3. Switch Copilot to agent mode and open a new chat. [00:00:34.360]
+4. Select the "AI Search" context and choose the desired model (e.g., GPT-5). [00:00:47.320]
+5. Use the hashtag/task selector to choose "implement unit tests" and confirm the AI Search scope. [00:01:09.560]
+6. Allow Copilot to read the solution and start analyzing the code. [00:01:31.870]
+7. Wait while Copilot generates test files and code, then attempts a build. [00:01:31.870]
+8. Inspect build failure messages and let Copilot add missing dependencies. [00:02:56.040]
+9. Rebuild the solution and confirm the build succeeds with the new tests added. [00:02:56.040]
+10. Accept Copilot's code changes in the editor. [00:03:24.304]
+11. Open Test Explorer and run all tests to verify the new "products AI" tests are listed and passing. [00:03:24.304]
+12. Prepare to expand the request to check and implement missing unit tests across the entire solution. [00:03:58.600]
 
 Related guides:
 

@@ -1,10 +1,15 @@
-1. Select a product tile from the product list and click "Add to cart." [00:00:14.240]  
-2. Add a second product and verify the cart shows two items. [00:00:27.400]  
-3. Enter the product name in the search field and run the search. [00:00:27.400]  
-4. Note that the search results do not display an "Add to cart" option and flag this for validation. [00:00:38.440]  
-5. Open the cart to review the selected items. [00:00:38.440]  
-6. Click "Proceed to checkout" and observe that the cart is cleared unexpectedly. [00:00:47.760]  
-7. Log the issues and plan fixes in the SAVA application, including localization adjustments and re-validation of add-to-cart and checkout flows. [00:00:47.760]
+# Video: [brk447-02-Zava Overview.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:00:57
+
+1. Explain the SAVA migration scope and list the target e-commerce sites for integration. [00:00:03.720]  
+2. Select a product from the product listing and click "Add to cart." [00:00:14.240]  
+3. Add the paint and stain items and verify the cart count shows two items. [00:00:14.240]  
+4. Use the search field to find the product and observe whether the "Add to cart" action appears in the results. [00:00:27.400]  
+5. Log or flag the missing "Add to cart" action in search results for team validation. [00:00:27.400]  
+6. Open the cart, review selected items, and click "Proceed to checkout." [00:00:38.440]  
+7. Note that the post-checkout cart clearing action is not implemented and record this as a task. [00:00:38.440]  
+8. Validate the missing add-to-cart behavior in search results as a prioritized action item. [00:00:47.760]  
+9. Implement cart clearing upon successful checkout. [00:00:47.760]  
+10. Update SAVA localization and general look-and-feel settings to match the target UI styling. [00:00:47.760]
 
 Related guides:
 

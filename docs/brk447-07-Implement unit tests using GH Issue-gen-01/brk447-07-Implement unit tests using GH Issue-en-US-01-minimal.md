@@ -1,13 +1,14 @@
-1. Choose between implementing the unit test locally or assigning a cloud-isolated agent to implement missing tests. [00:00:00.160]  
-2. Enable GitHub tools in MCP and grant permission for the repository search tool to run. [00:00:11.849]  
-3. Run a search of repository issues to locate entries about missing unit tests. [00:00:11.849]  
-4. Open issue #18 and review its scope, acceptance criteria, and listed tasks. [00:01:00.000]  
-5. Choose an assignment method (GitHub UI or Visual Studio) and assign Copilot to issue #18. [00:01:37.040]  
-6. Watch Copilot create a pull request and start a cloud session, noting environment and fork creation steps. [00:02:02.600]  
-7. Open the pull request details and session view to monitor the agent’s progress. [00:02:02.600]  
-8. Inspect previous PR #17 to view changed files and newly added unit test files for pattern guidance. [00:02:56.920]  
-9. Open the session log and read the recorded step-by-step actions (clone, plan, view source). [00:03:37.040]  
-10. Monitor the current PR’s GitHub Actions workflow and stream the CI logs for validation. [00:03:55.400]
+# Video: [brk447-07-Implement unit tests using GH Issue.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:04:35
+
+1. Enable GitHub tooling / allow tool execution in the repository. [00:00:18.240]  
+2. Search the repository issues for missing unit tests and locate issue #18. [00:00:18.240]  
+3. Open issue #18 and review its scope, acceptance criteria, tasks, and labels. [00:01:07.800]  
+4. Choose assignment method (GitHub UI or Visual Studio) and execute "assign Copilot" for the issue. [00:01:07.800]  
+5. Refresh the issue list and confirm Copilot has started a pull request and created the cloud environment and fork. [00:02:02.600]  
+6. Open the new pull request details to view the PR session and status. [00:02:02.600]  
+7. Open an example completed PR (e.g., PR #17) and view the "Files changed" to inspect added unit tests. [00:03:02.360]  
+8. Review the session summary or timeline to see the steps performed and total runtime. [00:03:02.360]  
+9. Open the running PR's GitHub Actions workflow run and inspect the action run logs to follow execution progress. [00:04:07.880]
 
 Related guides:
 

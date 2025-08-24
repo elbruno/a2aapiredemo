@@ -1,88 +1,90 @@
 {
   "sections": [
     {
-      "title": "Overview: E-commerce sites and SAVA migration",
+      "title": "Introduction \u2014 SAVA migration and e-commerce sites",
       "start_time": "00:00:03.720",
-      "end_time": "00:00:13.492",
-      "summary": "Introduces the e-commerce sites the team is working on and says they are deploying and integrating services to move to the new SAVA experience.",
+      "end_time": "00:00:14.240",
+      "summary": "Overview: the team is working on e-commerce sites and beginning to integrate services to move to the new SAVA experience.",
       "key_actions": [
-        "Describe migration to SAVA",
-        "Introduce team responsibilities"
+        "Explain project scope (SAVA migration)",
+        "Identify target e-commerce sites for integration"
       ],
       "ui_elements": [
         "SAVA application (general reference)"
       ]
     },
     {
-      "title": "Adding products to cart (demonstration)",
+      "title": "Adding products to the cart (demonstration)",
       "start_time": "00:00:14.240",
       "end_time": "00:00:27.400",
-      "summary": "Demonstrates adding items (example: paint products) to the cart and confirms that two products are present in the cart.",
+      "summary": "Demonstration of adding products to the cart: presenter adds multiple items (paint, stain) and confirms there are two items in the cart.",
       "key_actions": [
         "Select product from product list",
-        "Use 'add to cart' action to add product",
-        "Verify cart shows two products"
+        "Click \u0027Add to cart\u0027 for paint and stain",
+        "Verify cart count shows two items"
       ],
       "ui_elements": [
-        "Product list / product tiles",
+        "Product listing",
         "Add to cart button",
-        "Cart (cart icon or cart view)"
+        "Cart / cart count"
       ]
     },
     {
-      "title": "Search results missing 'Add to cart' option (bug/validation)",
+      "title": "Search results missing add-to-cart option",
       "start_time": "00:00:27.400",
       "end_time": "00:00:38.440",
-      "summary": "Search for a product (paint) does not display the 'add to cart' option — identified as something the team needs to validate.",
+      "summary": "Search for a product (paint) does not display the \u0027Add to cart\u0027 option \u2014 identified as an issue requiring validation by the team.",
       "key_actions": [
-        "Search for product by name",
-        "Observe missing 'add to cart' option in search results",
-        "Flag/validate this behavior with the team"
+        "Use search field to find product",
+        "Observe missing \u0027Add to cart\u0027 action in search results",
+        "Log/flag the missing action for validation"
       ],
       "ui_elements": [
-        "Search field / search box",
+        "Search field",
         "Search results list",
-        "Add to cart button (missing in this context)"
+        "(Missing) Add to cart button in results"
       ]
     },
     {
-      "title": "Cart -> Checkout behavior not implemented / clears cart",
+      "title": "Cart to checkout behavior and missing implementation",
       "start_time": "00:00:38.440",
       "end_time": "00:00:47.760",
-      "summary": "When viewing the cart with selected items, proceeding to checkout currently clears the cart — this behavior is not implemented correctly and needs attention.",
+      "summary": "In the cart, after selecting items the user can proceed to checkout, but the action that would clear the cart after checkout is not yet implemented.",
       "key_actions": [
         "Open cart to review selected items",
-        "Click 'proceed to checkout'",
-        "Observe cart is cleared (unexpected) and mark as not implemented"
+        "Click \u0027Proceed to checkout\u0027",
+        "Note that post-checkout cart clearing is not implemented"
       ],
       "ui_elements": [
-        "Cart view",
-        "Proceed to checkout button"
+        "Cart view (items list)",
+        "Proceed to checkout button",
+        "Cart clear/reset action (not implemented)"
       ]
     },
     {
-      "title": "Next steps: team tasks and localization",
+      "title": "Action items and next steps",
       "start_time": "00:00:47.760",
       "end_time": "00:00:55.480",
-      "summary": "Notes there are a couple of places (including general local feel) where the team will work in the SAVA application to address these issues.",
+      "summary": "Summary of work areas: team will address the add-to-cart in search results, cart/checkout clearing behavior, and general localization/look-and-feel in the SAVA application.",
       "key_actions": [
-        "Plan fixes in SAVA application",
-        "Work on localization / 'local feel' issues",
-        "Validate add-to-cart and checkout flows"
+        "Validate missing add-to-cart in search results",
+        "Implement cart clearing on checkout",
+        "Work on general locale / look-and-feel in SAVA"
       ],
       "ui_elements": [
-        "SAVA application (project area)",
-        "Localization / UI language settings (implied)"
+        "SAVA application (settings/localization)",
+        "General local feel / UI styling"
       ]
     }
   ],
   "main_topics": [
-    "Migration to SAVA experience",
-    "Add-to-cart functionality",
+    "SAVA application migration/integration",
+    "Adding items to cart",
     "Search results behavior",
-    "Cart and checkout behavior",
-    "Validation and implementation tasks",
-    "Localization / local UI feel"
+    "Cart and checkout flow (cart clearing)",
+    "Localization / general UI look-and-feel"
   ],
-  "total_duration": "00:00:55.480"
+  "total_duration": "00:00:55.480",
+  "video": "brk447-02-Zava Overview.mkv",
+  "duration": "00:00:57.1833333"
 }

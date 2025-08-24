@@ -1,154 +1,172 @@
-# Applying Brand Styles to a Blazor App Using GitHub Copilot / Compiler (Multimodal Agent)
+# Video: [brk447-08-update ui using agent based on images.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:05:05
 
-Overview
---------
-This manual guides you through the workflow shown in the video to update a Blazor application's UI to match a brand (SAVA) using a multimodal agent (GitHub Copilot / Compiler). The process covers preparing style assets and reference images, prompting the compiler with multimodal inputs, letting the agent analyze the codebase, applying CSS edits, restarting the app, and iterating using screenshots to refine the UI.
+# UI Branding Update Manual — Using Multimodal Copilot/Compiler with Blazor
 
-Key outcomes:
-- Use images and style files as references for automated UI improvements
-- Let Copilot scan the project and produce a plan
-- Apply CSS changes safely and verify them in the browser
-- Iterate with screenshots to refine visuals and component styling
+This manual walks you through the process demonstrated in the video to apply branding and style updates to a Blazor web app using a multimodal agent (GitHub Copilot / Compiler). It covers preparing assets, feeding visual references to the agent, allowing automated edits, verifying changes with hot reload, and iterating with screenshots.
 
-Relevant timestamps for reference: see inline timestamps in steps and final Snapshots list.
+- Total demo duration: 00:05:04.840
+- Primary goal: Update website style to SAVA branding using a multimodal agent
 
-Step-by-step Instructions
--------------------------
+---
 
-1. Introduction — Understand the goal (00:00:00.080 → 00:00:15.560)
-   - Goal: update the Blazor app UI to match the SAVA brand and leverage Copilot's multimodal capabilities.
-   - Tip: Have a clear visual target (brand style guide or screenshots) ready before you start.
+## Overview
 
-   ![Intro snapshot — agent + brand intent (00:00:00.080)](./snapshot-00-00-00.080.png)
+(00:00:00.080 — 00:00:08.760)
 
-2. Prepare style assets and reference images (00:00:15.560 → 00:00:58.400)
-   - Open your repository file explorer (store view) and locate:
-     - Current CSS cascade file(s) (commonly app.css, site.css, or styles/*.css)
-     - Component files (.razor) for pages you expect to change (e.g., Product.razor)
-     - Brand assets: SAVA style file(s) and reference images (logos, color swatches, card mockups)
-   - Copy the SAVA/brand style file and any images to a location where you can paste them into the Copilot/Compiler context.
-   - In the Compiler interface, paste the brand style file and upload or paste reference images into the prompt/input area.
+This workflow uses a multimodal agent (Copilot / Compiler) that can accept images and prompts, scan the repository, and propose or apply front-end changes automatically. The agent will:
 
-   Tips:
-   - Use high-resolution images for better analysis.
-   - If the repo has many CSS files, note the primary cascade file (app.css) to prioritize.
+- Read repository assets and front-end files (Blazor Razor components, CSS).
+- Apply edits (notably to app.css and components) to match SAVA branding.
+- Accept iterative visual feedback (screenshots) to refine colors and contrast.
+- Support hot reload for quick verification.
 
-   ![Preparing assets in repo and Copilot input (00:00:15.560)](./snapshot-00-00-15.560.png)
+Use this manual to reproduce the same process reliably and safely.
 
-3. Prompt the Compiler to analyze and improve the UI (initial run) (00:00:58.400 → 00:01:12.706)
-   - In the prompt textbox, give a concise instruction such as:
-     - "Analyze these reference images and the repository files. Update the app's styles and components so the UI follows the SAVA brand colors, typography, and card styles. Make minimal, safe changes and list the files you'll modify."
-   - Send the prompt to start the analysis.
-   - Wait while the Compiler begins scanning and planning (this can take some time).
+---
 
-   Tip:
-   - Ask for a step-by-step plan first if you prefer manual review before modifications.
+## Step-by-step Instructions
 
-   ![Prompting Compiler with images & directions (00:00:58.400)](./snapshot-00-00-58.400.png)
+Follow these steps in order. Where timestamps are relevant, they are provided for reference to the demo.
 
-4. Let the Compiler analyze the codebase and prepare a plan (00:01:12.706 → 00:02:09.720)
-   - Copilot will scan:
-     - The Blazor front end structure
-     - CSS cascade files (e.g., app.css)
-     - Component .razor files (e.g., Product.razor)
-     - The repository "store" / file list
-   - Review the plan Copilot provides. Typical plan items:
-     - Edit app.css or create a new CSS file for SAVA variables
-     - Update component classes to use new styles
-     - Apply color and typographic changes to product cards
+### 1. Set goal and enable the multimodal agent (Intro)
+- Timestamp reference: 00:00:00.080
+- Action:
+  1. Open your development workspace and enable the multimodal agent (Copilot / Compiler) feature.
+  2. Define the high-level goal for the agent: update the site style to SAVA branding.
+- Tip: Be explicit about the target branding (colors, imagery, tone) in your prompt.
 
-   Tip:
-   - If the plan makes large or risky changes, request the agent to break work into smaller commits.
+![Intro / agent enabled](./path/to/placeholder)  
+Caption: Agent enabled and goal set (00:00:00.080)
 
-5. Apply CSS edits and handle the running application (00:02:09.720 → 00:03:03.040)
-   - When Copilot applies edits, you will be shown the modified files (e.g., APP.css).
-   - If the app is running, a popup will prompt you to stop the running application before changes can be fully applied.
-     - Accept stopping the running app to let changes be written and compiled.
-   - Restart/run the application after the agent finishes edits.
-   - Refresh the browser to view updated styles.
+---
 
-   Warnings:
-   - **Save or commit current work** before accepting automated edits to avoid losing changes.
-   - **Stopping a running app** will interrupt user sessions. Do this in a dev environment.
+### 2. Locate and copy branding/style assets
+- Timestamp reference: 00:00:09.080 — 00:00:35.200
+- Action:
+  1. Open the repository file list and locate branding assets: reference images, color files, and any existing style file.
+  2. Identify a suitable style file to copy (e.g., a branding stylesheet or theme file).
+  3. Copy the chosen file into your project folder or workspace.
+  4. Return to the Copilot/Compiler input area in your IDE to prepare the asset for upload.
+- UI elements to look for: repository file list, branding images, GitHub Copilot input area.
+- Tip: Keep filenames clear (e.g., sava-branding.css or sava-style.png) so the agent can reference them.
 
-   ![Popup asking to stop the app and restart to apply styles (00:02:09.720)](./snapshot-00-02-09.720.png)
+![Locate branding assets](./path/to/placeholder)  
+Caption: Repository assets and branding images located (00:00:09.080)
 
-6. Evaluate visual results and take a screenshot (00:03:03.040 → 00:03:25.830)
-   - Inspect the updated UI in the browser.
-   - Look for issues:
-     - Incorrect color values or contrast
-     - Typography not applied
-     - Product cards not matching the reference
-   - Take a screenshot of the areas that need fixing. Include the surrounding layout so the agent has context.
+---
 
-   Tip:
-   - Prefer full-window screenshots or targeted region captures of components (e.g., product cards) that need improvement.
+### 3. Attach visual references and prompt the compiler
+- Timestamp reference: 00:00:35.200 — 00:01:04.200
+- Action:
+  1. Open the reference images (two or more images) that exemplify the SAVA look.
+  2. Paste/upload those images into the Copilot/Compiler context (image paste/upload area).
+  3. In the prompt input, clearly request the UI improvements you want based on those images. Example prompt:
+     - "Use these two reference images and the branding file I pasted. Update the site CSS and component styles to match SAVA branding—adjust primary/secondary colors, button styles, headings, and card contrast. Focus on front-end Blazor components and app.css."
+  4. Send the prompt.
+- UI elements: reference images, Copilot prompt input, image paste/upload area.
+- Tip: Include what not to change (e.g., avoid changing core layout or server-side logic).
 
-   ![Inspecting results in the browser and taking a screenshot (00:03:03.040)](./snapshot-00-03-03.040.png)
+![Attach reference images](./path/to/placeholder)  
+Caption: Two reference images attached to the compiler context (00:00:35.200)
 
-7. Iterative improvement — resubmit screenshots and request fixes (00:03:25.830 → 00:03:56.709)
-   - Paste the screenshot(s) into the Copilot/Compiler prompt area.
-   - Provide a concise description of the issues and request specific fixes. Examples:
-     - "Contrast is too low on product cards; align colors to SAVA primary/secondary swatches attached."
-     - "Make product card backgrounds white with a subtle shadow and round corners to match SAVA mockup."
-   - Optionally ask the agent to make smaller incremental changes (easier to review and revert).
+---
 
-   Tip:
-   - When results are noisy, ask for one change at a time (e.g., colors first, then spacing, then card layout).
+### 4. Let Copilot analyze the project and plan edits
+- Timestamp reference: 00:01:09.380 — 00:02:09.599
+- Action:
+  1. Allow Copilot to scan the repository. It will look for front-end files such as:
+     - Blazor Razor components (.razor)
+     - CSS files (app.css)
+     - Component tracer / store files
+  2. Review Copilot’s proposed plan (if presented). Typical changes include edits to app.css and updating component styles.
+  3. If Copilot attempts to apply changes while the app is running, you may be prompted to stop the running application. Respond to that popup:
+     - If asked, choose to stop the running application so file edits can be applied.
+  4. Let Copilot apply the edits (it will often modify app.css first).
+- UI elements: Blazor front-end files, app.css, popup "stop running application", Copilot activity view.
+- Warning: Stopping the app will terminate the current run. Save any unsaved work before confirming.
 
-   ![Pasting screenshot & requesting further changes (00:03:25.830)](./snapshot-00-03-25.830.png)
+![Copilot scanning project](./path/to/placeholder)  
+Caption: Copilot scans front-end files and starts editing (00:01:09.380)
 
-8. Inspect specific components and verify updates (Product.razor example) (00:03:56.709 → 00:04:22.274)
-   - Navigate to the component page in your app (Product.razor).
-   - Refresh the browser to ensure the component picks up the new CSS.
-   - Check the repository for a new or updated CSS snippet that the agent added to improve styling (e.g., additional selectors or a new CSS file).
-   - Confirm whether the Product.razor markup requires class updates or if CSS overrides suffice.
+---
 
-   Tip:
-   - If a component still looks unchanged, inspect the element with browser dev tools to see which CSS rules are applied and whether selectors are being overridden.
+### 5. Restart app and preview applied styles
+- Timestamp reference: 00:02:09.720 — 00:03:16.391
+- Action:
+  1. Restart or run the application in your browser (use your usual run command / browser preview).
+  2. Refresh the browser page to load the updated styles.
+  3. Inspect the UI for initial results: primary color changes, button styles, and overall contrast.
+- UI elements: web browser preview, refresh button.
+- Tip: Use a private/incognito window if caching causes the old CSS to persist.
+- Warning: Initial automated changes can sometimes be too dark or have poor contrast—do not assume final perfection on first pass.
 
-   ![Verifying Product.razor and new CSS edits (00:03:56.709)](./snapshot-00-03-56.709.png)
+![Preview updated styles](./path/to/placeholder)  
+Caption: Browser preview shows new styling after initial edits (00:02:09.720)
 
-9. Final run, UI evaluation, and further iterative refinement (00:04:22.274 → 00:05:04.920)
-   - Run the application and inspect interactive elements:
-     - Product cards: appearance, spacing, shadows, borders
-     - Cart interactions: adding a product to cart and UI response
-   - Test a sample interaction (add a product to cart) to validate states (hover, active, added).
-   - Note remaining issues (e.g., card appearance not matching reference) and submit fresh screenshots + instructions for additional agent iterations.
+---
 
-   Tips:
-   - Use the app's normal workflows to catch state-related style issues (disabled, hover, focus).
-   - Continue the cycle: prompt → analyze → apply → verify → screenshot until the UI matches the reference.
+### 6. Capture a screenshot of issues and feed back to the agent
+- Timestamp reference: 00:02:09.720 — 00:03:16.391
+- Action:
+  1. If you notice visual issues (e.g., colors too dark, poor contrast), use your OS browser screenshot tool to capture the problematic area.
+  2. Paste or upload the screenshot back into the Copilot/Compiler input context.
+  3. Add a concise description of the issues and a clear request for adjustments. Example:
+     - "Screenshot shows product cards with too-dark backgrounds and low contrast on text. Please lighten card backgrounds, increase text contrast, and adjust button colors to match SAVA branding while keeping accessibility in mind."
+  4. Send the prompt and wait for the agent to analyze.
+- UI elements: screenshot tool, Copilot input (image + description).
+- Tip: Highlight or annotate regions in the screenshot if your tool supports it.
+- Warning: Analysis can take a few minutes—be patient.
 
-   ![Running the app, testing add-to-cart, and evaluating final UI (00:04:22.274)](./snapshot-00-04-22.274.png)
+![Screenshot and feedback](./path/to/placeholder)  
+Caption: Screenshot pasted with description asking for further improvements (00:02:40.000)
 
-Helpful Tips & Best Practices
------------------------------
-- Start with a clear reference: color hex codes, typography specs, and sample mockups improve agent accuracy.
-- Ask for a safety-first plan: request the agent to list files to modify before applying edits.
-- Keep changes small and commit often to make rollbacks easy.
-- Use targeted screenshots with annotations (if supported) to point out exact problems.
-- If an automated change breaks something, revert via version control (git) and ask the agent for an incremental fix.
-- Use browser dev tools to confirm which CSS selectors need to be changed; include these findings in your next prompt.
+---
 
-Warnings
---------
-- Always work in a development environment, not production, when letting agents modify code.
-- Stop the running application only when safe to do so — unsaved data and sessions may be interrupted.
-- Automated edits may not capture every edge case; manual review is required before release.
+### 7. Use iterative, small edits and Blazor hot reload
+- Timestamp reference: 00:03:16.391 — 00:04:33.417
+- Action:
+  1. When the agent applies updates, prefer incremental changes (smaller steps) so you can quickly verify.
+  2. Use Blazor hot reload to see CSS and Razor component edits applied without a full rebuild when possible.
+  3. After each agent change, refresh the browser or rely on hot reload to inspect the specific pages affected (e.g., Product pages).
+- UI elements: Copilot progress/analysis, Blazor hot reload, Razor component pages (product.razor).
+- Tip: If an automated change breaks layout, revert that file and ask Copilot to make a narrower change.
 
-Inline Snapshot Placeholders
-----------------------------
-Place the actual extracted frames at these points in your own documentation or editing tool where the placeholders are referenced above. Filenames or references shown next to each placeholder can be replaced with real images extracted from the video.
+---
+
+### 8. Verify UI changes and test functionality (product cards, cart)
+- Timestamp reference: 00:04:33.417 — 00:05:04.920
+- Action:
+  1. Navigate to the product page (product.razor) and check product cards for correct colors, contrast, and spacing.
+  2. Add items to the cart and inspect the cart UI to ensure buttons, totals, and text are readable and styled.
+  3. If remaining issues exist, capture screenshots and run another targeted Copilot prompt for refinement.
+- UI elements: product page, product cards, cart, browser run button/command.
+- Tip: Test on multiple screen sizes and browser zoom levels to validate responsive styles.
+
+![Verify product cards and cart](./path/to/placeholder)  
+Caption: Product cards and cart checked after iterative updates (00:04:33.417)
+
+---
+
+## Tips and Warnings (general)
+
+- Tip: Be explicit in prompts—include color hex codes, font names, and elements to change for predictable results.
+- Tip: Provide multiple reference images showing the desired look (buttons, cards, navbars).
+- Warning: Allowing automated tools to edit while the app is running may require stopping the app; save your work.
+- Warning: Automated changes may affect accessibility; always verify contrast ratios and readable font sizes after edits.
+
+---
 
 ## Snapshots
-[00:00:00.080]  
-[00:00:15.560]  
-[00:00:58.400]  
-[00:01:12.706]  
-[00:02:09.720]  
-[00:03:03.040]  
-[00:03:25.830]  
-[00:03:56.709]  
-[00:04:22.274]  
-[00:05:04.920]
+
+Include the images captured at the following key moments to document each stage visually.
+
+- ![Snapshot at 00:00:00.080](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-00-00-080.png) — Agent enabled and goal set (intro)
+- ![Snapshot at 00:00:09.080](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-00-09-080.png) — Repository branding assets located
+- ![Snapshot at 00:00:35.200](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-00-35-200.png) — Reference images attached to Copilot/Compiler
+- ![Snapshot at 00:01:09.380](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-01-09-380.png) — Copilot scanning project / planning edits
+- ![Snapshot at 00:02:09.720](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-02-09-720.png) — Browser preview showing initial updated styles
+- ![Snapshot at 00:02:40.000](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-02-40-000.png) — Screenshot pasted into Copilot with issue description
+- ![Snapshot at 00:03:16.391](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-03-16-391.png) — Copilot analysis / hot reload in progress
+- ![Snapshot at 00:04:33.417](./images/brk447-08-update%20ui%20using%20agent%20based%20on%20images-en-US-snapshot-00-04-33-417.png) — Final verification: product cards and cart UI
+
+(Note: Replace placeholder images in the manual with the actual screenshots captured at the timestamps above.)

@@ -1,152 +1,115 @@
-# User Manual — Updating a Blazor App UI with GitHub Copilot (Compiler) and Multimodal Inputs
+# Video: [brk447-08-update ui using agent based on images.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:05:05
 
-Duration: 00:05:04.920
+# Using Multimodal Agents (Copilot/Compiler) to Apply Branding and Improve UI — User Manual
+
+This manual shows how to use a multimodal agent (GitHub Copilot / Compiler) to apply branding assets and iteratively improve a Blazor front-end UI, as demonstrated in the video. Follow the steps to copy branding assets, attach visual references, let the agent analyze and edit code (CSS / Razor components), and verify changes with hot reload and browser preview.
+
+Duration referenced in the video: 00:00:00 — 00:05:04
+
+---
 
 ## Overview
-(00:00:00 — 00:05:04)
 
-This manual describes a repeatable workflow for using an agent (GitHub Copilot / Compiler) together with multimodal inputs (style assets and screenshots) to apply a brand style to a Blazor web application. The workflow covers preparing assets, prompting the compiler, letting it analyze the codebase and plan changes, applying CSS edits, handling a running app, inspecting results in the browser, taking screenshots, and iterating until the UI matches the target style.
+This workflow uses a multimodal agent to:
 
-Main goals:
-- Apply SAVA (brand) styles to a Blazor front-end.
-- Use images and screenshots as inputs to guide automatic style changes.
-- Iterate: analyze → apply edits → review → refine.
+- Read your project and locate front-end files (Blazor Razor components, CSS).
+- Apply branding assets (images, colors) to update styling (notably app.css).
+- Accept screenshots and visual references to iteratively refine UI contrast and layout.
+- Use Blazor hot reload and browser refresh to preview changes quickly.
 
----
+Key concepts:
+- Attach reference images and style assets to the agent's context.
+- Allow the agent to scan the repo and propose/implement edits.
+- Use small, incremental changes and iterate using screenshots and prompts.
 
-## Step-by-step Instructions
-
-Follow these steps in order. Timestamps correspond to the demonstrated actions in the source content.
-
-### 1. Introduction — Agents & Multimodal Models (00:00:00 — 00:00:15)
-- Understand the approach: the agent can process both code and images to make style/UI improvements.
-- Decide the target branding (e.g., SAVA) and gather any reference images or style files you plan to apply.
-
-Tip: Have a clear visual reference image (color palette, typography, example screens) to guide the agent.
-
----
-
-### 2. Prepare Style Assets and Reference Images (00:00:15 — 00:00:58)
-- Open your project repository and locate the current style files and assets:
-  - Common files: app.css (or APP.css), site-wide cascade files, component .razor files.
-  - Asset locations: repository file explorer (store), images folder, branding folder.
-- Copy the SAVA/brand style file(s) and any relevant images (logo, color palette, screenshots).
-- Paste these files and images into the GitHub Copilot / Compiler input context so the agent has direct access to them.
-
-How to present assets to the agent:
-- Ensure filenames are descriptive (e.g., sava-brand.css, sava-colors.png).
-- Attach images as files or paste references into the Compiler prompt area.
-
-Warning: Do not paste sensitive credentials or private secrets into the compiler context.
+Relevant timestamps:
+- Intro and goal: 00:00:00–00:00:08  
+- Copy style assets: 00:00:09–00:00:35  
+- Attach visual references and prompt: 00:00:35–00:01:04  
+- Agent analysis and edits (app.css): 00:01:09–00:02:09  
+- Preview, screenshot, iterate: 00:02:09–00:03:16  
+- Iterative improvement & hot reload: 00:03:16–00:04:33  
+- Verify product UI and cart: 00:04:33–00:05:04
 
 ---
 
-### 3. Prompt the Compiler to Improve the UI — Initial Run (00:00:58 — 00:01:12)
-- In the Compiler prompt textbox, request an audit and UI improvement using the provided images and style file.
-- Example prompt (use as a template):
+## Step-by-step instructions
 
-```
-Please analyze the repository and the attached SAVA style assets. Update the Blazor front-end styles to match the SAVA brand (colors, contrast, and card styles). Focus on app.css and component styles. Report a step-by-step plan before applying changes.
-```
+Follow these numbered steps to reproduce the process.
 
-- Send the prompt and wait for the Compiler to begin analysis. The process may take some time.
+1. Prepare your workspace
+   - Open the repository in your IDE that is connected to Copilot/Compiler (or the multimodal agent feature).  
+   - Confirm you can run the Blazor application locally (development server) so you can preview changes.  
+   - Tip: Work on a development branch and have a backup or version control commit before large automated edits.
 
-Tip: Ask the agent to produce a brief plan before making edits so you can confirm intent.
+2. Identify and copy branding/style assets (00:00:09–00:00:35)
+   - In the repository file list, locate branding assets: images, reference images, color information, or an existing style file.  
+   - Copy the branding/style file that contains the SAVA color palette or other details into your project folder (for example, into a styles or assets directory).  
+   - Paste or attach that file into the Copilot/Compiler input/context area so the agent can access the same files you did.
+   - Tip: Keep filenames descriptive (e.g., sava-branding.json, sava-colors.css).
 
----
+3. Attach visual references and craft the initial prompt (00:00:35–00:01:04)
+   - Open and attach reference images (two or more images that define the desired look). Use the agent’s image paste/upload area.  
+   - In the Copilot/Compiler prompt input, give a concise instruction: e.g., “Use these SAVA branding images and colors to update the site’s UI—improve header, product cards, and general color contrast.”  
+   - Include which files to prioritize (app.css, product.razor, shared components) if possible.
+   - Tip: Provide specific goals (e.g., lighter button background, improved text contrast).
 
-### 4. Let the Compiler Analyze the Codebase & Plan Changes (00:01:12 — 00:02:09)
-- Allow Copilot to scan CSS cascade files, component (.razor) files, and the file list/store view.
-- Review the plan it generates — expected files to edit (eg. app.css, Product.razor adjustments), and the change steps.
+4. Allow the agent to analyze the project and plan edits (00:01:09–00:02:09)
+   - Let Copilot/Compiler scan the repository. It will identify front-end files such as Razor components, CSS (app.css), and component tracers.  
+   - The agent will propose a plan and begin implementing edits (often starting with app.css).  
+   - Warning: The agent may need to stop your running application to update files.
 
-What the agent commonly inspects:
-- Global CSS cascade (app.css)
-- Component-level styles and markup (.razor files)
-- Visual references from provided images
+5. Respond to the running-application popup and restart app (00:01:09–00:02:09)
+   - If a popup appears asking to stop the running application to apply changes, accept it so file edits can be applied.  
+   - After edits are applied, restart the development server (or let hot reload reapply changes).  
+   - Tip: If hot reload is active, the agent’s changes may appear without a full restart—verify your environment’s behavior.
 
-Tip: If the plan includes risky or large changes, ask the agent to break them into smaller, incremental edits.
+6. Preview updated styles in the browser and inspect (00:02:09–00:03:16)
+   - Refresh the browser (use the preview tab or browser reload) to load updated styles.  
+   - Inspect areas affected by the changes: header, product cards, buttons, cart UI.  
+   - Note issues (e.g., colors too dark, poor contrast, spacing problems).
 
----
+7. Capture and submit a screenshot for iterative refinement (00:02:09–00:03:16)
+   - Use your OS or browser screenshot tool to capture the problematic view. Include the area that needs improvement.  
+   - Paste or upload the screenshot into Copilot/Compiler and add a short description with the issue (e.g., “Buttons appear too dark and low contrast on product cards; please increase contrast and adjust text color.”)  
+   - Tip: Crop to the relevant UI area and add a one-line instruction for clarity.
 
-### 5. Apply CSS Edits and Handle the Running Application (00:02:09 — 00:03:03)
-- Accept the changes applied by the Compiler to app.css or other CSS files.
-- If the application is running, the IDE or Compiler will likely prompt you to stop the running app before writing files. Choose to stop the app so changes can be saved.
-  - Popup action: "Stop running application?" — accept to proceed.
-- Restart / run the application to apply the new styles.
-- Refresh the browser to load the updated CSS.
+8. Wait for agent analysis and accept incremental changes (00:03:16–00:04:33)
+   - The agent will analyze the screenshot and may take time (minutes) to process and apply improved edits.  
+   - Prefer smaller incremental edits rather than bulk changes. This improves the chance that hot reload and previews will quickly show useful results.  
+   - Tip: If the agent’s changes are not satisfactory, provide targeted feedback and another screenshot.
 
-Warning: Stopping the running application will interrupt active sessions. Save any work before confirming the stop.
+9. Use Blazor hot reload for quick verification (00:03:16–00:04:33)
+   - After each set of edits, rely on Blazor hot reload to see style changes rapidly in running pages (e.g., product.razor).  
+   - Refresh specific pages if changes don’t appear immediately.  
+   - Warning: Some edits require stopping and restarting the dev server—follow the agent’s prompts.
 
-Tip: If possible, keep a version-controlled commit or branch before automated edits so you can revert quickly.
+10. Test interactive UI elements (00:04:33–00:05:04)
+    - Navigate to the product page and inspect updated product cards and layout.  
+    - Add items to the cart to verify cart UI, button states, and spacing.  
+    - Identify any remaining issues (e.g., cart contrast, alignment) and repeat the screenshot → prompt → apply cycle as necessary.
 
----
-
-### 6. Evaluate Visual Results and Take a Screenshot (00:03:03 — 00:03:25)
-- Inspect the updated UI in the browser. Check:
-  - Global color changes and contrast
-  - Component/card styles
-  - Typography and spacing
-- If something looks off (colors, contrast, card appearance), take a screenshot of the problematic area.
-
-How to capture useful screenshots:
-- Focus on the affected component(s) (product cards, headers, nav).
-- Include enough context (surrounding UI) so the agent can interpret layout and color relationships.
-
-Tip: Keep a naming convention for screenshots (e.g., product-card-issue-01.png) and include short notes describing the issue.
-
----
-
-### 7. Iterative Improvement — Submit Screenshot and Request Fixes (00:03:25 — 00:03:56)
-- Paste or attach the screenshot and a concise description of issues back into the Compiler prompt area.
-- Ask the agent to improve the UI based on the screenshot and earlier style references. Example prompt:
-
-```
-Attached: product-card-issue-01.png. The card contrast and spacing still look off compared to SAVA references. Please adjust the card background, border, padding, and contrast to match SAVA style. Make small, incremental changes and list the edits you will make.
-```
-
-- Optionally request that the agent break the work into smaller steps to reduce risk and allow quicker validation.
-
-Tip: Use multiple screenshots if multiple areas need fixes. Smaller change sets make verification faster.
+11. Iterate until satisfied
+    - Continue the cycle of: observe → capture → prompt the agent with images/instructions → accept edits → preview.  
+    - Keep iterations small and focused (contrast, spacing, typography) for faster, reliable results.  
+    - Tip: Use precise feedback (hex color suggestions, contrast ratios, font sizes) to guide the agent’s changes.
 
 ---
 
-### 8. Inspect Specific Components (Product Page) and Verify Updates (00:03:56 — 00:04:22)
-- Navigate to the specific component/page (e.g., Product.razor) in the app and review whether the compiler applied targeted changes.
-- Refresh the browser to ensure the latest CSS is loaded.
-- Confirm whether new or updated CSS rules appear (e.g., a new CSS class or revised app.css entries).
+## Useful tips and warnings
 
-What to check:
-- Did the product page reflect the new styles?
-- Are new CSS files or rules created and applied?
+- Tips
+  - Provide direct, focused prompts with images and specific goals (e.g., “increase button contrast to WCAG AA”).
+  - Use small, incremental edits to leverage hot reload and reduce disruptive changes.
+  - Attach multiple reference images (colors, spacing, typography) to better convey design intent.
+  - Name style files and assets clearly so the agent can find them quickly.
 
-Tip: If component-level styles aren't updating, verify component scoping (component CSS vs global CSS) and ensure the agent edited the correct file scope.
-
----
-
-### 9. Final Run, UI Evaluation, and Iterative Refinement (00:04:22 — 00:05:04)
-- Run the application again and inspect the product cards, header, and other UI areas.
-- Test interactions: add sample products to the cart and verify UI behavior (buttons, confirmation modals, cart counts).
-- Identify remaining issues (e.g., card appearance, missized elements), capture screenshots, and repeat the submit-fix cycle with Copilot.
-- Request additional changes based on screenshots and the SAVA style references until you reach the desired look.
-
-Checklist during final reviews:
-- Contrast and accessibility (text legibility)
-- Button and control styling and spacing
-- Card layout, shadows, borders, padding
-- Interactive states (hover, active)
-
-Tip: Test on multiple browser widths (responsive layouts) to catch layout regressions.
+- Warnings
+  - Always work in a development environment and a feature branch—automated edits can be broad.
+  - Accept the “stop running application” popup only if you are ready to restart or rely on hot reload.
+  - Agent analysis may take time; avoid making many simultaneous requests that could conflict.
+  - Review all generated code changes before committing to source control.
 
 ---
 
-## Tips and Warnings
-
-- Tip: Ask the Compiler for a short plan before it applies changes — this improves predictability.
-- Tip: Request incremental changes rather than a single large edit when you are uncertain.
-- Tip: Keep copies or a branch/commit point before letting the agent perform edits so you can revert easily.
-- Warning: When the application is running, automated edits may require stopping it; expect brief downtime.
-- Warning: Do not include secrets or private keys in prompts or attached files.
-
----
-
-This manual provides the practical steps demonstrated in the video to apply brand styling to a Blazor app using an agent that accepts multimodal inputs. Follow the iterative workflow — prepare assets, prompt, review plan, accept edits, verify in the browser, capture screenshots, and repeat — until the UI matches your brand references.
+By following this manual you can reproduce the demonstrated workflow: supply branding assets and screenshots to a multimodal agent, let it edit the Blazor front-end (app.css and Razor components), and iterate quickly using hot reload and targeted feedback.

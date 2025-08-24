@@ -1,150 +1,153 @@
-# Extend GitHub Copilot with MCP Servers — User Manual
+# Video: [brk447-05 add mcp servers.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:02:42
 
-This manual shows how to add MCP (Modular Copilot Provider) servers to GitHub Copilot in Visual Studio so Copilot can surface extra tools (for example, GitHub and Microsoft Docs). Follow the steps below to create an MCP configuration file in your solution, add server entries, authenticate, and verify the tools inside Copilot Chat (Assistant mode).
+# Extending GitHub Copilot with MCP Servers — User Manual
 
-- Video reference duration: 00:00:02.760 – 00:02:40.320
+This manual shows how to register additional MCP (Managed Connector Provider) servers so GitHub Copilot in Visual Studio can use external sources (for example: GitHub and Microsoft Learn / Microsoft Docs). Follow the steps below to create an MCP configuration file in your solution root, add server entries, authenticate, and verify the new tools appear in the Copilot assistant.
+
+Duration referenced from source video: 00:00:02.760 — 00:02:37.560
 
 ---
 
 ## Overview
-(00:00:02.760 – 00:00:16.080)
+(00:00:02.760 — 00:00:16.080)
 
-MCP servers extend GitHub Copilot with additional tools and data sources. Out of the box Copilot may include a small set of MCP tools; adding MCP server entries to a configuration file in your solution lets you load more servers (for example, GitHub and Microsoft Docs) and exposes many additional Copilot tools.
-
-Key points:
-- MCP servers are defined via a JSON configuration file placed in your solution root.
-- After adding a server entry you may need to authenticate; Visual Studio can provide local credentials to do this.
-- Once connected, Copilot’s Assistant tools panel will list added tools.
+- Goal: Give GitHub Copilot more capabilities by registering MCP servers.
+- Result: After registering servers and authenticating, Copilot gains additional tools (e.g., GitHub-related tools and documentation lookup via Microsoft Docs).
 
 ---
 
 ## Step-by-step instructions
 
-Follow these steps to add MCP servers and verify them in Copilot Chat.
+Note: These steps assume you are using Visual Studio with GitHub Copilot already installed and running.
 
-### 1) Inspect default MCP tools
-(00:00:16.080 – 00:00:26.800)
+### 1. Open your solution in Visual Studio
+(00:00:56.528 — 00:01:00 approx.)
+1. Launch Visual Studio and open the solution in which you want to register MCP servers.
+2. Open Solution Explorer and confirm the solution root is visible.
 
-1. Open Visual Studio.
-2. Open GitHub Copilot (Assistant mode).
-3. Open the Copilot Tools/Plugins panel to view the default out-of-the-box tools (the demo shows two default tools).
-
-Tip: This gives a baseline of what’s available before you add new servers.
+Tip: Place the MCP configuration in the solution root so it applies to the whole solution.
 
 ---
 
-### 2) Open Visual Studio MCP servers list and plan additions
-(00:00:27.400 – 00:00:49.258)
+### 2. Create the MCP configuration file in the solution root
+(00:00:56.528 — 00:01:25.952)
 
-1. In Visual Studio, open the MCP servers list (this is in the Copilot / extension settings area or a dedicated MCP servers view).
-2. Review existing servers. Identify which additional servers you want to add (the demo targets:
-   - GitHub
-   - Microsoft Learn / Microsoft Docs)
+1. In Solution Explorer, right-click the solution root (or the project root if no solution-level node) and choose Add > New Item (or Add > New File).
+2. Name the new file using the pattern: <name>.mcp.json — for example: my-solution.mcp.json
+   - The filename can be any name but must end with `.mcp.json` and be located at solution root.
+3. Save the file.
 
-Note the desired servers so you can add their JSON configuration entries in the next steps.
-
----
-
-### 3) Create the MCP configuration file in your solution
-(00:00:49.258 – 00:01:22.090)
-
-1. In Solution Explorer, right-click the solution root (top-level node).
-2. Choose Add → New Item (or Add New File).
-3. Create a new file named using the pattern: <name>.mcp.json
-   - Example: my-servers.mcp.json or copilot-servers.mcp.json
-4. Save the file in the solution root.
-
-Warning: The file must be valid JSON and located in the solution root so Visual Studio/Copilot can discover it.
+Warning: The file must be saved in the solution root. If the file is elsewhere, Copilot may not detect the registered servers.
 
 ---
 
-### 4) Add a GitHub MCP server entry
-(00:01:22.090 – 00:01:36.013)
+### 3. Add the GitHub MCP server entry
+(00:01:25.952 — 00:01:55.680)
 
-1. Open the newly created <name>.mcp.json in the editor.
-2. Paste or type the GitHub server JSON snippet into the file.
-
-Example minimal structure (use this as a template — replace or expand fields with the exact configuration snippet you have from your source):
+1. Open the newly created `<name>.mcp.json` file in the editor.
+2. Add a JSON object describing the GitHub server. Use this minimal example as a starting point, replacing placeholders with your settings where necessary:
 
 ```json
 {
   "servers": [
     {
       "id": "github",
-      "label": "GitHub",
-      "endpoint": "https://api.github.com",
-      "type": "github"
+      "displayName": "GitHub",
+      "type": "github",
+      "url": "https://api.github.com"
     }
   ]
 }
 ```
 
-3. Save the file.
+3. Save the file. Saving registers the server with Visual Studio/Copilot.
 
-Tip: If you have an official snippet or configuration from your organization or the video, paste it here instead of the template.
+What to expect:
+- Visual Studio may show the server status as "in cache, not connected" initially.
+- An authentication prompt may appear.
 
----
-
-### 5) Authenticate the added server and connect
-(00:01:36.013 – 00:01:55.680)
-
-1. After adding the GitHub entry, return to the MCP servers list or the Copilot servers view.
-2. The newly added GitHub server will likely appear in the server cache as “not connected” or “requires authentication.”
-3. Trigger connection/authentication:
-   - Click the server entry or a “Connect”/“Authenticate” action shown in Visual Studio.
-   - When prompted, choose the local Visual Studio credential (the account you use to sign into Visual Studio) to authenticate to GitHub.
-4. Confirm the authentication completes. Once authenticated, GitHub will expose many additional tools (the demo shows +90 tools available).
-
-Tip: Use the Visual Studio account option to avoid entering credentials repeatedly. If your organization uses SSO, follow your normal sign-on flow.
-
-Warning: If authentication fails, double-check that your Visual Studio account has permission to access the GitHub organization or resources being requested.
+Tip: If you have an account already signed into Visual Studio (e.g., GitHub or Microsoft account), Visual Studio will present it in the credential chooser.
 
 ---
 
-### 6) Add Microsoft Docs (Microsoft Learn) MCP server entry
-(00:01:56.000 – 00:02:12.240)
+### 4. Authenticate to GitHub via Visual Studio credentials
+(00:01:25.952 — 00:01:55.680)
 
-1. Return to your <name>.mcp.json file.
-2. Add a Microsoft Docs entry to the "servers" array.
+1. When prompted, choose the account to authenticate with (Visual Studio’s credential chooser).
+2. Complete the sign-in flow for GitHub as requested by Visual Studio.
+3. After successful authentication, Visual Studio connects to the GitHub server entry.
 
-Example minimal entry to append (adjust as needed):
+What to observe:
+- The server status should change from cached/not connected to connected.
+- Copilot will enumerate GitHub-related tools — the presenter saw +90 tools become available.
+
+Warning: If you deny or cancel authentication, Copilot cannot access GitHub resources and related tools will remain unavailable.
+
+---
+
+### 5. Add Microsoft Learn / Microsoft Docs server entry
+(00:01:55.680 — 00:02:10 approx.)
+
+1. Edit the same `<name>.mcp.json` and add a Microsoft Docs / Learn server entry. Example:
 
 ```json
 {
-  "id": "microsoft-docs",
-  "label": "Microsoft Docs",
-  "endpoint": "https://learn.microsoft.com",
-  "type": "docs"
+  "servers": [
+    {
+      "id": "github",
+      "displayName": "GitHub",
+      "type": "github",
+      "url": "https://api.github.com"
+    },
+    {
+      "id": "microsoft-docs",
+      "displayName": "Microsoft Learn / Docs",
+      "type": "docs",
+      "url": "https://learn.microsoft.com"
+    }
+  ]
 }
 ```
 
-3. Save the file.
-4. If needed, refresh the MCP servers view in Visual Studio so the new entry is recognized.
+2. Save the file to register the new server.
 
-Tip: The Microsoft Docs config is typically simple — just ensure it uses the correct endpoint and an appropriate "type" or label.
-
----
-
-### 7) Verify tools in Copilot Chat (Assistant mode)
-(00:02:24.000 – 00:02:40.320)
-
-1. Open GitHub Copilot Chat in Assistant mode in Visual Studio.
-2. Open the Tools panel (Tools list / Plugins section).
-3. Confirm that:
-   - The Microsoft Docs tool is listed.
-   - The GitHub Copilot toolset (and newly exposed GitHub tools) are present.
-
-If the tools are shown, the configuration and authentication were successful and Copilot can now use those MCP servers to surface additional assistance.
+Tip: Replace the "type" and "url" values to match any specific MCP server schema required by the server provider. If unsure, consult the provider’s MCP configuration examples.
 
 ---
 
-## Tips & Warnings (summary)
-- Tip: Name the file clearly (e.g., copilot-servers.mcp.json) and keep it in the solution root so it is discovered automatically.
-- Tip: If you have official JSON snippets for GitHub or Microsoft Docs from a trusted source, prefer pasting those exact snippets into the file.
-- Warning: Ensure the JSON is valid. A stray comma or missing bracket will prevent Visual Studio/Copilot from parsing the file.
-- Warning: Authentication is required for many servers (GitHub especially). Use your Visual Studio authenticated account to connect if available.
-- Troubleshooting hint: If tools do not appear after adding entries and authenticating, restart Visual Studio or reload the solution to force a refresh of discovered servers.
+### 6. Verify new tools appear in GitHub Copilot assistant (chat mode)
+(00:01:55.680 — 00:02:40.320)
+
+1. Open GitHub Copilot in Assistant / Chat mode (the Copilot pane in Visual Studio).
+2. In the Copilot chat window, open the Tools panel (often a sidebar or tab labeled “Tools”).
+3. Look for entries such as:
+   - GitHub Copilot local (built-in),
+   - GitHub (the registered server tools),
+   - Microsoft Docs / Microsoft Learn (the registered docs server).
+
+What to expect:
+- The Tools pane should now list the newly registered tools.
+- You can invoke these tools from Copilot chat to query documentation, search repositories, or use server-provided capabilities.
+
+Tip: If the new tools don't appear immediately, try closing and reopening the Copilot assistant, or wait a moment for Visual Studio to finish the server handshake.
 
 ---
 
-Timestamps referenced in this manual correspond to the demo sections in the analyzed video (total duration 00:02:40.320). Follow the steps in order to reproduce the result shown in the video: adding GitHub and Microsoft Docs MCP servers to extend GitHub Copilot’s toolset.
+## Helpful Tips and Warnings
+
+- Tip: Use meaningful IDs and display names in your `.mcp.json` for easier identification in the Copilot Tools pane.
+- Tip: If you manage multiple solutions, place a separate `.mcp.json` in each solution root to have solution-specific servers.
+- Warning: Ensure the JSON is valid. A syntax error in `.mcp.json` can prevent the MCP servers from registering.
+- Warning: Authentication uses Visual Studio credentials. If Visual Studio is signed into the wrong account, sign out or add the correct account before authenticating.
+
+---
+
+Timestamps reference:
+- Introduction & Goal: 00:00:02.760 — 00:00:16.080
+- Out-of-the-box MCP Tools Overview: 00:00:16.080 — 00:00:36.640
+- Selecting Additional Servers: 00:00:36.680 — 00:00:56.528
+- Create mcp.json: 00:00:56.528 — 00:01:25.952
+- Add GitHub Server & Authentication: 00:01:25.952 — 00:01:55.680
+- Add Microsoft Docs & Verify: 00:01:55.680 — 00:02:40.320
+
+This manual provides the actionable steps demonstrated in the video to extend GitHub Copilot by registering MCP servers and verifying available tools in the Copilot assistant.

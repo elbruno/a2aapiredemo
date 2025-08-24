@@ -1,187 +1,178 @@
-# Local Demo User Manual — AI Foundry Integration
-This manual guides you through running the local demo shown in the video, from Azure login and resource creation to configuring the local application and verifying Azure OpenAI deployments.
+# Video: [brk447-01-Initial Setup.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:03:02
 
-- Total video reference: ~00:00:00 — 00:03:00
-- Follow each step in order. Timestamps reference the video for the corresponding action.
+# Local Deployment User Manual for Demo Models
+
+This manual guides you through deploying two demo models locally, retrieving keys and endpoints, configuring the local application, and verifying functionality via the app dashboard and Azure Portal. Follow the step-by-step instructions and timestamps to replicate the demo.
 
 ---
 
 ## Overview
+(00:00:00 — 00:00:12)
+
 This demo shows how to:
-- Log in to Azure using the correct tenant,
-- Create and inspect an Azure resource group and deployment outputs,
-- Use a local script to obtain a connection string (endpoint + key),
-- Configure the application with the AI Foundry parameter (stored in user secrets),
-- Start the app and validate semantic search / product browsing,
-- Switch resources by editing user secrets and verify Azure OpenAI deployments in the Azure Portal.
 
-Prerequisites (referenced in the video): Visual Studio, Docker, PowerShell, .NET 9, and Azure CLI. (See video 00:00:00 — 00:00:09)
+- Deploy the demo resources and models into an Azure resource group
+- Retrieve deployment outputs (endpoints, keys, foundry name)
+- Configure a local application with those values (using a small script and user secrets)
+- Run the app, supply a required AI Foundry parameter, and test semantic search
+- Inspect the deployed Azure OpenAI resources and deployments in the Azure Portal
 
----
+Required tools (install before starting):
+- Visual Studio (for editing and running the app)
+- Docker (if containerized components are used)
+- PowerShell (or another terminal)
+- .NET 9 SDK
+- Azure CLI (az)
 
-## Step-by-step instructions
-
-### 1) Log in to Azure (select correct tenant)
-- Video ref: **00:00:13 — 00:00:31**
-
-1. Open a terminal (PowerShell recommended).
-2. Log in to Azure with the tenant option to pick the correct subscription/tenant:
-   ```
-   az login --tenant <TENANT_ID_OR_DOMAIN>
-   ```
-   - Replace `<TENANT_ID_OR_DOMAIN>` with the tenant used in the demo (for example the Cloud Advocate tenant).
-3. If prompted, follow the browser flow to authenticate.
-4. Confirm you are in the intended subscription:
-   ```
-   az account show -o table
-   ```
-   Tip: If the wrong subscription is active, switch with:
-   ```
-   az account set --subscription "<SUBSCRIPTION_NAME_OR_ID>"
-   ```
-
-Warning: Use the correct tenant to ensure resources are created in the expected subscription.
+Tip: Ensure your local environment matches the demo requirements (Visual Studio and .NET version). Keep Azure credentials and keys secure — do not commit them into source control.
 
 ---
 
-### 2) Create a resource group (example shown in demo)
-- Video ref: **00:00:31 — 00:00:41**
+## Step-by-step Instructions
 
-1. Create a resource group (example name used in the demo: `RGBR-CAR-447`). Pick a location you need:
-   ```
-   az group create --name "RGBR-CAR-447" --location "eastus"
-   ```
-2. The command returns JSON output. Inspect it for resource identifiers.
+Follow these steps in order. Timestamps reference the demo video sections.
 
-Tip: Save deployment outputs or resource names — you'll need them for subsequent steps.
+### 1. Sign in to Azure and pick the correct tenant/subscription
+(00:00:13 — 00:00:27)
 
----
+1. Open a terminal (PowerShell or your preferred shell).
+2. Log in to Azure with the tenant option (to access the intended tenant):
+   - Example:
+     - az login --tenant <TENANT_ID>
+3. Confirm you are in the correct subscription/tenant:
+   - az account show
+   - If needed, switch subscription:
+     - az account set --subscription <SUBSCRIPTION_ID>
 
-### 3) Retrieve deployment outputs: endpoints, keys, foundry name
-- Video ref: **00:00:41 — 00:00:58**
-
-1. If the deployment produced outputs (e.g., via an ARM/Bicep deployment), fetch them:
-   ```
-   az deployment group show --resource-group "RGBR-CAR-447" --name <DEPLOYMENT_NAME> --query properties.outputs -o json
-   ```
-   - Replace `<DEPLOYMENT_NAME>` with the deployment name used in your environment.
-2. Inspect the JSON output to find:
-   - AI Foundry/account name (copy this for later)
-   - Endpoint(s)
-   - Keys or other IDs
-
-Tip: Use `-o json` to make copying values easy. In many demos the foundry/account name is a top-level output in the deployment results.
+Warning: Logging into the wrong tenant or subscription may create resources in an unintended account. Double-check subscription details before proceeding.
 
 ---
 
-### 4) Update and run the local setup script to obtain connection string
-- Video ref: **00:01:04 — 00:01:37**
+### 2. Create the resource group and deploy demo resources
+(00:00:27 — 00:00:46)
 
-1. Open the local script file used to create/retrieve the connection string (example: `scripts/GetConnection.ps1` or a similarly named script included with the demo).
-2. Update the script variables with the resource group and account/foundry name you noted:
-   Example PowerShell variables inside the script:
-   ```powershell
-   $resourceGroup = "RGBR-CAR-447"
-   $accountName   = "<COPIED_FOUNDRY_NAME>"
-   ```
-3. Save the script changes.
-4. Run the script in PowerShell. You can copy-paste the script contents into your console or run the file directly:
-   ```
-   pwsh .\scripts\GetConnection.ps1
-   ```
-   - After running you'll receive output showing the endpoint and key (the connection string).
-5. Copy the returned endpoint and key for use in the app.
+1. Run the provided deployment command or script to create a resource group and provision resources.
+   - Example resource group name used in the demo: RGBR-CAR-447 (use your naming convention)
+   - If you have a deployment script, run it from the repository root, e.g.:
+     - ./deploy-demo-resources.ps1 <parameters>
+   - If using an ARM/Bicep deployment with Azure CLI, it may look like:
+     - az deployment group create --resource-group <RG_NAME> --template-file <template> --parameters <params>
+2. Wait ~2 minutes for the deployment to complete.
+3. Inspect the command output (typically JSON) for resource and deployment details.
 
-Tip: If the demo script prints a connection string (endpoint + key), copy it immediately. Store secrets securely — do not check them into source control.
+Tip: The command will typically print JSON containing outputs such as endpoints, keys, and a foundry name. Save this output (or copy key fields) for the next steps.
 
 ---
 
-### 5) Configure the AI Foundry parameter and start the application
-- Video ref: **00:01:40 — 00:02:05**
+### 3. Retrieve deployment outputs: keys, endpoints, and foundry name
+(00:00:41 — 00:00:58)
 
-1. Start the application (e.g., run from Visual Studio or `dotnet run` in the app host project).
-2. On first run, the app dashboard will open and prompt for the AI Foundry parameter:
-   - It notifies you that the AI Foundry parameter is missing (video 00:01:45 — 00:01:51).
-3. Paste the foundry/account name or connection string into the dashboard input.
-4. Save the value to user secrets so it persists and you will not be prompted again:
-   - The dashboard may automatically call user secrets, or you can set it manually:
-     ```
-     dotnet user-secrets set "AiFoundry:Name" "<FOUNDY_NAME_OR_VALUE>"
-     ```
-5. Once configured, the app will start up and you can:
-   - Browse products,
-   - Run a semantic search to validate the integration (video 00:02:05).
+1. Use the deployment output command to view outputs (examples):
+   - az deployment group show --resource-group <RG_NAME> --name <DEPLOYMENT_NAME> --query properties.outputs
+   - Or use the provided "get output" helper in the repository if available.
+2. From the JSON output, copy these values:
+   - Foundry name (used by the application)
+   - Endpoint URL(s)
+   - Key(s) or connection string(s)
 
-Tip: Use `dotnet user-secrets list` to verify stored secrets:
-```
-dotnet user-secrets list
-```
-
-Warning: User secrets are local to your machine (development only) — do not treat them as production secret storage.
+Important: Copy the foundry name exactly (you will paste it into the local app’s configuration).
 
 ---
 
-### 6) Switch resources (point the app to a different resource)
-- Video ref: **00:02:18 — 00:02:39**
+### 4. Update and run the local configuration script
+(00:01:00 — 00:01:22)
 
-If you need to change which resource/account the app points to (for example to test another foundry or subscription):
+1. Open the small local script provided in the repository (e.g., a PowerShell or shell script) that accepts resource names or accounts.
+2. Populate the script with:
+   - The resource group name you created
+   - The account name or other variables retrieved from the deployment output
+3. Copy the updated script contents into your console or save and run the script locally.
+4. Clear the console if needed, then run the script.
 
-1. Open the app host’s user secrets (edit the secrets configuration).
-   - You can edit with the `dotnet user-secrets` CLI or open the `secrets.json` file the tool manages.
-2. Remove or update the AI Foundry entry:
-   - Remove:
-     ```
-     dotnet user-secrets remove "AiFoundry:Name"
-     ```
-   - Add/set:
-     ```
-     dotnet user-secrets set "AiFoundry:Name" "<NEW_FOUNDY_NAME_OR_VALUE>"
-     ```
-3. Restart the application so it picks up the changed value.
+The script will generate connection strings, endpoints, and keys for the local app to use.
 
-Tip: If you frequently swap between foundry accounts, keep a small script to set the `AiFoundry` secret programmatically.
+Tip: Save the script in a secure place; it may include sensitive values. Do not commit secrets to source control.
 
 ---
 
-### 7) Verify Azure OpenAI deployments and retrieve keys from Azure Portal
-- Video ref: **00:02:39 — 00:02:57**
+### 5. Run the application and supply AI Foundry parameter
+(00:01:22 — 00:02:05)
 
-1. Open the Azure Portal (https://portal.azure.com).
-2. Navigate to the Resource Group you created/used (e.g., `RGBR-CAR-447`).
-3. Open the Azure OpenAI resource in that resource group.
-4. Inspect the Deployments blade to confirm deployed models:
-   - Example models shown in the demo: GPT-4o-mini (chat & text-embedding) and ADI O2 (embeddings).
-5. Retrieve endpoint and keys from the resource:
-   - In the Azure OpenAI resource blade, go to **Keys & Endpoint** (or the equivalent blade) to copy the endpoint and primary/secondary keys.
+1. Launch the application (e.g., from Visual Studio or via dotnet run).
+2. On first run:
+   - The application dashboard will open in your browser automatically.
+   - You will be prompted to enter an "AI Foundry" parameter (paste the foundry name you copied earlier).
+3. Paste the foundry name into the prompt and choose the option to save it to user secrets (so you don’t need to re-enter it on subsequent runs).
+   - If prompted to store it in user secrets, confirm/save.
 
-Warning: Treat these keys as sensitive secrets — rotate them periodically and never expose them in public repositories.
-
----
-
-## Tips & Warnings (inline collection)
-- Tip: Keep a copy of critical values (resource group name, foundry/account name, endpoint, key) in a secure place during setup.
-- Tip: If the app prompts for the AI Foundry parameter, you can use the dashboard input or the `dotnet user-secrets` CLI to persist the value.
-- Warning: Never commit keys or connection strings to source control.
-- Warning: Ensure Docker is running (if the app or demo requires containers) and .NET 9 is installed before running the demo app.
+Warning: The AI Foundry parameter and other keys are sensitive. Using user secrets (dotnet user-secrets) is recommended to avoid storing them in source files.
 
 ---
 
-If you need a quick-reference checklist:
-- [ ] Confirm prerequisites installed: Visual Studio, Docker, PowerShell, .NET 9, Azure CLI.
-- [ ] az login --tenant <tenant>
-- [ ] az group create --name <RG> --location <LOC>
-- [ ] Retrieve deployment outputs (endpoint, keys, foundry name)
-- [ ] Edit local script with <RG> and <foundry>, run to get connection string
-- [ ] Start app, paste AI Foundry parameter into dashboard, save to user secrets
-- [ ] Verify app is running and test semantic search
-- [ ] If needed, change user secrets to point to another resource and verify Azure OpenAI deployments in Portal
+### 6. Verify application functionality: browse and semantic search
+(00:02:05 — 00:02:14)
 
-Reference timestamps: follow along in the video for each major action:
-- Intro & prerequisites: **00:00:00 — 00:00:09**
-- Azure CLI login & create RG: **00:00:09 — 00:00:41**
-- Retrieve outputs: **00:00:41 — 00:00:58**
-- Update/run local script: **00:00:58 — 00:01:40**
-- Configure AI Foundry & start app: **00:01:40 — 00:02:14**
-- Switch resources & verify OpenAI deployments: **00:02:18 — 00:03:00**
+1. With the app running and the foundry parameter saved, browse the application UI.
+2. Use the application’s semantic search feature to confirm:
+   - Embeddings are working
+   - Search results return meaningful results from the demo content
 
-This manual should allow you to reproduce the demo setup and validate the AI Foundry + Azure OpenAI integration locally.
+Tip: If the semantic search returns no results, ensure embeddings/deployments were provisioned correctly and that the app is pointing to the correct foundry endpoint.
+
+---
+
+### 7. Edit user secrets to switch resources or update configuration
+(00:02:18 — 00:02:39)
+
+1. To change which resource the app points to, edit the App host user secrets:
+   - In Visual Studio: Right-click project → Manage User Secrets
+   - Or use dotnet user-secrets commands:
+     - dotnet user-secrets list
+     - dotnet user-secrets set "AIFoundry" "<new-foundry-name>"
+2. If an existing AI Foundry line exists, delete or update it:
+   - Remove the old entry, then save/close.
+3. Rerun the application and supply the new AI Foundry value if prompted.
+
+Tip: Use dotnet user-secrets set to automate updating secrets from scripts or CI (for local development only).
+
+---
+
+### 8. Inspect resources and deployments in the Azure Portal
+(00:02:39 — 00:03:00)
+
+1. Open the Azure Portal (portal.azure.com).
+2. Navigate to:
+   - Resource Groups → select the resource group you created
+   - Open the Azure OpenAI resource within the resource group
+3. On the Azure OpenAI resource page:
+   - View the list of deployments (examples from the demo: "gpt-41-mini" for chat/text + "adi-o2" for embeddings)
+   - Select a deployment to view details
+4. Copy endpoints and keys from the Azure Portal if needed:
+   - Keys and Endpoint are available on the resource blade (or under Keys/Endpoint sections)
+
+Warning: Portal keys are sensitive. Use them only in secure local configurations and rotate keys if they are ever exposed.
+
+---
+
+## Tips & Warnings (General)
+- Always verify you are using the correct Azure tenant and subscription before creating resources.
+- Store secrets in user secrets for local development; never commit them to your repository.
+- Monitor deployment logs and JSON outputs for missing or failed resources.
+- Allow 1–3 minutes for resource provisioning; larger deployments may take longer.
+- Keep track of resource names (resource group, foundry name, deployment names) — you will need them during configuration.
+- If something fails, check Azure deployment logs and the console output for detailed error messages.
+
+---
+
+Timestamps reference the demo video sections for quick navigation:
+- Intro & Prerequisites: 00:00:00 — 00:00:12  
+- Azure CLI Login / Tenant Selection: 00:00:13 — 00:00:27  
+- Create Resource Group with Deployment Script: 00:00:27 — 00:00:46  
+- Retrieve Outputs: Keys and Endpoints: 00:00:41 — 00:00:58  
+- Update Script with Resource/Account Names: 00:01:00 — 00:01:22  
+- Run Script => Obtain Connection String, Endpoint, Key; Dashboard Prompt: 00:01:22 — 00:02:05  
+- Application Running — Browse & Semantic Search: 00:02:05 — 00:02:14  
+- Editing User Secrets / Switching Resources: 00:02:18 — 00:02:39  
+- Check Resource Group in Azure Portal & Inspect OpenAI Deployments: 00:02:39 — 00:03:00
+
+This manual provides the actionable steps demonstrated in the video to reproduce the local demo deployment and verification.

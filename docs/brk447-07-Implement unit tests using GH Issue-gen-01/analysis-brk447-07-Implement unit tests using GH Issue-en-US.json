@@ -1,130 +1,109 @@
 {
   "sections": [
     {
-      "title": "Introduction — local unit test vs cloud agent",
+      "title": "Introduction \u2014 local vs cloud unit test implementation",
       "start_time": "00:00:00.160",
-      "end_time": "00:00:11.849",
-      "summary": "Speaker contrasts a locally implemented unit test (quick) with the option to have an agent work in the cloud to implement missing unit tests.",
+      "end_time": "00:00:18.240",
+      "summary": "Presenter contrasts implementing a unit test locally (fast) with delegating missing unit tests to an agent operating isolated in the cloud.",
       "key_actions": [
-        "Describe local implementation time for AI search unit test",
-        "Propose using a cloud-isolated agent to implement missing unit tests"
-      ],
-      "ui_elements": []
-    },
-    {
-      "title": "Enable GitHub tools and search issues",
-      "start_time": "00:00:11.849",
-      "end_time": "00:01:03.008",
-      "summary": "Speaker enables GitHub tools (via MCP) and runs a search to check if there are repository issues related to missing unit tests; grants permission to execute the tool.",
-      "key_actions": [
-        "Enable GitHub tools at MCP",
-        "Allow execution/permission for the search tool",
-        "Search issues in repository for missing unit tests"
+        "Describe problem: missing unit tests for AI search",
+        "Propose using an agent in the cloud to implement missing tests"
       ],
       "ui_elements": [
-        "GitHub tools (MCP)",
-        "Issues search tool",
-        "Permission/allow execution dialog"
+        "none (conceptual introduction)"
       ]
     },
     {
-      "title": "Issue #18 identified (missing unit tests)",
-      "start_time": "00:01:00.000",
-      "end_time": "00:01:37.040",
-      "summary": "An open issue (#18) is found requesting missing unit tests for products, store and domain entities. The issue includes scope, acceptance criteria, tasks, labels and other metadata.",
+      "title": "Check repository issues and enable GitHub tooling",
+      "start_time": "00:00:18.240",
+      "end_time": "00:01:07.800",
+      "summary": "Demonstrates enabling GitHub tooling and searching repository issues to see if there\u0027s an existing issue for missing unit tests. The speaker runs a search and finds an open issue (#18).",
       "key_actions": [
-        "Open issue #18 in repository",
-        "Review issue scope, acceptance criteria, and tasks"
+        "Enable GitHub tools / allow tool execution",
+        "Search repository issues for missing unit tests",
+        "Identify open issue #18: \u0027add missing unit tests for products, store and domain entity\u0027"
       ],
       "ui_elements": [
-        "Issue page (issue #18)",
-        "Labels, scope and acceptance criteria sections"
+        "GitHub tools integration",
+        "Issue list / search",
+        "Issue #18"
       ]
     },
     {
-      "title": "Assign GitHub Copilot to the issue (via GitHub or Visual Studio)",
-      "start_time": "00:01:37.040",
+      "title": "Inspect issue details and decide how to assign work",
+      "start_time": "00:01:07.800",
       "end_time": "00:02:02.600",
-      "summary": "Demonstrates two options to assign the work: use GitHub (preferred) or directly from Visual Studio. The speaker issues a command to assign Copilot to issue #18.",
+      "summary": "Opens the sample repository and inspects issue #18 (scope, acceptance criteria, tasks, labels). Discusses two options to have Copilot handle it: via the GitHub UI (preferred) or directly from Visual Studio.",
       "key_actions": [
-        "Choose assignment method (GitHub or Visual Studio)",
-        "Assign Copilot to issue #18"
+        "Open issue #18 and review scope, acceptance criteria and tasks",
+        "Consider assignment options (GitHub Copilot via GitHub, or from Visual Studio)",
+        "Execute \u0027assign Copilot\u0027 to the issue"
       ],
       "ui_elements": [
-        "GitHub / Copilot integration (assign action)",
-        "Visual Studio (command to assign Copilot)",
-        "Refresh button on issue page"
+        "Repository view",
+        "Issue detail page",
+        "Assign to Copilot action (via GitHub or Visual Studio)"
       ]
     },
     {
-      "title": "Pull request created and cloud session started",
+      "title": "Trigger Copilot to create a pull request (cloud execution)",
       "start_time": "00:02:02.600",
-      "end_time": "00:02:56.920",
-      "summary": "After assignment, Copilot starts creating a pull request and performs work isolated in the cloud: creating environment, getting a fork and interacting with GitHub/CP servers. The process may take time.",
+      "end_time": "00:03:02.360",
+      "summary": "After assigning Copilot, refresh the issue to observe that Copilot has started a pull request. The process runs isolated in the cloud and includes environment creation and a fork creation step.",
       "key_actions": [
-        "Observe PR creation",
-        "Open PR details/session",
-        "Monitor environment creation and fork steps"
+        "Refresh issue list to confirm Copilot has started a PR",
+        "Open pull request details",
+        "Observe Copilot creating the environment and fork for work"
       ],
       "ui_elements": [
-        "Pull request page",
-        "Session details view",
-        "Fork creation / environment creation indicators"
+        "Pull request entry",
+        "PR details / session view",
+        "Fork creation status"
       ]
     },
     {
-      "title": "Review previous PR (#17) and changed files",
-      "start_time": "00:02:56.920",
-      "end_time": "00:03:37.040",
-      "summary": "Speaker inspects a previously completed PR (#17) to see what Copilot produced: new unit tests for product and store, file changes and implementation notes.",
+      "title": "Review completed PRs and changed files (sample PR #17)",
+      "start_time": "00:03:02.360",
+      "end_time": "00:04:07.880",
+      "summary": "Looks at a previously run PR (#17) as an example: views the changed files, sees new unit tests added for product and store, and checks the session summary showing the steps performed and duration (~18 minutes).",
       "key_actions": [
-        "Open previous PR (#17)",
-        "View changed files and newly added test files",
-        "Examine technical implementation notes"
+        "Open example PR (#17)",
+        "View \u0027Files changed\u0027 to inspect new unit test files",
+        "Review session log and overall steps (get repository, make a plan, view source code)",
+        "Note session runtime (~18 minutes)"
       ],
       "ui_elements": [
-        "Changed files tab / diff viewer",
-        "File tree showing new test files (products test, store test)"
+        "Files changed tab / file viewer",
+        "Session summary / timeline",
+        "PR overview"
       ]
     },
     {
-      "title": "Session log and duration details",
-      "start_time": "00:03:37.040",
-      "end_time": "00:03:55.400",
-      "summary": "Speaker highlights the session duration (~18 minutes) and the recorded steps: cloning the repository, making a plan, viewing source code — all recorded in the session log.",
-      "key_actions": [
-        "Open session log",
-        "Read step-by-step actions recorded by Copilot"
-      ],
-      "ui_elements": [
-        "Session log/timeline",
-        "Recorded steps list (get repository, make a plan, view source code)"
-      ]
-    },
-    {
-      "title": "Review current PR progress and GitHub Actions CI",
-      "start_time": "00:03:55.400",
+      "title": "Monitor current PR run and GitHub Actions logs",
+      "start_time": "00:04:07.880",
       "end_time": "00:04:34.480",
-      "summary": "Speaker inspects the ongoing PR triggered by Copilot, watches the GitHub Actions run (CI) which streams a full log of the process — useful for debugging and validation.",
+      "summary": "Checks the current pull request running: opens details to see that the work is executed via GitHub Actions and examines the action run logs to follow progress.",
       "key_actions": [
-        "Open PR details for current/ongoing PR",
-        "Monitor GitHub Actions workflow and logs",
-        "Review Copilot-proposed changes"
+        "Open current PR details",
+        "Open GitHub Actions run associated with PR",
+        "Inspect action run logs to follow execution steps"
       ],
       "ui_elements": [
         "Pull request details",
         "GitHub Actions tab / workflow run",
-        "Action logs (CI console output)"
+        "Action logs / full log viewer"
       ]
     }
   ],
   "main_topics": [
-    "Using GitHub Copilot / cloud agents to implement missing unit tests",
-    "Searching for and managing repository issues",
-    "Assigning Copilot to an issue (GitHub or Visual Studio)",
-    "Automated pull request creation and cloud-isolated work sessions",
-    "Reviewing file changes and session logs",
-    "Monitoring GitHub Actions CI runs"
+    "Using GitHub Copilot (agent) to implement missing unit tests",
+    "Searching and managing GitHub issues",
+    "Assigning issues to Copilot from GitHub or Visual Studio",
+    "Monitoring cloud-executed pull requests and sessions",
+    "Inspecting changed files and unit test additions",
+    "Viewing GitHub Actions workflow runs and logs"
   ],
-  "total_duration": "00:04:34.320"
+  "total_duration": "00:04:34.480",
+  "video": "brk447-07-Implement unit tests using GH Issue.mp4",
+  "duration": "00:04:35.3333333"
 }

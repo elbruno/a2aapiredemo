@@ -1,153 +1,150 @@
-# Implementing Missing Unit Tests with Copilot (Agent Mode) — User Manual
+# Video: [brk447-04 Add single unit Test for AI Search.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:04:02
 
-This manual walks you through using Copilot in agent mode to implement missing unit tests for AI-related endpoints (AI search and "formal" search), review and accept generated changes, and run the tests in your IDE's Test Explorer.
+# Implementing Unit Tests for AI Search with Copilot — User Manual
 
-- Total demo duration: ~00:04:00
-- Primary goal: Add unit tests for AI search endpoints to prevent regressions
+This manual guides you through the process demonstrated in the video: using Copilot (agent mode) to implement and run unit tests for AI search endpoints. Follow the steps below to reproduce the workflow, from identifying missing tests to running and verifying the new tests.
 
 ---
 
 ## Overview
 
-This procedure shows how to:
+Duration: 00:00:02.400 — 00:03:57.680
 
-- Switch Copilot to *agent mode* and create a chat configured for the AI search context
-- Select a model (GPT-5 in the demo)
-- Trigger a quick action (hashtag + task) to request implementation of unit tests
-- Let Copilot read the solution, generate tests, attempt builds, and iterate
-- Review and accept generated changes, then run tests with Test Explorer
+This workflow shows how to:
+- Identify missing unit tests for AI search endpoints
+- Use Copilot in agent mode to auto-generate tests and any required code/dependencies
+- Let Copilot build and iterate on failures
+- Accept changes and run the resulting tests in the Test Explorer
 
-Key UI elements used:
-- Copilot (Agent mode)
-- New Chat button and chat session UI
-- AI Search context selector
-- Model dropdown (GPT-5)
-- Hashtag quick actions
-- Build output / logs
-- Accept Changes control
-- Test Explorer and Run All Tests
-
-Snapshot references are provided inline and collected at the end of this document.
+Key concepts demonstrated:
+- Selecting an appropriate Copilot context (AI Search)
+- Choosing the model (e.g., GPT-5)
+- Triggering a predefined task via hashtag
+- Monitoring automated analysis, build, and iteration
+- Verifying test results in Test Explorer
 
 ---
 
 ## Step-by-step Instructions
 
-Follow these steps to reproduce the workflow shown in the video. Timestamps are provided for quick reference.
+Follow these steps in order. Timestamps are provided for reference to the corresponding parts of the video.
 
-### 1. Identify missing tests and define the task (00:00:02.400 — 00:00:41.560)
-1. Open your solution/project workspace and navigate to the endpoints view to confirm the AI-related endpoints (AI search, formal search) are present.
-2. Note which endpoints are missing unit tests. The objective is to have Copilot implement the missing tests to avoid regressions.
+1. Prepare your workspace (00:00:02.400 — 00:00:12.480)
+   - Ensure your codebase is open in your IDE.
+   - Commit or create a new branch before making automated changes.  
+     Tip: Always keep a backup or branch to easily revert changes made by Copilot.
 
-Tip: Keep a short list of endpoint names and expected behaviors before starting — this helps you review generated tests.
+   ![Snapshot: Ready workspace and task overview]![Snapshot at 00:00:02.400](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-02-400.png)
 
-Snapshot:  
-![Workspace and endpoints view (00:00:02.400)](./snapshot-00-00-02-400.png)
+2. Identify missing tests and decide scope (00:00:13.120 — 00:00:34.160)
+   - Inspect the codebase or endpoints list to find endpoints lacking unit tests.
+   - In this scenario, the AI search endpoint (and possibly the formal search) are missing tests.
+   - Decide which components you want Copilot to cover — e.g., AI Search only, or the whole solution.
 
----
+   ![Snapshot: Code/Endpoints view showing missing tests]![Snapshot at 00:00:13.120](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-13-120.png)
 
-### 2. Switch Copilot to agent mode and create a new chat (00:00:41.560 — 00:01:15.920)
-1. Open Copilot in your IDE.
-2. Switch to *Agent mode* (look for an "Agent mode" toggle or option).
-3. Click **New Chat** to start a fresh session.
-4. Select the *AI Search* context for the chat (this scopes the assistant to relevant files and behavior).
-5. Open the model dropdown and select **GPT-5** (or change to another model if needed).
+3. Switch to Copilot Agent mode and start a new chat (00:00:34.360 — 00:00:47.320)
+   - Open Copilot and switch it to the agent/assistant mode.
+   - Click "New chat" to create a fresh conversation for the task.
+   - Note: You can return to previous chats if you need to revisit earlier context.
 
-Tip: If you have an existing chat with useful context, you can use "Previous chat" to reference it; however a new chat gives a clean start for code generation.
+   ![Snapshot: Copilot agent mode and new chat button]![Snapshot at 00:00:34.360](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-34-360.png)
 
-Snapshot:  
-![Agent mode, New Chat, AI Search context, model selection (00:00:41.560)](./snapshot-00-00-41-560.png)
+   Warning: Agent mode may request access to read your solution. Confirm you are comfortable granting this access for the session.
 
-Warning: Ensure the context you choose (AI Search) points to the correct folder/files; wrong context may lead Copilot to analyze irrelevant code.
+4. Select the AI Search context and choose a model (00:00:47.320 — 00:00:59.800)
+   - In the new chat, set the context selector to "AI Search".
+   - Choose the model you prefer for generation (the demo uses GPT-5). You can switch models before running the task.
 
----
+   ![Snapshot: Context selector set to 'AI Search' and model selector showing GPT-5]![Snapshot at 00:00:47.320](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-47-320.png)
 
-### 3. Trigger the task using a hashtag quick action (00:01:09.560 — 00:01:21.105)
-1. In the chat input, type a hashtag followed by the task name to invoke a quick action. Example:
-   - `#implement-unit-tests ai search`
-2. From the quick action list that appears, select the option that corresponds to implementing unit tests for AI search.
+5. Trigger the task using the hashtag/task selector (00:01:09.560 — 00:01:31.870)
+   - Type a hashtag or open the task autocomplete and select "implement unit tests".
+   - Confirm the task scope (AI Search) when prompted.
+   - Start the task: Copilot will read the codebase, propose or add test files, attempt builds, and iterate.
 
-Tip: Quick actions speed up requests—there may be multiple quick action suggestions; select the one that most closely matches your intent.
+   ![Snapshot: Hashtag/task selector chosen: 'implement unit tests']![Snapshot at 00:01:09.560](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-09-560.png)
 
-Snapshot:  
-![Hashtag quick actions menu (00:01:09.560)](./snapshot-00-01-09-560.png)
+   Tip: Adding a concise task description helps Copilot focus. Example: "#implement unit tests for AI Search endpoints".
 
----
+6. Let Copilot analyze the solution and generate code (00:01:31.870 — 00:02:56.040)
+   - Wait while Copilot scans the repository and generates files (it may create test files and helper code).
+   - Monitor the build output/log; Copilot will attempt to build the solution automatically.
+   - Be patient — this is an iterative, automated process and can take some time.
 
-### 4. Let Copilot analyze the solution, generate tests, and iterate (00:01:21.105 — 00:02:56.040)
-1. After invoking the quick action, allow Copilot to:
-   - Read the entire solution or the relevant scope
-   - Identify where unit tests are missing
-   - Generate test code that exercises the AI endpoints
-   - Attempt to build the project to validate the new tests
-2. Wait while Copilot performs background analysis and compilation. This process can take roughly 1–2 minutes depending on project size.
+   ![Snapshot: Copilot analyzing and generating tests; build logs visible]![Snapshot at 00:01:31.870](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-31-870.png)
 
-What Copilot does automatically:
-- Adds or modifies test files
-- Updates dependencies if required (e.g., adds a mocking library)
-- Runs build attempts and iterates on failures
+7. Inspect and resolve build failures (00:02:56.040 — 00:03:24.304)
+   - If the build fails, check the build errors/log to identify missing dependencies or compile issues.
+   - Copilot can add missing dependencies or change project configuration. Review these modifications carefully.
+   - After Copilot adds fixes (e.g., dependency updates), the agent will re-run the build.
 
-Tip: Be patient while the analysis runs. Avoid making unrelated code changes during this automated process to prevent conflicts.
+   ![Snapshot: Build failure log showing missing dependencies]![Snapshot at 00:02:56.040](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-02-56-040.png)
 
-Snapshot (analysis in progress):  
-![Copilot background analysis and build attempt (00:01:21.105)](./snapshot-00-01-21-105.png)
+   Warning: Automatic dependency changes can affect other parts of the solution. Review and test changes before merging into main branches.
 
-Warning: If your workspace is large, the indexing/analysis may take longer. Ensure you have a stable environment (network, disk space) before starting.
+8. Confirm build success and review new tests (00:03:24.304)
+   - Once the build succeeds, verify that the new unit test files have been created (the demo shows two new tests).
+   - Inspect the generated tests to confirm they match expected behaviors for AI search.
 
----
+   ![Snapshot: Successful build and new unit test files created]![Snapshot at 00:03:24.304](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-24-304.png)
 
-### 5. Review generated changes, accept them, and run tests (00:02:56.040 — 00:03:58.600)
-1. When Copilot completes its work, it will present the proposed changes (new test files, dependency updates, etc.).
-2. Review the generated test code carefully:
-   - Check that tests assert correct behavior and are not just superficial
-   - Ensure any dependency additions are appropriate for your project
-   - Confirm naming and scopes of tests (e.g., "Products AI test")
-3. Click **Accept Changes** (or the equivalent action) to apply Copilot's modifications to your workspace.
-4. Open the **Test Explorer** in your IDE.
-5. Run tests:
-   - Use **Run All Tests**, or
-   - Run the newly added tests only (e.g., "Products AI test")
-6. Inspect the build output and test results:
-   - Confirm the build succeeded after any dependency additions
-   - Verify the new tests are present and passing
+9. Accept Copilot's changes and run tests in Test Explorer (00:03:24.304 — 00:03:58.600)
+   - Accept or commit the changes Copilot made (use your IDE's Accept Changes or Commit tools).
+   - Open Test Explorer in your IDE.
+   - Run tests: click "Run All" or run the specific new tests (e.g., "products AI" tests).
+   - Verify all tests pass. If failures remain, iterate: fix code or instruct Copilot to refine tests.
 
-Tip: If a generated test fails, inspect the failure message and relevant test code. Copilot iterates based on build/test feedback; you can trigger another cycle if needed.
+   ![Snapshot: Test Explorer showing 'Products AI' tests and Run All button]![Snapshot at 00:03:24.304](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-24-304.png)
 
-Snapshot (successful build and tests visible):  
-![Build output and Test Explorer with Products AI tests passing (00:02:56.040)](./snapshot-00-02-56-040.png)
+   Tip: If any tests fail, examine the failing test's output first — it often points to missing mocks, environment setup, or dependency issues.
 
-Warning: Do not blindly accept large or unexpected changes. If Copilot modifies core logic instead of only adding tests, review carefully or revert and request a narrower change.
+10. (Optional) Expand scope later
+    - If you want broader coverage, repeat the process but set the task scope to "entire solution" to find and implement other missing unit tests.
+    - Plan and run this on a safe branch as the number of automated changes may be significant.
 
 ---
 
-### 6. (Optional) Plan broader analysis
-If you want Copilot to check the entire solution for missing unit tests, prepare a broader quick action request (e.g., `#check-all-unit-tests`) and repeat the process. This expands Copilot’s scope to identify other endpoints or modules missing tests.
+## Images / Snapshots
 
-Snapshot (preview of broader analysis prompt):  
-![Broader solution check prompt (00:03:58.600)](./snapshot-00-03-58-600.png)
+These inline snapshots show important UI states referenced in the steps above. Use them as visual checkpoints while following the procedure.
 
----
+- Snapshot at 00:00:02.400 — Workspace and task overview
+  ![Snapshot: Ready workspace and task overview]![Snapshot at 00:00:02.400](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-02-400.png)
 
-## Helpful Tips & Best Practices
+- Snapshot at 00:00:13.120 — Code/Endpoints view showing missing tests
+  ![Snapshot: Code/Endpoints view showing missing tests]![Snapshot at 00:00:13.120](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-13-120.png)
 
-- Always review generated tests and dependency changes before accepting them.
-- Run tests locally after accepting changes to ensure environment-specific issues are caught.
-- Keep commits small and descriptive when accepting generated code (e.g., "Add unit tests for Products AI search — generated by Copilot").
-- If builds fail due to dependencies, review Copilot's suggested package additions; prefer specific, well-known libraries.
+- Snapshot at 00:00:34.360 — Copilot agent mode and new chat
+  ![Snapshot: Copilot agent mode and new chat button]![Snapshot at 00:00:34.360](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-34-360.png)
 
-## Warnings
+- Snapshot at 00:00:47.320 — Context selector (AI Search) and model selector (GPT-5)
+  ![Snapshot: Context selector set to 'AI Search' and model selector showing GPT-5]![Snapshot at 00:00:47.320](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-47-320.png)
 
-- Automated changes can introduce unexpected behavior. Manual review is required.
-- Ensure your CI/Build environment mirrors your local environment to catch missing dependency issues early.
-- Avoid running Copilot modifications on a protected branch without review.
+- Snapshot at 00:01:09.560 — Hashtag/task selector 'implement unit tests'
+  ![Snapshot: Hashtag/task selector chosen: 'implement unit tests']![Snapshot at 00:01:09.560](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-09-560.png)
+
+- Snapshot at 00:01:31.870 — Copilot analyzing and build logs
+  ![Snapshot: Copilot analyzing and generating tests; build logs visible]![Snapshot at 00:01:31.870](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-31-870.png)
+
+- Snapshot at 00:02:56.040 — Build failure due to missing dependencies
+  ![Snapshot: Build failure log showing missing dependencies]![Snapshot at 00:02:56.040](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-02-56-040.png)
+
+- Snapshot at 00:03:24.304 — Successful build and new unit test files
+  ![Snapshot: Successful build and new unit test files created]![Snapshot at 00:03:24.304](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-24-304.png)
+
+- Snapshot at 00:03:24.304 — Test Explorer showing 'Products AI' tests and Run All button
+  ![Snapshot: Test Explorer showing 'Products AI' tests and Run All button]![Snapshot at 00:03:24.304](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-24-304.png)
 
 ---
 
 ## Snapshots
 
-![Snapshot at 00:00:02.400](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-02-400.png)  
-![Snapshot at 00:00:41.560](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-41-560.png)  
-![Snapshot at 00:01:09.560](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-09-560.png)  
-![Snapshot at 00:01:21.105](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-21-105.png)  
-![Snapshot at 00:02:56.040](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-02-56-040.png)  
-![Snapshot at 00:03:58.600](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-58-600.png)
+![Snapshot at 00:00:02.400](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-02-400.png)
+![Snapshot at 00:00:13.120](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-13-120.png)
+![Snapshot at 00:00:34.360](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-34-360.png)
+![Snapshot at 00:00:47.320](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-47-320.png)
+![Snapshot at 00:01:09.560](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-09-560.png)
+![Snapshot at 00:01:31.870](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-31-870.png)
+![Snapshot at 00:02:56.040](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-02-56-040.png)
+![Snapshot at 00:03:24.304](./images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-24-304.png)

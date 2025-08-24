@@ -1,6 +1,23 @@
 {
   "vtt": "brk447-05 add mcp servers-en-US.vtt",
   "video": "brk447-05 add mcp servers.mkv",
-  "timestampsRequested": [],
-  "timestampToImage": {}
+  "duration": "00:02:42.5000000",
+  "timestampsRequested": [
+    "[00:00:02.760]",
+    "[00:00:16.080]",
+    "[00:00:36.680]",
+    "[00:00:56.528]",
+    "[00:01:25.952]",
+    "[00:01:55.680]",
+    "[00:02:40.320]"
+  ],
+  "timestampToImage": {
+    "[00:00:02.760]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-00-02-760.png",
+    "[00:00:16.080]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-00-16-080.png",
+    "[00:00:36.680]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-00-36-680.png",
+    "[00:00:56.528]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-00-56-528.png",
+    "[00:01:25.952]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-01-25-952.png",
+    "[00:01:55.680]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-01-55-680.png",
+    "[00:02:40.320]": "images/brk447-05%20add%20mcp%20servers-en-US-snapshot-00-02-40-320.png"
+  }
 }

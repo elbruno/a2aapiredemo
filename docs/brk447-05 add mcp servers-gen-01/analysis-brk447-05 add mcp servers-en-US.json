@@ -1,130 +1,107 @@
 {
   "sections": [
     {
-      "title": "Introduction / Goal",
+      "title": "Introduction \u0026 Goal",
       "start_time": "00:00:02.760",
       "end_time": "00:00:16.080",
-      "summary": "Presenter states the goal: add more power to GitHub Copilot by using MCP servers and introduces MCP concept.",
+      "summary": "Presenter states the goal: to extend GitHub Copilot capabilities by using MCP servers.",
       "key_actions": [
-        "Explain intention to enhance GitHub Copilot with MCP servers",
-        "Introduce what MCP servers are (out-of-the-box features)"
+        "Announce intention to give more power to GitHub Copilot",
+        "Introduce MCP servers as the mechanism to extend Copilot"
       ],
       "ui_elements": [
-        "GitHub Copilot (Assistant mode)",
-        "MCP servers (conceptual)"
+        "GitHub Copilot (assistant)",
+        "MCP servers (concept)"
       ]
     },
     {
-      "title": "Default MCP Tools Overview",
+      "title": "Out-of-the-box MCP Tools Overview",
       "start_time": "00:00:16.080",
-      "end_time": "00:00:26.800",
-      "summary": "Shows the out-of-the-box MCP tools available by default (two tools) for Copilot.",
+      "end_time": "00:00:36.640",
+      "summary": "Describes the default tools available for MCP and notes the current available ones (GitHub Copilot local and .NET aggregate assistance).",
       "key_actions": [
-        "Identify default MCP tools available"
+        "Review list of built-in MCP tools",
+        "Note currently available tools"
       ],
       "ui_elements": [
-        "GitHub Copilot local staff (tool)",
-        ".NET aggregate assistance (tool)"
+        "GitHub Copilot local (built-in tool)",
+        ".NET aggregate assistance (built-in tool)",
+        "MCP servers list (Visual Studio)"
       ]
     },
     {
-      "title": "Viewing MCP Servers in Visual Studio and Planning Additions",
-      "start_time": "00:00:27.400",
-      "end_time": "00:00:49.258",
-      "summary": "Opens the Visual Studio list of MCP servers, mentions desired additions (GitHub and Microsoft Learn / Docs) to speed access to documentation.",
+      "title": "Selecting Additional Servers (GitHub, Microsoft Learn/Docs)",
+      "start_time": "00:00:36.680",
+      "end_time": "00:00:56.528",
+      "summary": "Presenter selects additional MCP servers to add: GitHub and a Microsoft Learn / Microsoft Docs source for quick documentation access.",
       "key_actions": [
-        "Open Visual Studio MCP servers list",
-        "Identify candidate servers to add (GitHub, Microsoft Learn/Docs)"
+        "Identify desired MCP servers to add (GitHub, Microsoft Docs/Learn)",
+        "Refer to configuration instructions for adding servers"
       ],
       "ui_elements": [
-        "Visual Studio: list of MCP servers",
-        "Server entries (GitHub, Microsoft Learn/Docs)"
+        "MCP servers list (Visual Studio)",
+        "Server configuration examples (documentation)"
       ]
     },
     {
-      "title": "Create MCP configuration file in solution",
-      "start_time": "00:00:49.258",
-      "end_time": "00:01:22.090",
-      "summary": "Walks through creating a new MCP configuration file in the solution root (named <name>.mcp.json).",
+      "title": "Create mcp.json in Solution Root",
+      "start_time": "00:00:56.528",
+      "end_time": "00:01:25.952",
+      "summary": "Demonstrates creating a new file named (name).mcp.json in the root of the solution to register MCP servers.",
       "key_actions": [
+        "Open solution in Visual Studio",
         "Add new file to solution",
-        "Name file as <name>.mcp.json (create file in solution root)"
+        "Name the file \u003Cname\u003E.mcp.json (placed in solution root)"
       ],
       "ui_elements": [
-        "Solution Explorer",
-        "Add New File (menu/command)",
-        "<name>.mcp.json file (new file)"
+        "Solution Explorer (Visual Studio)",
+        "Add New File action",
+        "File: \u003Cname\u003E.mcp.json"
       ]
     },
     {
-      "title": "Add GitHub MCP server entry",
-      "start_time": "00:01:22.090",
-      "end_time": "00:01:36.013",
-      "summary": "Copies the GitHub server configuration into the MCP JSON file to enable GitHub as an MCP server.",
-      "key_actions": [
-        "Copy GitHub server JSON snippet into the mcp.json file"
-      ],
-      "ui_elements": [
-        "mcp.json content editor",
-        "GitHub server JSON entry"
-      ]
-    },
-    {
-      "title": "Authentication and Connection Behavior",
-      "start_time": "00:01:36.013",
+      "title": "Add GitHub Server Configuration \u0026 Authentication Notes",
+      "start_time": "00:01:25.952",
       "end_time": "00:01:55.680",
-      "summary": "Explains that the server will appear in cache as not connected and will require authentication; Visual Studio will offer local authenticated credentials to authenticate to GitHub, which then exposes many tools (+90).",
+      "summary": "Copies the GitHub server config into mcp.json, explains server cache/connection status and that authentication will use Visual Studio\u0027s local credentials to authenticate to GitHub, enabling many GitHub-related tools.",
       "key_actions": [
-        "Trigger authentication for the added server",
-        "Select local Visual Studio credential to authenticate with GitHub",
-        "Confirm server becomes available and exposes additional tools"
+        "Copy GitHub server configuration into mcp.json",
+        "Save file (registers server)",
+        "Authenticate when prompted using Visual Studio local credentials",
+        "Observe that many GitHub tools become available after authentication"
       ],
       "ui_elements": [
-        "Authentication prompt",
-        "Local Visual Studio authenticated credential selector",
-        "Server cache state indicator (not connected / requires authentication)",
-        "Tools list (+90 tools for GitHub)"
+        "mcp.json (server configuration file)",
+        "Authentication prompt (Visual Studio credential chooser)",
+        "Server status indicators (in cache, not connected)",
+        "GitHub-related tools (reported \u002B90 tools)"
       ]
     },
     {
-      "title": "Add Microsoft Docs MCP server entry",
-      "start_time": "00:01:56.000",
-      "end_time": "00:02:12.240",
-      "summary": "Adds Microsoft Docs as another MCP server by copying its configuration into the MCP file; presenter notes the configuration is simple.",
-      "key_actions": [
-        "Locate Microsoft Docs server configuration",
-        "Add Microsoft Docs entry to the mcp.json file"
-      ],
-      "ui_elements": [
-        "mcp.json content editor",
-        "Microsoft Docs server JSON entry",
-        "Configuration snippet (label: Microsoft Docs / docs)"
-      ]
-    },
-    {
-      "title": "Verify Tools in Copilot Chat (Assistant) UI",
-      "start_time": "00:02:24.000",
+      "title": "Add Microsoft Docs Server \u0026 Verify in Copilot Chat Tools",
+      "start_time": "00:01:55.680",
       "end_time": "00:02:40.320",
-      "summary": "Opens Copilot chat (assistant mode) tools panel and confirms the presence of the new Microsoft Docs tool along with GitHub Copilot tools.",
+      "summary": "Adds Microsoft Docs configuration to the MCP file and verifies in Copilot\u0027s assistant/chat mode that the new Microsoft Docs and GitHub Copilot tools appear in the Tools pane.",
       "key_actions": [
-        "Open Copilot chat in assistant mode",
-        "Open Tools panel",
-        "Verify Microsoft Docs tool and GitHub Copilot tools are listed"
+        "Add Microsoft Docs (Microsoft Learn) configuration to mcp.json",
+        "Open GitHub Copilot in assistant (chat) mode",
+        "Open Tools panel to confirm Microsoft Docs and GitHub tools are listed"
       ],
       "ui_elements": [
-        "Copilot Chat (Assistant mode)",
-        "Tools panel / Tools list",
-        "Microsoft Docs tool",
-        "GitHub Copilot toolset"
+        "Microsoft Docs tool (new MCP tool)",
+        "Copilot assistant/chat mode",
+        "Tools pane (in Copilot chat)"
       ]
     }
   ],
   "main_topics": [
-    "Using MCP servers to extend GitHub Copilot",
-    "Creating and editing the <name>.mcp.json configuration file",
-    "Adding GitHub and Microsoft Docs as MCP servers",
-    "Authentication via Visual Studio credentials for MCP servers",
-    "Verifying added tools in the Copilot chat/tools UI"
+    "MCP (Managed Connector Provider) servers for GitHub Copilot",
+    "Creating and editing mcp.json in solution root",
+    "Adding third-party or documentation servers (GitHub, Microsoft Docs)",
+    "Authentication via Visual Studio local credentials",
+    "Verifying tools in GitHub Copilot assistant chat (Tools pane)"
   ],
-  "total_duration": "00:02:40.320"
+  "total_duration": "00:02:37.560",
+  "video": "brk447-05 add mcp servers.mkv",
+  "duration": "00:02:42.5000000"
 }
