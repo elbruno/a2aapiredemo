@@ -9,6 +9,9 @@ var productsDb = sql
     .WithDataVolume()
     .AddDatabase("productsDb");
 
+// Add SQLite database for PaymentsService - provisions paymentsdb for local development
+var paymentsDb = builder.AddConnectionString("PaymentsDb", "Data Source=Data/payments.db");
+
 IResourceBuilder<IResourceWithConnectionString>? aifoundry;
 
 var chatDeploymentName = "gpt-4.1-mini";
@@ -18,8 +21,14 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
     .WaitFor(productsDb);
 
+// Register PaymentsService with Aspire for service discovery, logging, and health checks
+var paymentsService = builder.AddProject<Projects.PaymentsService>("payments-service")
+    .WithReference(paymentsDb)
+    .WithExternalHttpEndpoints();
+
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
+    .WithReference(paymentsService) // Store can discover PaymentsService via Aspire
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
