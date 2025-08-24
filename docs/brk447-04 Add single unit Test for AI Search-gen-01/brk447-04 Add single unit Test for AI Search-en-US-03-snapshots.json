@@ -1,0 +1,20 @@
+{
+  "vtt": "brk447-04 Add single unit Test for AI Search-en-US.vtt",
+  "video": "brk447-04 Add single unit Test for AI Search.mkv",
+  "timestampsRequested": [
+    "[00:00:02.400]",
+    "[00:00:41.560]",
+    "[00:01:09.560]",
+    "[00:01:21.105]",
+    "[00:02:56.040]",
+    "[00:03:58.600]"
+  ],
+  "timestampToImage": {
+    "[00:00:02.400]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-02-400.png",
+    "[00:00:41.560]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-41-560.png",
+    "[00:01:09.560]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-09-560.png",
+    "[00:01:21.105]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-21-105.png",
+    "[00:02:56.040]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-02-56-040.png",
+    "[00:03:58.600]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-58-600.png"
+  }
+}

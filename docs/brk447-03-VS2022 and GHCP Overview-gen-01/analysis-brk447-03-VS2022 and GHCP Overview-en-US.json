@@ -1,0 +1,97 @@
+{
+  "sections": [
+    {
+      "title": "Introduction — GitHub Copilot integration with Visual Studio",
+      "start_time": "00:00:01.800",
+      "end_time": "00:00:17.700",
+      "summary": "Presenter introduces GitHub Copilot integration inside Visual Studio (preview). Mentions main features such as inline suggestions while coding and the 'next edit' suggestion.",
+      "key_actions": [
+        "Open Visual Studio with Copilot integration",
+        "Run the preview version of the Copilot extension",
+        "Observe inline suggestions and next-edit suggestions while coding"
+      ],
+      "ui_elements": [
+        "GitHub Copilot integration (extension)",
+        "Visual Studio (preview)",
+        "Inline suggestion UI",
+        "Next edit suggestion"
+      ]
+    },
+    {
+      "title": "Usage and consumption / plan status",
+      "start_time": "00:00:17.700",
+      "end_time": "00:00:33.680",
+      "summary": "Shows consumption/usage information for the Copilot plan (example: 28% of pro plan used for premium requests) and notes other resources are available.",
+      "key_actions": [
+        "Open consumption/usage panel",
+        "Check pro plan usage percentage",
+        "Verify available quotas/resources"
+      ],
+      "ui_elements": [
+        "Consumption/usage meter",
+        "Pro plan indicator",
+        "Premium request usage stats"
+      ]
+    },
+    {
+      "title": "Solution architecture and Copilot modes",
+      "start_time": "00:00:33.680",
+      "end_time": "00:01:02.600",
+      "summary": "Describes the solution components (orchestrators, backend, AI front end, models) and explains Copilot can operate in two modes: Ask mode for Q&A and an interactive Agent mode for more hands-on coding assistance.",
+      "key_actions": [
+        "Identify project solution components (orchestrators, backend, front end, models)",
+        "Choose between Ask mode and Agent mode depending on the task",
+        "Use Ask mode to query about the system and Agent mode for interactive coding"
+      ],
+      "ui_elements": [
+        "Solution/project structure (orchestrators, backend, front end, models)",
+        "Ask mode",
+        "Agent mode"
+      ]
+    },
+    {
+      "title": "Model selection and querying Copilot",
+      "start_time": "00:01:02.600",
+      "end_time": "00:01:54.560",
+      "summary": "Demonstrates asking Copilot which OpenAI model the solution is using and selecting a model (example shown: switching to GPT-5). Notes a full set of models is available in the selector.",
+      "key_actions": [
+        "Ask Copilot which model the solution currently uses",
+        "Open the model selector and choose a model (e.g., GPT-5)",
+        "Review the model options and Copilot's response"
+      ],
+      "ui_elements": [
+        "Model selector/dropdown",
+        "Model list (e.g., GPT-5)",
+        "Copilot Q&A interface"
+      ]
+    },
+    {
+      "title": "Copilot analysis and upgrade actions",
+      "start_time": "00:01:54.560",
+      "end_time": "00:02:41.520",
+      "summary": "Copilot reports details about configured models (example mentions app host defining specific models and embeddings). The user asks Copilot to create a plan to upgrade to GPT-5 and to consider switching to local models. Copilot is described as capable of applying changes to code (C#) and infrastructure (Bicep) files to perform upgrades.",
+      "key_actions": [
+        "Request Copilot to analyze currently configured models and embeddings",
+        "Ask Copilot to create a plan for upgrading to GPT-5",
+        "Ask Copilot about switching to local models",
+        "Allow Copilot to modify project files (C#) and infrastructure templates (Bicep) to implement changes"
+      ],
+      "ui_elements": [
+        "Copilot response pane",
+        "Project code files (C#)",
+        "Infrastructure-as-code files (Bicep)",
+        "Copilot edit/perform-changes action"
+      ]
+    }
+  ],
+  "main_topics": [
+    "GitHub Copilot integration in Visual Studio",
+    "Preview features: inline suggestions and next-edit",
+    "Consumption and pro plan usage",
+    "Solution architecture (orchestrators, backend, front end, models)",
+    "Copilot modes: Ask mode and Agent mode",
+    "Model selection and switching (example: GPT-5)",
+    "Automated updates to code and infrastructure files (C# and Bicep)"
+  ],
+  "total_duration": "00:02:41.520"
+}

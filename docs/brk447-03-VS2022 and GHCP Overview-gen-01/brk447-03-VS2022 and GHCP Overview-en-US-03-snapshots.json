@@ -1,0 +1,18 @@
+{
+  "vtt": "brk447-03-VS2022 and GHCP Overview-en-US.vtt",
+  "video": "brk447-03-VS2022 and GHCP Overview.mkv",
+  "timestampsRequested": [
+    "[00:00:08.000]",
+    "[00:00:25.000]",
+    "[00:00:45.000]",
+    "[00:01:12.000]",
+    "[00:02:15.000]"
+  ],
+  "timestampToImage": {
+    "[00:00:08.000]": "images/brk447-03-VS2022%20and%20GHCP%20Overview-en-US-snapshot-00-00-08-000.png",
+    "[00:00:25.000]": "images/brk447-03-VS2022%20and%20GHCP%20Overview-en-US-snapshot-00-00-25-000.png",
+    "[00:00:45.000]": "images/brk447-03-VS2022%20and%20GHCP%20Overview-en-US-snapshot-00-00-45-000.png",
+    "[00:01:12.000]": "images/brk447-03-VS2022%20and%20GHCP%20Overview-en-US-snapshot-00-01-12-000.png",
+    "[00:02:15.000]": "images/brk447-03-VS2022%20and%20GHCP%20Overview-en-US-snapshot-00-02-15-000.png"
+  }
+}

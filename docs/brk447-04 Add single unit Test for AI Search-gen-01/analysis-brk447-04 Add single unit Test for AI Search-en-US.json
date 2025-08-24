@@ -1,0 +1,108 @@
+{
+  "sections": [
+    {
+      "title": "Introduction & Task Definition",
+      "start_time": "00:00:02.400",
+      "end_time": "00:00:41.560",
+      "summary": "Presenter explains the goal: use Copilot to implement missing unit tests for AI-related endpoints (AI search and 'formal' search) to avoid regressions.",
+      "key_actions": [
+        "Identify endpoints missing unit tests (AI search, formal search)",
+        "State the objective to implement unit tests"
+      ],
+      "ui_elements": [
+        "Code/solution workspace (endpoints view)",
+        "Copilot (general)"
+      ]
+    },
+    {
+      "title": "Switch to Agent Mode and Create Chat",
+      "start_time": "00:00:41.560",
+      "end_time": "00:01:15.920",
+      "summary": "Switch Copilot to agent mode, create a new chat, select the 'AI search' context, and choose the model (GPT-5).",
+      "key_actions": [
+        "Switch Copilot to agent mode",
+        "Create a new chat session",
+        "Select AI search context",
+        "Choose GPT-5 model (with option to switch models)"
+      ],
+      "ui_elements": [
+        "Agent mode (Copilot)",
+        "New Chat button",
+        "Chat history / Previous chat link",
+        "AI Search context selection",
+        "Model dropdown (GPT-5)"
+      ]
+    },
+    {
+      "title": "Triggering the Task via Hashtag / Quick Action",
+      "start_time": "00:01:09.560",
+      "end_time": "00:01:21.105",
+      "summary": "Use a hashtag + task name quick action to directly request implementation of unit tests for AI search. Presenter notes there may be other available quick actions.",
+      "key_actions": [
+        "Type hashtag and task name to access quick action (e.g., implement unit tests)",
+        "Select the specific quick action for AI search"
+      ],
+      "ui_elements": [
+        "Hashtag quick actions",
+        "Quick action list for AI search"
+      ]
+    },
+    {
+      "title": "Copilot Analysis & Automated Work (Read, Build, Iterate)",
+      "start_time": "00:01:21.105",
+      "end_time": "00:02:56.040",
+      "summary": "Copilot reads the entire solution, identifies required tests, adds code, attempts to build, and iterates—this analysis and code-generation process takes time (approx. 2 minutes).",
+      "key_actions": [
+        "Let Copilot analyze the solution codebase",
+        "Allow Copilot to generate new test code",
+        "Allow Copilot to attempt building the project/solution",
+        "Allow Copilot to modify dependencies as needed and iterate"
+      ],
+      "ui_elements": [
+        "Background analysis / indexing (Copilot)",
+        "Build/compile action",
+        "Dependency management updates (automated)"
+      ]
+    },
+    {
+      "title": "Build Outcome, Accept Changes, and Run Tests",
+      "start_time": "00:02:56.040",
+      "end_time": "00:03:58.600",
+      "summary": "After about two minutes Copilot added tests and tried to build; initial failures caused dependency additions, then a successful build produced two new unit tests. Presenter accepts the changes and runs tests via the Test Explorer, confirming the new 'products AI test' cases are present and passing.",
+      "key_actions": [
+        "Review generated unit tests",
+        "Accept Copilot's code changes",
+        "Open Test Explorer",
+        "Run all tests / run the newly added tests",
+        "Inspect build output to confirm success"
+      ],
+      "ui_elements": [
+        "Accept Changes button/confirmation",
+        "Test Explorer",
+        "Run All Tests button",
+        "Build output / build log",
+        "Products AI test (new test entries)"
+      ]
+    },
+    {
+      "title": "Next Steps / Scale Up Suggestion",
+      "start_time": "00:03:58.600",
+      "end_time": "00:04:00.080",
+      "summary": "Presenter previews a follow-up scenario: expanding the request to check the entire solution for missing unit tests.",
+      "key_actions": [
+        "Plan to request a broader 'check entire solution' analysis for missing unit tests"
+      ],
+      "ui_elements": [
+        "Broader analysis / 'check all solution' request (Copilot)"
+      ]
+    }
+  ],
+  "main_topics": [
+    "Using Copilot (agent mode) to implement unit tests",
+    "Selecting AI search context and model configuration (GPT-5)",
+    "Automated code analysis, test generation, and iterative builds",
+    "Accepting generated changes and running tests in Test Explorer",
+    "Handling build failures via dependency additions"
+  ],
+  "total_duration": "00:04:00.080"
+}

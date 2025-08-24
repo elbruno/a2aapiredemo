@@ -1,0 +1,99 @@
+{
+  "sections": [
+    {
+      "title": "Scenario introduction: existing DB initializer with Entity Framework",
+      "start_time": "00:00:01.840",
+      "end_time": "00:00:23.520",
+      "summary": "Presenter describes a real project scenario (products project) using Entity Framework and questions whether the current DB initializer approach is correct.",
+      "key_actions": [
+        "Review current products list, DbContext and DB initializer implementation (00:00:01.840–00:00:17.920)",
+        "Decide to use Copilot agent to validate/improve implementation (00:00:17.920–00:00:23.520)"
+      ],
+      "ui_elements": []
+    },
+    {
+      "title": "Enable GitHub Copilot agent and search Microsoft Docs",
+      "start_time": "00:00:23.520",
+      "end_time": "00:00:51.080",
+      "summary": "Enable Copilot agent mode, grant it access to Microsoft Docs, and ask it to search documentation for guidance on implementing a DB initializer class for EF Core 9.",
+      "key_actions": [
+        "Enable GitHub Copilot agent mode and select Microsoft Docs as a tool (00:00:23.520–00:00:31.560)",
+        "Ask agent to search Microsoft Docs for DB initializer patterns for EF Core 9 and request answers based on full doc content (00:00:31.560–00:00:51.080)"
+      ],
+      "ui_elements": [
+        "GitHub Copilot agent mode (enable/disable)",
+        "Microsoft Docs tool (enable access/search)"
+      ]
+    },
+    {
+      "title": "Permissions prompt for tools",
+      "start_time": "00:00:57.240",
+      "end_time": "00:01:14.800",
+      "summary": "Permission dialog appears to allow the agent/tools to access resources (disk, run commands). User chooses permission scope for the session.",
+      "key_actions": [
+        "Read permission warning about tools accessing disk or running commands (00:00:57.240–00:01:02.360)",
+        "Choose permission option: always allow or allow only this time; presenter chooses allow only this time for the demo (00:01:02.360–00:01:14.800)"
+      ],
+      "ui_elements": [
+        "Permissions dialog",
+        "Allow (this session)",
+        "Always allow"
+      ]
+    },
+    {
+      "title": "Agent run and recommendations returned",
+      "start_time": "00:01:24.960",
+      "end_time": "00:01:58.680",
+      "summary": "Agent processes the request (took a few minutes) and returns recommendations: EF Core 9 has a different recommended approach for DB initialization, includes links to docs and suggestions for improved implementation.",
+      "key_actions": [
+        "Wait for agent to run and analyze documentation and project (00:01:24.960–00:01:29.888)",
+        "Receive recommendations that current initializer works but EF Core 9 recommends a different approach, plus reference links (00:01:29.888–00:01:58.680)"
+      ],
+      "ui_elements": [
+        "Agent response panel (recommendations and links)",
+        "Documentation/reference links"
+      ]
+    },
+    {
+      "title": "Trigger agent to implement suggested changes; session/model selection",
+      "start_time": "00:02:09.320",
+      "end_time": "00:02:41.122",
+      "summary": "User asks the agent to implement the recommended changes. A new agent session is triggered and tied to a chosen model (options mentioned: GPT-4.1, GPT-5). Agent begins reading related project files (Program.cs, DbContext) to prepare code changes.",
+      "key_actions": [
+        "Request agent to implement recommended code changes (00:02:09.320)",
+        "Trigger a new agent session and choose a model (GPT-4.1 or GPT-5) (00:02:12.400–00:02:17.320)",
+        "Agent reads relevant classes and project files (Program, DbContext, etc.) to plan edits (00:02:25.738–00:02:41.122)"
+      ],
+      "ui_elements": [
+        "Start/Trigger session button",
+        "Model selection dropdown (GPT-4.1, GPT-5, others)"
+      ]
+    },
+    {
+      "title": "Agent applies changes and final recommendations (EF Core 9)",
+      "start_time": "00:02:41.122",
+      "end_time": "00:03:44.720",
+      "summary": "Agent implements code changes to align with EF Core 9 recommendations: refactors DB initialization, suggests using migrations and MigrateAsync instead of EnsureCreated/EnsureCreatedAsync, provides conditional async/sync handling and improved sample data initialization.",
+      "key_actions": [
+        "Agent modifies classes to implement the recommended DB initialization approach (00:02:41.122–00:02:51.653)",
+        "Agent finishes processing and reports that new approach aligns with EF Core 9 docs (00:02:51.653–00:02:59.280)",
+        "Recommendation to use Database.MigrateAsync (or Migrate) instead of EnsureCreated/EnsureCreatedAsync when moving migrations (00:02:59.280–00:03:07.970)",
+        "Agent implements conditional handling (sync vs async) and better sample-data seeding based on documentation (00:03:07.970–00:03:44.720)"
+      ],
+      "ui_elements": [
+        "Code changes/patch preview panel",
+        "Apply/commit changes button",
+        "Agent session status/finished indicator"
+      ]
+    }
+  ],
+  "main_topics": [
+    "Using GitHub Copilot Agents to consult Microsoft Docs",
+    "DB initializer patterns for Entity Framework Core 9",
+    "Tool permission controls for agent access",
+    "Agent-driven code modification/workflows",
+    "Model selection for agent sessions (GPT variants)",
+    "Migration vs EnsureCreated (use MigrateAsync)"
+  ],
+  "total_duration": "00:03:44.720"
+}

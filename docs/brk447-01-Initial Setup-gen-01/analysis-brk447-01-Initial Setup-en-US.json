@@ -1,0 +1,104 @@
+{
+  "sections": [
+    {
+      "title": "Introduction and prerequisites",
+      "start_time": "00:00:00.360",
+      "end_time": "00:00:09.688",
+      "summary": "Lists required tools and frameworks to run the demo locally: Visual Studio, Docker, PowerShell, .NET 9, and Azure CLI.",
+      "key_actions": [
+        "Identify and ensure prerequisites are installed: Visual Studio, Docker, PowerShell, .NET 9, Azure CLI"
+      ],
+      "ui_elements": []
+    },
+    {
+      "title": "Azure CLI login and resource group creation",
+      "start_time": "00:00:09.688",
+      "end_time": "00:00:41.720",
+      "summary": "Log into Azure using the tenant option to pick the correct subscription, then run a command to create a new resource group (example name shown). The command returns JSON output with resource identifiers.",
+      "key_actions": [
+        "00:00:13.360 - az login using --tenant option to access the Cloud Advocate tenant",
+        "00:00:31.316 - Run command to create a new resource group (example: RGBR CAR 447)",
+        "Inspect JSON output for resource IDs and keys"
+      ],
+      "ui_elements": [
+        "Azure CLI (login prompt)",
+        "JSON output in terminal"
+      ]
+    },
+    {
+      "title": "Retrieve outputs: endpoints, keys, foundry name",
+      "start_time": "00:00:41.720",
+      "end_time": "00:00:58.409",
+      "summary": "Use CLI commands to get the deployment outputs: keys, endpoint, and the foundry/account name. Copy the foundry name for later steps.",
+      "key_actions": [
+        "Run command to get output and retrieve keys/IDs",
+        "Copy the foundry name from the output for configuration"
+      ],
+      "ui_elements": [
+        "Terminal output (keys, endpoint, foundry name)",
+        "Copy action (from terminal)"
+      ]
+    },
+    {
+      "title": "Update and run local setup script to obtain connection string",
+      "start_time": "00:00:58.409",
+      "end_time": "00:01:40.996",
+      "summary": "Update a local script with the resource group and account name, paste it into the console, and run it to generate a connection string, endpoint and key. Running the app the first time opens a dashboard that requests the AI Foundry parameter.",
+      "key_actions": [
+        "00:01:04.000 - Edit the script with resource name and account name",
+        "00:01:30.200 - Copy updated script into the console application",
+        "00:01:32.000 - Run the script to provision/get the connection string",
+        "00:01:37.120 - Receive endpoints and key output"
+      ],
+      "ui_elements": [
+        "Console application/terminal",
+        "Local script file (to edit resource/account values)",
+        "Dashboard (auto-open on first run)"
+      ]
+    },
+    {
+      "title": "Configure AI Foundry parameter and start application",
+      "start_time": "00:01:40.996",
+      "end_time": "00:02:14.440",
+      "summary": "Paste the AI Foundry parameter into the dashboard when prompted and save it to user secrets so it won't be prompted again. Once configured the application starts and can be used (including semantic search testing).",
+      "key_actions": [
+        "00:01:45.590 / 00:01:51.045 - Dashboard indicates missing AI Foundry parameter",
+        "00:01:56.960 - Paste the foundry value into the dashboard input and save to user secrets",
+        "00:02:05.149 - Application is up and running",
+        "Test browsing the product and run a semantic search to validate integration"
+      ],
+      "ui_elements": [
+        "Dashboard (input for AI Foundry parameter)",
+        "User secrets (dotnet user-secrets storage)",
+        "Application UI (product browser, semantic search interface)"
+      ]
+    },
+    {
+      "title": "Switching resources and verifying Azure OpenAI deployments",
+      "start_time": "00:02:18.160",
+      "end_time": "00:03:00.480",
+      "summary": "Show how to change which resource the app points to by editing the app host's user secrets (delete/add the AI Foundry line). Then inspect the created Resource Group in the Azure Portal to view Azure OpenAI deployments (chat and embeddings) and retrieve endpoints/keys from the portal.",
+      "key_actions": [
+        "00:02:23.377 - Open APP host and edit user secrets",
+        "00:02:31.440 - Locate AI Foundry entry in user secrets; delete and re-add if changing resources",
+        "00:02:39.848 - Open Resource Group in Azure Portal",
+        "00:02:49.138 - View Azure OpenAI resources and confirm deployments (e.g., GPT-4o mini for chats and text-embedding, ADI O2 for embeddings)",
+        "00:02:57.280 - Retrieve endpoint and key values from portal"
+      ],
+      "ui_elements": [
+        "APP host file (user secrets editor)",
+        "Azure Portal (Resource Group view)",
+        "Azure OpenAI resource blade (Deployments list, Endpoints, Keys)"
+      ]
+    }
+  ],
+  "main_topics": [
+    "Local demo prerequisites and environment setup",
+    "Azure CLI login and resource group deployment",
+    "Retrieving outputs: endpoints, keys, foundry/account names",
+    "Updating local scripts and obtaining connection strings",
+    "Configuring application (user secrets) and starting the demo",
+    "Verifying Azure OpenAI deployments and retrieving keys from Azure Portal"
+  ],
+  "total_duration": "00:03:00.120"
+}
