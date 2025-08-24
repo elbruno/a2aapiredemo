@@ -4,7 +4,9 @@
 @using Store.Components.Cart
 @inject ICartService CartService
 @inject ICheckoutService CheckoutService
+@inject IPaymentsClient PaymentsClient
 @inject NavigationManager Navigation
+@inject ILogger<CheckoutPage> Logger
 @attribute [StreamRendering(true)]
 
 <PageTitle>Checkout</PageTitle>
@@ -91,11 +93,20 @@ else
                         <span class="visually-hidden">Processing...</span>
                     </div>
                     <h5>Processing Your Order</h5>
-                    <p class="text-muted">Please wait while we process your order...</p>
+                    <p class="text-muted">Please wait while we process your order and payment...</p>
                 </div>
             </div>
         </div>
     </div>
+}
+
+@* Payment Dialog *@
+@if (showPaymentDialog)
+{
+    <PaymentDialog Amount="shoppingCart.Total" 
+                   Currency="USD"
+                   OnPaymentSuccess="HandlePaymentSuccess" 
+                   OnCancel="HandlePaymentCancel" />
 }
 
 @code {
@@ -103,6 +114,8 @@ else
     private Customer customer = new();
     private bool isLoading = true;
     private bool isProcessing = false;
+    private bool showPaymentDialog = false;
+    private Customer? pendingCustomer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,28 +143,90 @@ else
     {
         try
         {
-            isProcessing = true;
-            
             // Ensure shipping address is set correctly
             if (submittedCustomer.SameAsShipping)
             {
                 submittedCustomer.ShippingAddress = submittedCustomer.BillingAddress;
             }
 
-            // Process the order
-            var order = await CheckoutService.ProcessOrderAsync(submittedCustomer, shoppingCart);
+            // Store customer info for after payment
+            pendingCustomer = submittedCustomer;
             
-            // Clear the cart
-            await CartService.ClearCartAsync();
-            
-            // Navigate to confirmation page
-            Navigation.NavigateTo($"/order-confirmation/{order.OrderNumber}");
+            // Show payment dialog
+            showPaymentDialog = true;
+            StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error initiating checkout process");
             // Handle error - could show error message
-            isProcessing = false;
         }
+    }
+
+    private async Task HandlePaymentSuccess(string paymentMethod)
+    {
+        if (pendingCustomer == null) return;
+        
+        try
+        {
+            showPaymentDialog = false;
+            isProcessing = true;
+            StateHasChanged();
+
+            // Create payment request
+            var paymentRequest = new CreatePaymentRequest
+            {
+                StoreId = "zava-store",
+                UserId = pendingCustomer.Email,
+                CartId = "cart-" + Guid.NewGuid().ToString("N")[..8],
+                Currency = "USD",
+                Amount = shoppingCart.Total,
+                PaymentMethod = paymentMethod,
+                Items = shoppingCart.Items.Select(item => new PaymentItem
+                {
+                    ProductId = item.ProductId.ToString(),
+                    Quantity = item.Quantity,
+                    UnitPrice = item.Price
+                }).ToArray()
+            };
+
+            // Process payment via PaymentsService
+            var paymentResult = await PaymentsClient.CreatePaymentAsync(paymentRequest);
+            
+            if (paymentResult != null)
+            {
+                Logger.LogInformation("Payment processed successfully with ID {PaymentId}", paymentResult.PaymentId);
+                
+                // Process the order
+                var order = await CheckoutService.ProcessOrderAsync(pendingCustomer, shoppingCart);
+                
+                // Clear the cart
+                await CartService.ClearCartAsync();
+                
+                // Navigate to confirmation page
+                Navigation.NavigateTo($"/order-confirmation/{order.OrderNumber}");
+            }
+            else
+            {
+                Logger.LogWarning("Payment processing failed");
+                // Show error message - payment failed
+                isProcessing = false;
+                // Could show an error dialog here
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error processing payment");
+            isProcessing = false;
+            // Handle error - could show error message
+        }
+    }
+
+    private void HandlePaymentCancel()
+    {
+        showPaymentDialog = false;
+        pendingCustomer = null;
+        StateHasChanged();
     }
 
     private void BackToCart()

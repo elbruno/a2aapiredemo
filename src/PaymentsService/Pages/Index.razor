@@ -1,0 +1,49 @@
+@page "/"
+
+<PageTitle>Payments Service</PageTitle>
+
+<h1>Welcome to Payments Service</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Payment Processing</h5>
+            </div>
+            <div class="card-body">
+                <p>This service provides mock payment processing capabilities for the Zava store.</p>
+                <ul>
+                    <li>Mock payment processing via API</li>
+                    <li>Payment record persistence</li>
+                    <li>Payment history viewing</li>
+                </ul>
+                <a href="/payments" class="btn btn-primary">View Payments</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>API Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <p>Available API endpoints for integration:</p>
+                <ul>
+                    <li><code>POST /api/payments</code> - Create payment</li>
+                    <li><code>GET /api/payments</code> - Get payments list</li>
+                    <li><code>GET /api/payments/{id}</code> - Get payment by ID</li>
+                </ul>
+                <a href="/swagger" target="_blank" class="btn btn-secondary">API Documentation</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6>Mock Mode</h6>
+            <p class="mb-0">This service operates in mock mode and simulates successful payment processing. No real payment processing occurs.</p>
+        </div>
+    </div>
+</div>

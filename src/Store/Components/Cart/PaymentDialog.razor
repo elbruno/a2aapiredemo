@@ -1,0 +1,143 @@
+@using Store.Services
+
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mock Payment</h5>
+                <button type="button" class="btn-close" @onclick="Cancel"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>Mock Payment Mode</h6>
+                    <p class="mb-0">This is a demonstration payment flow. No real payment processing occurs.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Order Total: <strong>@Amount.ToString("C") @Currency</strong></h6>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Select Payment Method:</label>
+                    <div class="list-group">
+                        @foreach (var method in PaymentMethods)
+                        {
+                            <button type="button" 
+                                    class="list-group-item list-group-item-action @(selectedPaymentMethod == method ? "active" : "")"
+                                    @onclick="() => SelectPaymentMethod(method)">
+                                <div class="d-flex align-items-center">
+                                    <i class="@GetPaymentMethodIcon(method) me-2"></i>
+                                    <div>
+                                        <div class="fw-medium">@method</div>
+                                        <small class="text-muted">@GetPaymentMethodDescription(method)</small>
+                                    </div>
+                                </div>
+                            </button>
+                        }
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(selectedPaymentMethod))
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Selected Payment Method</h6>
+                            <p class="mb-0"><i class="@GetPaymentMethodIcon(selectedPaymentMethod) me-2"></i>@selectedPaymentMethod</p>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                <button type="button" 
+                        class="btn btn-success" 
+                        @onclick="ProcessPayment" 
+                        disabled="@(string.IsNullOrEmpty(selectedPaymentMethod) || isProcessing)">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    }
+                    else
+                    {
+                        <i class="bi bi-credit-card me-1"></i>
+                        Process Payment
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public decimal Amount { get; set; }
+    [Parameter] public string Currency { get; set; } = "USD";
+    [Parameter] public EventCallback<string> OnPaymentSuccess { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    
+    private string selectedPaymentMethod = "";
+    private bool isProcessing = false;
+    
+    private readonly string[] PaymentMethods = [
+        "Visa ****1234",
+        "MasterCard ****5678", 
+        "American Express ****9012",
+        "PayPal Account",
+        "Apple Pay",
+        "Google Pay"
+    ];
+    
+    private void SelectPaymentMethod(string method)
+    {
+        selectedPaymentMethod = method;
+        StateHasChanged();
+    }
+    
+    private async Task ProcessPayment()
+    {
+        if (string.IsNullOrEmpty(selectedPaymentMethod)) return;
+        
+        isProcessing = true;
+        StateHasChanged();
+        
+        try
+        {
+            // Simulate payment processing delay
+            await Task.Delay(1500);
+            
+            // In a mock scenario, payment always succeeds
+            await OnPaymentSuccess.InvokeAsync(selectedPaymentMethod);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+    
+    private string GetPaymentMethodIcon(string method) => method switch
+    {
+        var m when m.Contains("Visa") => "bi bi-credit-card",
+        var m when m.Contains("MasterCard") => "bi bi-credit-card-2-front",
+        var m when m.Contains("American Express") => "bi bi-credit-card",
+        var m when m.Contains("PayPal") => "bi bi-paypal",
+        var m when m.Contains("Apple Pay") => "bi bi-apple",
+        var m when m.Contains("Google Pay") => "bi bi-google",
+        _ => "bi bi-credit-card"
+    };
+    
+    private string GetPaymentMethodDescription(string method) => method switch
+    {
+        var m when m.Contains("Visa") => "Secure credit card payment",
+        var m when m.Contains("MasterCard") => "Secure credit card payment",
+        var m when m.Contains("American Express") => "Secure credit card payment",
+        var m when m.Contains("PayPal") => "Pay with your PayPal account",
+        var m when m.Contains("Apple Pay") => "Pay securely with Touch ID",
+        var m when m.Contains("Google Pay") => "Pay with your Google account",
+        _ => "Secure payment method"
+    };
+}
