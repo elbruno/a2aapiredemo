@@ -27,7 +27,7 @@ By the end of this session, attendees will understand how to:
 
 ### 1. Review Initial Setup Requirements
 
-**📋 Action**: Thoroughly review the [Initial Setup documentation](./01-InitialSetup.md) to prepare all required resources.
+**📋 Action**: Thoroughly review the 'Initial Setup.md' file [docs\01-InitialSetup.md] to prepare all required resources.
 
 **Key preparation steps**:
 - Ensure all prerequisites are installed (Visual Studio 2022, Docker Desktop, PowerShell, Azure CLI, .NET 9 SDK)
@@ -38,25 +38,17 @@ By the end of this session, attendees will understand how to:
 
 **⏱️ Time allocation**: 15-20 minutes before session
 
-### 2. Create GitHub Issue and Assign to Coding Agent
+### 2. Create an issue in GitHub and assign it to the Coding Agent
 
-**📋 Action**: Create a demonstration GitHub issue that will be used during the session to showcase GitHub Copilot Agent capabilities.
-
-**Steps**:
-1. Create a new issue in your demo repository
-2. Use the template from [Create Issue for Unit Tests](./Create_Issue_for_unit_tests.md) as a reference
-3. Assign the issue to GitHub Copilot Coding Agent
-4. Prepare the issue description with clear, actionable requirements
+**📋 Action**: Create an issue in GitHub and assign it to the Coding Agent. Use the information in this file to create the issue: [docs\02-Create_Issue_for_unit_tests.md]
 
 **Sample Issue Title**: "Implement comprehensive unit tests for AI search functionality"
 
 **⏱️ Time allocation**: 5 minutes during demo
 
-### 3. Execute PRD Integration
+### 3. Execute a PRD, ensuring the PRD is downloadable for integration into the repository
 
-**📋 Action**: Ensure the Product Requirements Document (PRD) is available and downloadable for integration into the repository.
-
-**Reference Document**: [PRD: Add Mock Payment Server](./PRD_Add_Payment_Mock_Server.md)
+**📋 Action**: Execute a PRD, ensuring the PRD is downloadable for integration into the repository. **Reference Document**: The PRD is this file: [docs\03-PRD_Add_Payment_Mock_Server.md]
 
 **Preparation steps**:
 - Review the PRD thoroughly to understand the payment server requirements
@@ -65,6 +57,18 @@ By the end of this session, attendees will understand how to:
 - Have the PRD ready for potential live implementation during Q&A
 
 **⏱️ Time allocation**: Reference during demo as needed
+
+### 4. Follow the slide deck and demo videos
+
+**📋 Action**: Follow the slide deck and demo videos.
+
+**Preparation steps**:
+- Review all video demo modules and associated documentation
+- Ensure familiarity with the timing and flow of each module
+- Prepare backup plans for technical issues during live demos
+- Have all necessary demo materials and scripts ready
+
+**⏱️ Time allocation**: Full session duration (~75-85 minutes)
 
 ---
 
@@ -352,9 +356,9 @@ A: Provide realistic timelines and suggest incremental adoption strategies.
 ## Quick Reference Links
 
 ### Essential Documentation
-- [Initial Setup Guide](./01-InitialSetup.md)
-- [PRD Template](./PRD_Add_Payment_Mock_Server.md)
-- [Issue Creation Template](./Create_Issue_for_unit_tests.md)
+- [Initial Setup Guide](docs\01-InitialSetup.md)
+- [PRD Template](docs\03-PRD_Add_Payment_Mock_Server.md)
+- [Issue Creation Template](docs\02-Create_Issue_for_unit_tests.md)
 
 ### Individual Module Guides
 - [Module 1: Initial Setup](./brk447-01-Initial%20Setup-gen-01/brk447-01-Initial%20Setup-en-US-02-userguide.md)
