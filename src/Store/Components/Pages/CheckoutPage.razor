@@ -114,7 +114,23 @@ else
 
 @code {
     private CartEntities.Cart shoppingCart = new();
-    private Customer customer = new();
+    // Prefilled fake user info for demo/labs scenarios
+    private Customer customer = new()
+    {
+        FirstName = "Avery",
+        LastName = "Johnson",
+        Email = "avery.johnson@example.com",
+        Phone = "(555) 123-9876",
+        BillingAddress = new Address
+        {
+            Street = "123 Lab Way",
+            City = "Contoso",
+            State = "WA",
+            PostalCode = "98052",
+            Country = "USA"
+        },
+        SameAsShipping = true
+    };
     private bool isLoading = true;
     private bool isProcessing = false;
     private bool showPaymentDialog = false;
