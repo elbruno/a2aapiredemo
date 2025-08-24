@@ -1,211 +1,170 @@
 # Video: [brk447-03-VS2022 and GHCP Overview.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:02:43
 
-# GitHub Copilot in Visual Studio — User Manual
+# GitHub Copilot in Visual Studio (preview) — User Manual
 
-This manual guides you through using GitHub Copilot integrated into Visual Studio as demonstrated in the analyzed video. It explains how to enable Copilot in a preview build, use inline suggestions and the Next‑Edit feature, check usage/consumption, switch Copilot working modes (Ask vs Agent), select models (example: GPT‑5), read configured-model responses, and request Copilot to create plans and modify code (C#) and infrastructure (Bicep).
-
-- Total demo duration reference: 00:00:01.800 → 00:02:41.520
-
----
-
-## Overview (00:00:01.800 — 00:02:41.520)
-
-- GitHub Copilot is integrated into Visual Studio as an extension/pane. The demo uses a preview build — expect changes in future releases. (00:00:01.800 — 00:00:12.960)
-- Key capabilities shown:
-  - Inline suggestions while typing and a "Next‑Edit" suggestion feature (00:00:12.960 — 00:00:31.880)
-  - Monitoring consumption/usage for Pro/Premium requests (00:00:12.960 — 00:00:31.880)
-  - Two working modes: Ask (question/response) and Agent (interactive side‑by‑side coding) (00:00:31.880 — 00:00:55.520)
-  - Selecting models (example: choosing GPT‑5) and reading which models are configured for chat and embeddings (00:00:55.720 — 00:02:11.680)
-  - Requesting plans and automated code/infrastructure edits (C# and Bicep) to upgrade models or switch to local models (00:02:11.680 — 00:02:41.520)
+Version: Based on demo video (total duration 00:02:39.720)  
+This manual describes how to use the GitHub Copilot integration inside Visual Studio (preview), covering inline suggestions, the next-edit feature, usage/plan visibility, Copilot interaction modes, model selection, and automated code/infrastructure edits.
 
 ---
 
-## Step‑by‑Step Instructions
+## Overview
+(00:00:01.800 — 00:00:12.960)
 
-Follow the sections below in order to reproduce the actions shown in the video.
+This integration embeds GitHub Copilot directly into Visual Studio. The demo uses a preview build; features and UI may differ in future releases. Copilot offers inline code suggestions, a “next-edit” multi-line suggestion feature, an Ask mode for queries, and an Agent mode for interactive assistance. You can view and change which models are used (including selecting local models), check usage and plan consumption, and allow Copilot to make automated edits to code and infrastructure files (e.g., C# and Bicep).
+
+Important notes:
+- This manual assumes the Copilot extension is already installed and enabled in Visual Studio.
+- Because this was demonstrated in a preview build, expect small UI/behavior changes.
 
 ---
 
-### 1. Open Visual Studio with GitHub Copilot enabled
-Timestamp: 00:00:01.800 — 00:00:12.960
+## Step-by-step instructions
 
-Purpose: Start Visual Studio with the Copilot extension active (preview build used in demo).
+The following steps are grouped by common tasks shown in the demo. Each step includes a reference timestamp to the demo.
 
-Steps:
+### 1) Open Visual Studio with Copilot enabled
+(00:00:01.800 — 00:00:12.960)
+
 1. Launch Visual Studio.
-2. Verify the GitHub Copilot extension is installed and enabled. Look for a Copilot pane/indicator in the IDE.
-3. If you are using a preview build, confirm the preview version indicator is visible — this indicates features may change.
+2. Ensure the GitHub Copilot extension is installed and enabled:
+   - Look for Copilot UI elements or a preview indicator in the IDE.
+3. If you are in a preview build, note any preview indicator and be prepared for behavior differences.
 
-UI elements:
-- GitHub Copilot integration pane/extension
-- Preview version indicator
-
-Tips:
-- If Copilot is not present, install it from Visual Studio Marketplace or the Tools → Extensions menu.
-- Sign in with your GitHub account if required.
-
-Warning:
-- Preview builds may introduce UI and behavior changes. Do not rely on preview-only behavior for critical workflows.
+Tip: If Copilot is not visible, check Extensions > Manage Extensions and confirm “GitHub Copilot” is installed and enabled.
 
 ---
 
-### 2. Use Inline Suggestions and the Next‑Edit feature
-Timestamp: 00:00:12.960 — 00:00:31.880
+### 2) Use inline suggestions and the “next-edit” feature
+(00:00:12.960 — 00:00:23.680)
 
-Purpose: Accept inline suggestions while coding and invoke the Next‑Edit suggestion for context-aware, successive changes.
+1. Open a code file (e.g., C#) in the editor.
+2. Start typing as you normally would.
+   - Inline suggestions will appear as ghosted text directly in the editor.
+3. To accept an inline suggestion:
+   - Use the usual accept key (often Tab or your configured accept shortcut), or click the suggestion.
+4. To request a more substantial / multi-line change:
+   - Trigger Copilot’s “next-edit” suggestion (UI element labeled “next-edit”).
+   - Review the multi-line suggestion shown in the editor.
+   - Accept the suggestion to apply the change.
 
-Steps:
-1. Open a code file in your project and begin typing where you want assistance.
-2. Watch for the inline suggestion widget — Copilot proposes completions as you type.
-3. Accept a suggestion using the inline suggestion controls (e.g., on‑screen accept button or your configured keyboard shortcut).
-4. To request the next context-aware edit, use the "Next‑Edit" control in the Copilot UI. This prompts Copilot to propose the next logical modification or refinement.
+Tip: Use the arrow keys or suggestion UI to cycle alternative suggestions before accepting.
 
-UI elements:
-- Inline suggestion widget
-- Next‑Edit suggestion control
-
-Tips:
-- If you don’t see suggestions, ensure Copilot is enabled for the current file / language.
-- Many users map keyboard shortcuts to quickly accept suggestions — check Visual Studio keyboard settings for Copilot bindings.
+Warning: Always review suggestions for correctness and security (especially for business logic or secrets).
 
 ---
 
-### 3. Check usage / consumption (Pro plan / Premium requests)
-Timestamp: 00:00:12.960 — 00:00:31.880
+### 3) Check usage / plan consumption
+(00:00:23.680 — 00:00:33.680)
 
-Purpose: Monitor how many premium or Pro plan requests you’ve used (helpful when using paid features).
+1. Open Copilot’s options or usage panel from the Copilot menu or toolbar.
+2. Look for the plan usage indicator (e.g., “28% of my Pro plan”).
+3. Monitor consumption for premium requests to avoid unexpected limits.
 
-Steps:
-1. Open the Copilot consumption or usage panel inside Visual Studio. This may be accessible from the Copilot pane or a dedicated menu.
-2. Review the usage indicator. The demo shows a 28% usage example.
-
-UI elements:
-- Consumption / usage panel
-- Pro plan / premium request indicator
-
-Tips:
-- Track consumption regularly if you are on a metered plan.
-- If you approach your quota, switch to fewer premium requests or request additional quota through your subscription.
+Tip: Regularly check usage when running larger model requests or multiple premium features in the same session.
 
 ---
 
-### 4. Understand solution architecture and choose Copilot working mode
-Timestamp: 00:00:31.880 — 00:00:55.520
+### 4) Understand the solution architecture context
+(00:00:33.680 — 00:00:46.616)
 
-Purpose: Learn the high‑level components of the sample solution and select between Ask and Agent modes depending on workflow.
+1. Open your Solution Explorer.
+2. Identify key components Copilot may interact with:
+   - Orchestrators
+   - Backend services
+   - AI frontend code
+   - Model configuration/definition files
+3. When asking Copilot to make changes, narrow the scope to the relevant files to reduce unintended edits.
 
-Steps:
-1. Inspect the project structure in Solution Explorer to identify key components: orchestrators, backend, frontend, and models.
-2. Open the Copilot interface and choose the desired mode:
-   - Ask mode: Use a question/response interface for explanations, plans, and targeted queries.
-   - Agent mode: Use the interactive assistant for side‑by‑side coding actions and automated edits.
-
-UI elements:
-- Ask mode (question/response interface)
-- Agent mode (interactive coding assistant)
-- Project files: orchestrators, backend, frontend, models
-
-Tips:
-- Use Ask mode for planning, high‑level questions, or to get an explanation of configuration.
-- Use Agent mode when you want Copilot to propose or apply code changes directly.
+Tip: Keep architecture documentation or README files accessible so Copilot (and you) have clear context for changes.
 
 ---
 
-### 5. Select a model (example: choosing GPT‑5)
-Timestamp: 00:00:55.720 — 00:01:12.440
+### 5) Switch between Ask mode and Agent mode
+(00:00:46.616 — 00:00:55.720)
 
-Purpose: Select or change the OpenAI model used by the Copilot instance for chat/embeddings.
+1. Open the Copilot interaction pane.
+2. Choose the interaction mode:
+   - Ask mode: for one-off queries and factual questions about code or configuration.
+   - Agent mode: for an interactive, side-by-side coding assistant that can carry a longer conversational context.
+3. Use Ask mode to quickly query model usage or small tasks.
+4. Use Agent mode when you need a persistent assistant to guide edits and multi-step changes.
 
-Steps:
-1. Open the model selector in the Copilot UI (look for a dropdown or settings area that lists available models).
-2. Review the model list (examples: GPT‑5, GPT‑4.1 mini, embeddings models).
-3. Select the desired model (e.g., choose GPT‑5) from the dropdown.
-
-UI elements:
-- Model selector / dropdown
-- Model list: GPT‑5, GPT‑4.1 mini, embeddings models
-
-Tips:
-- Different models have different capabilities and costs — confirm suitability before switching.
-- Model selection may affect latency, cost, and available features like embeddings or chat.
-
-Warning:
-- Changing models can affect behavior across your solution. Test changes in a safe environment before applying them to production workflows.
+Tip: Use Agent mode for larger refactors or multi-file edits where Copilot needs to remember earlier context.
 
 ---
 
-### 6. Read Copilot’s response about configured models and embeddings
-Timestamp: 00:01:54.560 — 00:02:11.680
+### 6) Query and select models
+(00:00:55.720 — 00:01:12.440)
 
-Purpose: Confirm which models are configured in the sample solution (e.g., which model is used for embeddings vs chat).
+1. In the Copilot pane, ask which OpenAI model the solution currently uses (type a question in Ask mode or Agent mode).
+2. Open the model selector / dropdown in the Copilot UI.
+3. Select a model from the available list (e.g., GPT-5 if available).
+4. Confirm the selection so subsequent requests route to the chosen model.
 
-Steps:
-1. In Ask mode, ask Copilot which OpenAI models are configured in the solution (or examine the AppHost configuration file referenced in responses).
-2. Read Copilot’s answer in the response pane. The demo response notes AppHost defines specific models, such as:
-   - GPT‑4.1 mini for chat
-   - A specific embeddings model for vector searches
-3. Confirm which components (backend, AppHost) use embeddings or chat features based on the Copilot response.
-
-UI elements:
-- Copilot answer/response pane
-- AppHost configuration reference shown in the response
-
-Tips:
-- Use Copilot to quickly summarize configuration files so you don’t have to read every line manually.
-- If configuration details are ambiguous, ask Copilot to show the exact lines or files it used to draw conclusions.
+Tip: Review model-specific documentation for cost and capability differences before switching (e.g., GPT-4o-mini, GPT-5, embedding models).
 
 ---
 
-### 7. Request a plan to upgrade models and apply code/infrastructure changes
-Timestamp: 00:02:11.680 — 00:02:41.520
+### 7) Review Copilot’s reported model usage
+(00:01:54.560 — 00:02:11.680)
 
-Purpose: Ask Copilot to create a plan to upgrade configured models (e.g., upgrade to GPT‑5), consider switching to local models, and implement changes across code (C#) and infrastructure (Bicep).
+1. After asking about models, read Copilot’s response in the response pane.
+   - It may report that the app host defines a certain chat model (e.g., GPT-4o-mini) and specific embedding models.
+2. Note where embeddings and chat models are used in the stack (backend, frontend, model configs).
+3. Verify the information by opening configuration files referenced by Copilot (e.g., app settings or infrastructure files).
 
-Steps:
-1. In Ask or Agent mode, type a request such as:
-   - "Create a plan to upgrade the configured models to GPT‑5."
-   - "Consider switching to local models and outline required changes."
-2. Review Copilot’s proposed plan in the response pane. The plan should include:
-   - Code changes needed in the backend (C#) to reference the new model.
-   - Infrastructure changes in Bicep or IaC files to support model endpoints, authentication, or compute resources.
-3. Ask Copilot to apply the changes:
-   - In Agent mode, request Copilot to modify the necessary C# files and Bicep files.
-   - Review the suggested edits in the change suggestion pane.
-4. Accept and commit the changes if they are correct, run any required build or deployment steps, and test in a non‑production environment.
+Tip: Use Copilot’s response as a guide — always cross-check the actual configuration files in your repo.
 
-UI elements:
-- Ask interface for planning and action requests
-- Change suggestion pane for automated edits
-- Code files (C#)
-- Bicep files (infrastructure as code)
+---
 
-Tips:
-- Request a stepwise plan first, then ask Copilot to implement changes to minimize risk.
-- Use version control (git) to review and revert changes if needed.
+### 8) Ask Copilot to prepare an upgrade plan or switch to local models
+(00:02:13.520 — 00:02:39.720)
+
+Follow these safety-first steps when asking Copilot to make architectural or infrastructure changes:
+
+1. In Ask or Agent mode, request the change you want:
+   - Example queries: “Create a plan to upgrade to GPT-5” or “Switch to local models.”
+2. Ask Copilot to outline required file edits and steps first, before applying changes.
+3. Review the proposed plan carefully:
+   - Which C# files will change?
+   - Which infrastructure (Bicep) files will change?
+   - Are there additional deployment or configuration steps?
+4. When ready to implement, allow Copilot to modify files (if the UI supports automated edits):
+   - Accept each file change or enable the assisted edit flow.
+   - Carefully review diffs for each modified C# and Bicep file before saving or committing.
+5. After edits:
+   - Run your unit/integration tests.
+   - Validate infra templates (Bicep) using your standard validation/linting tools.
+   - Deploy to a safe environment (staging) first.
 
 Warnings:
-- Always review and test automated code and infrastructure edits before deploying.
-- Infrastructure changes (Bicep) can affect billing and environment state—apply them in a development or staging environment first.
-- When switching to local models, consider security, compute requirements, and licensing.
+- Always back up or commit current working branch before allowing automated edits.
+- For infrastructure files (Bicep), validate changes to avoid accidental resource changes or costs.
+- For model upgrades, verify cost/usage implications and compatibility with existing code.
+
+Tip: Use a feature branch and pull request workflow so changes can be reviewed by peers.
 
 ---
 
-## Tips & Best Practices (general)
-
-- Keep Copilot and Visual Studio updated. Preview features may move to stable releases.
-- Use source control for all changes Copilot applies so you can review diffs and revert if necessary.
-- Monitor consumption frequently if you are on a metered or Pro plan.
-- When making model upgrades, confirm compatibility with existing code paths (embedding sizes, API differences, rate limits).
-- For production critical infrastructure changes, follow your organization’s change management and testing procedures.
+## Tips & Warnings (summary of practical safeguards)
+- Backup or create a branch before accepting automated edits.
+- Review every Copilot suggestion and diff for logic, security, and compliance.
+- Monitor plan usage to avoid unexpected charges (check usage panel regularly).
+- Validate infrastructure templates (Bicep) with your normal tools before deploying.
+- When switching to local models, ensure local model hosting, hardware, and licensing are in place.
 
 ---
 
-Timestamps quick reference:
-- Introduction and preview note: 00:00:01.800 — 00:00:12.960
-- Inline suggestions and Next‑Edit, usage panel: 00:00:12.960 — 00:00:31.880
-- Solution overview and modes: 00:00:31.880 — 00:00:55.520
-- Model selection example (GPT‑5): 00:00:55.720 — 00:01:12.440
-- Copilot response on configured models: 00:01:54.560 — 00:02:11.680
-- Requesting upgrade plan and code/infrastructure edits: 00:02:11.680 — 00:02:41.520
+Timestamps quick reference
+- Introduction & preview notice: 00:00:01.800 — 00:00:12.960  
+- Inline suggestions & next-edit: 00:00:12.960 — 00:00:23.680  
+- Usage/plan consumption: 00:00:23.680 — 00:00:33.680  
+- Solution architecture context: 00:00:33.680 — 00:00:46.616  
+- Ask mode vs Agent mode: 00:00:46.616 — 00:00:55.720  
+- Model selection (choose GPT-5): 00:00:55.720 — 00:01:12.440  
+- Copilot model usage details: 00:01:54.560 — 00:02:11.680  
+- Upgrade plan & switching to local models; automated file edits: 00:02:13.520 — 00:02:39.720
 
-This manual should enable you to follow the same workflow demonstrated in the video: enabling Copilot in Visual Studio, using inline suggestions and Next‑Edit, monitoring usage, choosing models, reviewing configured models, and requesting/implementing upgrades in both code and infrastructure files.
+---
+
+End of manual.

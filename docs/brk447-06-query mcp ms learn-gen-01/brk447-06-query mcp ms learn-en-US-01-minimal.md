@@ -1,14 +1,15 @@
 # Video: [brk447-06-query mcp ms learn.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:03:45
 
-1. Open the products backend project and locate the current DB initializer implementation. [00:00:01.840]  
-2. Enable GitHub Copilot agent mode and grant it access to Microsoft Docs. [00:00:23.520]  
-3. Ask the agent to search Microsoft Docs for Entity Framework Core 9 guidance and base its answer on full document content. [00:00:38.838]  
-4. When the tool permission prompt appears, review the options and allow access for this session. [00:00:57.240]  
-5. Wait for the agent to analyze the documentation and review its recommendations and reference links. [00:01:24.960]  
-6. Request the agent to implement the suggested changes and start a new agent session, selecting the desired model if prompted. [00:01:55.560]  
-7. Allow the agent to read project files including Program, DbContext, and related classes so it can apply modifications. [00:01:55.560]  
-8. Review the modified code and replace EnsureCreatedAsync with MigrateAsync when using migrations. [00:02:41.122]  
-9. Verify conditional sync vs async logic and choose to accept the agent changes or make manual edits as needed. [00:03:07.970]
+1. Open the products project and inspect the list of products, DbContext, and DB initializer class. [00:00:01.840]  
+2. Identify the current DB initializer pattern and note whether it suits EF Core 9. [00:00:01.840]  
+3. Enable GitHub Copilot agent mode and turn on the Microsoft Docs tool. [00:00:23.520]  
+4. Compose a prompt asking if the current DB initializer is correct for EF Core 9 and request the agent to search Microsoft Docs. [00:00:23.520]  
+5. Respond to the tool permission prompt and grant access for this session. [00:00:57.240]  
+6. Wait for the agent to search the docs and return recommendations and reference links. [00:01:24.960]  
+7. Review the agent's summary, links, and suggested alternative implementations. [00:01:24.960]  
+8. Start a new agent session, select the model to use, and allow the agent to read project files. [00:02:12.360]  
+9. Let the agent implement the recommended code changes across Program, DbContext, and initializer classes. [00:02:51.653]  
+10. Replace EnsureCreatedAsync with MigrateAsync when using migrations and review the agent's diffs before accepting changes. [00:02:51.653]
 
 Related guides:
 

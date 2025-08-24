@@ -1,0 +1,27 @@
+{
+  "vtt": "brk447-09-coding-agent-implement-payment-PRD-en-US.vtt",
+  "video": "brk447-09-coding-agent-implement-payment-PRD.mp4",
+  "duration": "00:03:35.4000000",
+  "timestampsRequested": [
+    "[00:00:02.280]",
+    "[00:00:29.320]",
+    "[00:01:04.760]",
+    "[00:01:20.000]",
+    "[00:01:41.909]",
+    "[00:02:21.019]",
+    "[00:02:45.000]",
+    "[00:03:07.240]",
+    "[00:03:33.680]"
+  ],
+  "timestampToImage": {
+    "[00:00:02.280]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-00-02-280.png",
+    "[00:00:29.320]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-00-29-320.png",
+    "[00:01:04.760]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-01-04-760.png",
+    "[00:01:20.000]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-01-20-000.png",
+    "[00:01:41.909]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-01-41-909.png",
+    "[00:02:21.019]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-02-21-019.png",
+    "[00:02:45.000]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-02-45-000.png",
+    "[00:03:07.240]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-03-07-240.png",
+    "[00:03:33.680]": "images/brk447-09-coding-agent-implement-payment-PRD-en-US-snapshot-00-03-33-680.png"
+  }
+}

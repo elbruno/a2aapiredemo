@@ -1,14 +1,13 @@
 # Video: [brk447-07-Implement unit tests using GH Issue.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:04:35
 
-1. Enable GitHub tooling / allow tool execution in the repository. [00:00:18.240]  
-2. Search the repository issues for missing unit tests and locate issue #18. [00:00:18.240]  
-3. Open issue #18 and review its scope, acceptance criteria, tasks, and labels. [00:01:07.800]  
-4. Choose assignment method (GitHub UI or Visual Studio) and execute "assign Copilot" for the issue. [00:01:07.800]  
-5. Refresh the issue list and confirm Copilot has started a pull request and created the cloud environment and fork. [00:02:02.600]  
-6. Open the new pull request details to view the PR session and status. [00:02:02.600]  
-7. Open an example completed PR (e.g., PR #17) and view the "Files changed" to inspect added unit tests. [00:03:02.360]  
-8. Review the session summary or timeline to see the steps performed and total runtime. [00:03:02.360]  
-9. Open the running PR's GitHub Actions workflow run and inspect the action run logs to follow execution progress. [00:04:07.880]
+1. Note the local unit test implementation and decide to delegate any missing tests to a cloud-isolated agent. [00:00:00.160]  
+2. Create an issue describing the missing unit tests and enable GitHub tools/Copilot integration. [00:00:16.461]  
+3. Allow the GitHub search tool to run and search repository issues for "missing unit tests" to find existing reports. [00:00:40.978]  
+4. Open the identified issue (e.g., issue #18) and review the scope, acceptance criteria, and task list. [00:01:14.240]  
+5. Assign Copilot to the issue using the GitHub UI or Visual Studio integration. [00:01:38.680]  
+6. Refresh the issue to confirm Copilot pickup, then open the pull request created by Copilot and view the session steps (environment creation, fork, repo checkout). [00:02:02.600]  
+7. Open the PR "Files changed" diff and examine the added unit test files for products, store, and frontend, and review the session log and duration. [00:03:02.360]  
+8. Open the GitHub Actions run for the PR and inspect the full action logs for CI execution details. [00:03:55.400]
 
 Related guides:
 

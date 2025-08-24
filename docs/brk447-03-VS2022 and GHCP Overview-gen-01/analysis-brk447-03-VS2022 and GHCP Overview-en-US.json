@@ -1,107 +1,129 @@
 {
   "sections": [
     {
-      "title": "Introduction \u2014 GitHub Copilot integration with Visual Studio",
+      "title": "Introduction: GitHub Copilot integration with Visual Studio (preview)",
       "start_time": "00:00:01.800",
       "end_time": "00:00:12.960",
-      "summary": "Presenter introduces GitHub Copilot integration in Visual Studio and notes they are running a preview build which may include new changes.",
+      "summary": "Presenter introduces GitHub Copilot integration inside Visual Studio, noting they\u0027re running a preview build where recent changes may appear.",
       "key_actions": [
-        "Open Visual Studio with GitHub Copilot enabled",
-        "Note that preview version is running (expect changes)"
+        "Open Visual Studio with GitHub Copilot extension enabled",
+        "Note preview version status and potential changed behavior"
       ],
       "ui_elements": [
-        "GitHub Copilot integration (Visual Studio extension/pane)",
-        "Preview version indicator"
+        "GitHub Copilot integration",
+        "Visual Studio (preview indicator)"
       ]
     },
     {
-      "title": "Copilot core features \u2014 inline suggestions and next-edit",
+      "title": "Core Copilot features: inline suggestions and next-edit",
       "start_time": "00:00:12.960",
-      "end_time": "00:00:31.880",
-      "summary": "Demonstration of Copilot features: inline suggestions while coding and the \u0027next edit\u0027 suggestion. The presenter also checks usage/consumption metrics and pro plan usage for premium requests.",
+      "end_time": "00:00:23.680",
+      "summary": "Demonstrates the primary features: inline code suggestions while coding and the \u0027next edit\u0027 suggestion capability.",
       "key_actions": [
-        "Use inline suggestions as you type",
-        "Invoke next-edit suggestion",
-        "Open consumption/usage panel to view pro plan usage (28% shown)"
+        "Observe inline suggestions appearing as you type",
+        "Use the \u0027next edit\u0027 suggestion to accept a multi-line change"
       ],
       "ui_elements": [
-        "Inline suggestion widget",
-        "Next-edit suggestion control",
-        "Consumption/usage panel",
-        "Pro plan / premium request indicator"
+        "Inline suggestion UI",
+        "Next-edit suggestion UI"
       ]
     },
     {
-      "title": "Solution overview and Copilot working modes",
-      "start_time": "00:00:31.880",
-      "end_time": "00:00:55.520",
-      "summary": "High-level architecture: orchestrators, backend, frontend, models. Explanation that Copilot can help in two modes \u2014 \u0027Ask\u0027 mode to ask questions and an interactive \u0027Agent\u0027 mode for side-by-side coding assistance.",
+      "title": "Settings / Usage: consumption and plan info",
+      "start_time": "00:00:23.680",
+      "end_time": "00:00:33.680",
+      "summary": "Shows options related to usage and plan consumption \u2014 presenter checks their Pro plan usage level (28%) for premium requests.",
       "key_actions": [
-        "Explain solution components (orchestrators, backend, frontend, models)",
-        "Switch/choose between Ask mode and Agent mode"
+        "Open Copilot options/usage panel",
+        "Check consumption percentage for premium requests"
       ],
       "ui_elements": [
-        "Ask mode (question/response interface)",
-        "Agent mode (interactive coding assistant)",
-        "Project files (orchestrators, backend, frontend, models)"
+        "Options/Consumption panel",
+        "Plan usage indicator (e.g., \u002728% of my pro plan\u0027)"
       ]
     },
     {
-      "title": "Selecting a model (example: choosing GPT-5)",
+      "title": "Solution architecture context",
+      "start_time": "00:00:33.680",
+      "end_time": "00:00:46.616",
+      "summary": "Brief overview of the solution architecture: orchestrators, backend, AI frontend, and models used in the project.",
+      "key_actions": [
+        "Identify project components that Copilot may touch (orchestrators, backend, AI frontend, models)"
+      ],
+      "ui_elements": [
+        "Solution/project explorer (implied)",
+        "Code files (orchestrators, backend, frontend, model definitions)"
+      ]
+    },
+    {
+      "title": "Copilot modes: Ask mode vs Agent",
+      "start_time": "00:00:46.616",
+      "end_time": "00:00:55.720",
+      "summary": "Explains two interaction modes with Copilot: \u0027Ask\u0027 mode for queries and an \u0027Agent\u0027 mode for a more interactive, side-by-side coding assistant.",
+      "key_actions": [
+        "Switch between Ask mode and Agent mode depending on needs",
+        "Use Ask mode for information queries and Agent mode for interactive coding assistance"
+      ],
+      "ui_elements": [
+        "Ask mode UI",
+        "Agent mode UI (interactive assistant)"
+      ]
+    },
+    {
+      "title": "Selecting models and querying current model usage",
       "start_time": "00:00:55.720",
       "end_time": "00:01:12.440",
-      "summary": "Presenter demonstrates asking which OpenAI model the solution uses and selects a model (GPT\u20115) from the available model list.",
+      "summary": "User asks which OpenAI model the solution is using and selects a model (GPT-5) from the available list.",
       "key_actions": [
-        "Ask Copilot which OpenAI model is in use",
+        "Ask Copilot which OpenAI model the solution currently uses",
         "Open model selector and choose GPT-5"
       ],
       "ui_elements": [
-        "Model selector / dropdown",
-        "Model list (e.g., GPT\u20115, GPT\u20114.1 mini, embeddings models)"
+        "Model selector/dropdown",
+        "List of available models (e.g., GPT-5)"
       ]
     },
     {
-      "title": "Copilot\u2019s response \u2014 configured models and embeddings",
+      "title": "Copilot answers: reported models and usage details",
       "start_time": "00:01:54.560",
       "end_time": "00:02:11.680",
-      "summary": "Copilot reports that the AppHost (in the sample solution) defines specific models (GPT-4.1 mini and an embeddings model) and that the backend uses embeddings and chat features.",
+      "summary": "Copilot reports that the app host defines GPT-4o-mini and specific embedding models; backend uses embeddings and chat models.",
       "key_actions": [
-        "Read Copilot\u0027s analysis of AppHost configuration",
-        "Confirm which models are configured for embeddings and chat"
+        "Review Copilot\u0027s response about configured models",
+        "Identify where embeddings and chat models are used in the stack"
       ],
       "ui_elements": [
-        "Copilot answer/response pane",
-        "AppHost configuration reference (displayed in response)"
+        "Copilot response pane (model details)",
+        "Configuration files (implied)"
       ]
     },
     {
-      "title": "Asking for upgrades and code changes (GPT-5, local models, C# and Bicep)",
-      "start_time": "00:02:11.680",
-      "end_time": "00:02:41.520",
-      "summary": "Presenter asks Copilot to create a plan to upgrade to GPT\u20115 and to consider switching to local models. Copilot is described as capable of helping modify code (C#) and infrastructure-as-code (Bicep) files to implement upgrades.",
+      "title": "Requests to upgrade models and change to local models; automated file edits",
+      "start_time": "00:02:13.520",
+      "end_time": "00:02:39.720",
+      "summary": "Presenter demonstrates asking Copilot to create a plan to upgrade to GPT-5 and to switch to local models. Copilot can update C# files and Bicep files to perform the changes.",
       "key_actions": [
-        "Request a plan to upgrade configured models to GPT-5",
-        "Ask about switching to local models",
-        "Have Copilot modify C# and Bicep files to implement changes"
+        "Ask Copilot to create an upgrade plan to GPT-5",
+        "Request switching to local models",
+        "Allow Copilot to modify C# and Bicep files to implement changes"
       ],
       "ui_elements": [
-        "Ask interface for action requests (e.g., \u0027create a plan to upgrade\u0027)",
-        "Code files (C#)",
-        "Bicep (infrastructure-as-code) files",
-        "Copilot automated code-edit capability / change suggestion pane"
+        "Copilot conversational/assistant pane",
+        "C# code files (to be modified)",
+        "Bicep infrastructure files (to be modified)"
       ]
     }
   ],
   "main_topics": [
     "GitHub Copilot integration with Visual Studio",
-    "Copilot inline suggestions and next-edit feature",
-    "Usage/consumption monitoring (pro plan/premium requests)",
-    "Copilot working modes: Ask mode and Agent mode",
-    "Model selection (example: GPT-5) and configured models/embeddings",
-    "Copilot-assisted code and infrastructure changes (C#, Bicep)",
-    "Planning upgrades and switching to local models"
+    "Inline suggestions and next-edit feature",
+    "Usage/consumption and plan status",
+    "Copilot interaction modes (Ask vs Agent)",
+    "Model selection and model querying (GPT-5, GPT-4o-mini, embeddings)",
+    "Automated code and infrastructure updates (C#, Bicep)",
+    "Switching to local models"
   ],
-  "total_duration": "00:02:41.520",
+  "total_duration": "00:02:39.720",
   "video": "brk447-03-VS2022 and GHCP Overview.mkv",
   "duration": "00:02:43.6166666"
 }

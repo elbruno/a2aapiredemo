@@ -6,20 +6,24 @@
     "[00:00:02.400]",
     "[00:00:13.120]",
     "[00:00:34.360]",
-    "[00:00:47.320]",
-    "[00:01:09.560]",
-    "[00:01:31.870]",
+    "[00:00:45.000]",
+    "[00:01:30.000]",
     "[00:02:56.040]",
-    "[00:03:24.304]"
+    "[00:03:05.000]",
+    "[00:03:19.000]",
+    "[00:03:30.000]",
+    "[00:03:45.000]"
   ],
   "timestampToImage": {
     "[00:00:02.400]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-02-400.png",
     "[00:00:13.120]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-13-120.png",
     "[00:00:34.360]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-34-360.png",
-    "[00:00:47.320]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-47-320.png",
-    "[00:01:09.560]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-09-560.png",
-    "[00:01:31.870]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-31-870.png",
+    "[00:00:45.000]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-00-45-000.png",
+    "[00:01:30.000]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-01-30-000.png",
     "[00:02:56.040]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-02-56-040.png",
-    "[00:03:24.304]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-24-304.png"
+    "[00:03:05.000]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-05-000.png",
+    "[00:03:19.000]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-19-000.png",
+    "[00:03:30.000]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-30-000.png",
+    "[00:03:45.000]": "images/brk447-04%20Add%20single%20unit%20Test%20for%20AI%20Search-en-US-snapshot-00-03-45-000.png"
   }
 }

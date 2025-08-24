@@ -1,122 +1,109 @@
 # Video: [brk447-04 Add single unit Test for AI Search.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:04:02
 
-# Implementing Unit Tests for AI Search Using Copilot — User Manual
+# Implementing Unit Tests with Copilot (Agent Mode) — User Manual
 
-Version: 1.0  
-Derived from video walkthrough (total duration ~00:03:58)
+This manual describes how to use Copilot in Agent mode to generate and run unit tests for an AI search endpoint, following the workflow demonstrated in the source video. It includes step-by-step instructions, relevant timestamps for reference, UI elements to look for, and helpful tips and warnings.
 
 ---
 
 ## Overview
+(00:00:02 — 00:00:12)
 
-This manual shows how to use Copilot (agent mode) to automatically implement and run unit tests for AI search endpoints. It covers identifying missing tests, configuring Copilot for the AI Search context, running a task to generate tests, resolving build issues, and verifying tests in Test Explorer.
+This task guides you through using Copilot to implement unit tests for an AI search endpoint. The goal is to have Copilot analyze the solution, generate missing tests, fix build issues if necessary, and then run the tests using your IDE’s Test Explorer.
 
-Key outcomes demonstrated:
-- Use Copilot agent mode to implement unit tests
-- Target the AI Search context and choose a model (e.g., GPT-5)
-- Let Copilot analyze the solution, add test files, and iterate on build issues
-- Run and verify newly created unit tests in Test Explorer
-
-Relevant video timestamps:
-- Introduction & task overview: 00:00:02 — 00:00:12  
-- Identify missing tests: 00:00:13 — 00:00:34  
-- Switch to agent and start chat: 00:00:34 — 00:00:47  
-- Select context & model: 00:00:47 — 00:00:59  
-- Trigger task and start analysis: 00:01:09 — 00:01:31  
-- Copilot analysis & iterative builds: 00:01:31 — 00:03:04  
-- Fix dependencies & successful build: 00:02:56 — 00:03:24  
-- Accept changes & run tests: 00:03:24 — 00:03:58
+Key objectives:
+- Identify missing test coverage (AI search endpoint and related formal search).
+- Use Copilot Agent mode to generate unit tests.
+- Resolve build failures (add dependencies if required).
+- Accept the generated code and run the tests.
 
 ---
 
 ## Step-by-step Instructions
 
-Follow these steps to reproduce the workflow.
+1. **Review the task and target components**
+   - Timestamp: 00:00:13 — 00:00:34
+   - Actions:
+     1. Open your project in the IDE.
+     2. Inspect the endpoints list and identify components lacking tests (e.g., AI search endpoint and formal search).
+   - Expected outcome: You know which files/endpoints need unit-test coverage.
 
-### 1. Inspect the codebase and identify missing tests (00:00:13 — 00:00:34)
-1. Open your project in your IDE.
-2. Review the endpoints or components related to AI search (and any formal search endpoints you want covered).
-3. Note which endpoints lack unit test coverage.
+   Tip: Make a note of endpoint names and file paths so you can confirm generated tests target them.
 
-Tips:
-- Look for controllers, services, or API endpoints named with "search", "AI", or similar keywords.
-- Use your IDE’s search or the Code/Endpoints view to list endpoints quickly.
+2. **Switch Copilot to Agent mode and create a new chat**
+   - Timestamp: 00:00:34 — 00:01:21
+   - Actions:
+     1. Toggle Copilot to *Agent mode* in the Copilot UI.
+     2. Click **New Chat** to create a fresh chat session.
+     3. In the chat context selector, choose the relevant context (e.g., *AI Search*).
+     4. Select the model you want Copilot to use (the demo used *GPT‑5*).
+     5. In the chat input, use a quick-action hashtag such as `#implement unit tests`.
+   - UI elements to look for:
+     - Copilot Agent mode toggle
+     - New Chat button
+     - Context selector (e.g., AI Search)
+     - Model selector (e.g., GPT‑5)
+     - Hashtag / quick action entry
+   - Expected outcome: Copilot is prepared to analyze the AI Search context and generate tests.
 
-Warning:
-- Do not start automated changes before confirming the scope of what you want Copilot to modify.
+   Tip: Using a concise hashtag/quick-action triggers a targeted workflow. You can change models if you prefer a different Copilot capability.
 
-### 2. Switch Copilot to agent/assistant mode and create a new chat (00:00:34 — 00:00:47)
-1. Open Copilot in your IDE.
-2. Switch to *agent/assistant mode* (sometimes labeled “Agent mode”).
-3. Click *New chat* to start a fresh session for this task.
+3. **Allow Copilot to analyze the solution and generate tests**
+   - Timestamp: 00:01:27 — 00:02:59
+   - Actions:
+     1. Let Copilot read and analyze the codebase in the selected context.
+     2. Allow Copilot to create new test files and modify code as it deems necessary.
+     3. Wait while Copilot attempts to build the project and iterates (this can take ~2 minutes or longer depending on project size).
+   - Expected outcome: Copilot produces new test code and attempts automatic fixes based on build feedback.
 
-Notes:
-- You can return to previous chats if needed (previous chat list is usually available).
+   Warning: Generated code should be reviewed before acceptance. Copilot may add or modify files automatically — ensure you understand the changes.
 
-### 3. Select the AI Search context and choose the model (00:00:47 — 00:00:59)
-1. In the new Copilot chat, set the context to **AI Search** using the context selector.
-2. Choose the model you want (the video used **GPT-5**). You can switch models later if required.
+4. **Handle build failures and missing dependencies**
+   - Timestamp: 00:02:56 — 00:03:18
+   - Actions:
+     1. If the build fails, inspect the build output/errors to determine missing dependencies or compilation issues.
+     2. Add the required package references or dependencies to the project (Copilot may propose or create them automatically).
+     3. Re-run the build until it succeeds.
+   - UI elements to look for:
+     - Build output / error messages
+     - Package references added to project files
+   - Expected outcome: The project builds successfully after dependencies are added.
 
-Tip:
-- Selecting the correct context focuses Copilot’s analysis and generation on AI search-related code patterns.
+   Tip: Keep your package manager (NuGet, npm, etc.) UI or CLI available so you can quickly add or update packages suggested by Copilot.
 
-### 4. Trigger the unit-test implementation task (00:01:09 — 00:01:31)
-1. In the chat input, type a task trigger using the hashtag or task autocomplete (e.g., `#implement unit tests`).
-2. Select the task entry for *implement unit tests* and confirm the scope as **AI Search**.
-3. Submit the task so Copilot begins analyzing the solution.
+5. **Accept the generated tests and run them**
+   - Timestamp: 00:03:19 — 00:04:00
+   - Actions:
+     1. Review the diff or code changes Copilot produced. Confirm that the tests target the intended endpoints (e.g., products AI test files).
+     2. Click **Accept Changes** (or apply the changes in your source control/IDE).
+     3. Open the **Test Explorer** in your IDE.
+     4. Run the tests (Run All or run the specific new tests).
+   - UI elements to look for:
+     - Accept changes button
+     - Test Explorer
+     - Run All Tests button
+     - New test files (e.g., products AI test)
+   - Expected outcome: New unit tests execute; you can see pass/fail results in Test Explorer.
 
-What happens:
-- Copilot will read the solution, identify missing tests, generate new test files and any required code, attempt to build, and iterate on failures.
+   Tip: If tests examine external resources, ensure you have appropriate test doubles/mocks or environment settings in place.
 
-### 5. Let Copilot analyze and make iterative changes (00:01:31 — 00:03:04)
-1. Wait while Copilot reads the entire project. This may take time depending on project size.
-2. Monitor output logs or progress updates in the Copilot UI.
-3. Allow Copilot to:
-   - Create new unit test files
-   - Modify code where necessary
-   - Run a build and report errors
+6. **Optional — Request broader test coverage**
+   - Timestamp: 00:03:19 — 00:04:00 (context)
+   - Actions:
+     1. If you want coverage beyond the selected context, ask Copilot to “check the entire solution for missing tests” in a follow-up chat.
+   - Expected outcome: Copilot will attempt to scan the whole solution and generate additional tests.
 
-Tip:
-- Be patient — Copilot performs automated multi-step work (read → modify → build → iterate).
-
-### 6. Address build failures and missing dependencies (00:02:56 — 00:03:24)
-1. If the initial build fails, check the build output or error log shown by Copilot or your IDE.
-2. Accept or review Copilot’s proposed dependency or configuration changes. Copilot may:
-   - Add missing NuGet/npm/package references
-   - Update project files to include new test frameworks or helpers
-3. Allow Copilot to re-run the build after dependencies are added.
-
-Expected result:
-- The build should succeed after dependencies are added and code is adjusted.
-- In the demonstrated run, Copilot created two new unit test files for the AI products component.
-
-Warning:
-- Review automated dependency changes before fully accepting them, especially in production-critical projects.
-
-### 7. Accept code changes and run tests in Test Explorer (00:03:24 — 00:03:58)
-1. Use the *Accept Changes* (or equivalent) action to apply Copilot’s modifications to your workspace.
-2. Open your IDE’s Test Explorer (or test runner view).
-3. Locate the newly added tests (e.g., “Products AI” test entries).
-4. Run the tests:
-   - Click *Run All* to execute the full test suite, or
-   - Run the specific new tests only, if preferred.
-
-Verify:
-- Tests appear in Test Explorer.
-- Newly added tests pass (green/passing status) after a successful build.
-
-Tip:
-- If you use CI, commit the changes and let CI run the tests to validate behavior across environments.
+   Warning: Scanning the entire solution can take significantly longer and may introduce many changes — review in smaller batches if you prefer tight control.
 
 ---
 
-## Tips & Warnings (General)
-
-- Tip: Use small, clearly defined task scopes (like only AI Search) when first using automated agents to limit unintended changes.
-- Tip: Keep an eye on build output and Copilot iteration logs to understand what was modified.
-- Warning: Always review and, if necessary, run static analysis or security checks on automatically generated code before merging.
-- Warning: Automated dependency changes can affect other parts of your solution—review them carefully.
+## Tips and Warnings (general)
+- Always review generated code before accepting. Automated suggestions can introduce incorrect logic or insecure patterns.
+- Commit or branch your current work before accepting large automated changes. This lets you revert if needed.
+- If Copilot suggests new dependencies, verify their compatibility and licenses before adding to your project.
+- Expect the analysis + build cycle to take time — larger projects will require longer runs.
+- Use mocks or stubs for external calls in generated tests to avoid flaky tests and to speed execution.
 
 ---
 
-End of manual.
+Timestamps referenced correspond to the video demonstration and can help you follow along during each stage of the process.

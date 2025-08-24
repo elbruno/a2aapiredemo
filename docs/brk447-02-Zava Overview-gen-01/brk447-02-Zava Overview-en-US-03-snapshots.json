@@ -2,18 +2,6 @@
   "vtt": "brk447-02-Zava Overview-en-US.vtt",
   "video": "brk447-02-Zava Overview.mkv",
   "duration": "00:00:57.1833333",
-  "timestampsRequested": [
-    "[00:00:03.720]",
-    "[00:00:14.240]",
-    "[00:00:27.400]",
-    "[00:00:38.440]",
-    "[00:00:47.760]"
-  ],
-  "timestampToImage": {
-    "[00:00:03.720]": "images/brk447-02-Zava%20Overview-en-US-snapshot-00-00-03-720.png",
-    "[00:00:14.240]": "images/brk447-02-Zava%20Overview-en-US-snapshot-00-00-14-240.png",
-    "[00:00:27.400]": "images/brk447-02-Zava%20Overview-en-US-snapshot-00-00-27-400.png",
-    "[00:00:38.440]": "images/brk447-02-Zava%20Overview-en-US-snapshot-00-00-38-440.png",
-    "[00:00:47.760]": "images/brk447-02-Zava%20Overview-en-US-snapshot-00-00-47-760.png"
-  }
+  "timestampsRequested": [],
+  "timestampToImage": {}
 }

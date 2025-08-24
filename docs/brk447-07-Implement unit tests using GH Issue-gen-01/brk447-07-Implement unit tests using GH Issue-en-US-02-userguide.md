@@ -1,101 +1,127 @@
 # Video: [brk447-07-Implement unit tests using GH Issue.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:04:35
 
-# User Manual — Using GitHub Copilot (Cloud Agent) to Add Missing Unit Tests
+# User Manual — Using GitHub Copilot to Implement Missing Unit Tests (Local vs Cloud)
 
-This manual shows how to delegate missing unit tests to GitHub Copilot running as a cloud agent, inspect the resulting pull request, and follow the execution using GitHub Actions logs. Steps and timestamps reference the demonstrated video sections.
+Overview
+--------
+This manual guides you through delegating missing unit tests to a cloud-isolated GitHub Copilot agent using an issue-driven workflow. It shows how to create or locate an issue describing missing tests, enable the necessary GitHub tools, assign Copilot, review the automatically created pull request (PR), inspect added tests and the agent session, and view CI logs. Each major action corresponds to timestamps from the demonstration for quick reference.
 
-## Overview
-(00:00:00 — 00:04:34)
+Key outcomes:
+- Create or locate an issue requesting missing unit tests
+- Assign GitHub Copilot to implement the tests in a cloud-isolated session
+- Review the resulting PR, files changed, and session logs
+- Inspect CI execution (GitHub Actions) and build logs
 
-This workflow demonstrates the difference between implementing unit tests locally (fast, manual) and delegating the task to an isolated cloud agent (GitHub Copilot) that creates a fork, runs in a cloud environment, modifies the repository, and opens a pull request. You will:
+Step-by-step Instructions
+-------------------------
 
-- Search repository issues to find the missing-tests task (00:00:18 — 00:01:07).
-- Inspect an issue and assign it to Copilot (00:01:07 — 00:02:02).
-- Trigger Copilot to run in the cloud and create a PR (00:02:02 — 00:03:02).
-- Review changed files and session details (00:03:02 — 00:04:07).
-- Monitor the running PR and inspect GitHub Actions logs (00:04:07 — 00:04:34).
+1) Prepare and choose your workflow (00:00:00 – 00:00:40)
+   - Summary (00:00:00 — 00:00:16)
+     - Decide whether to implement tests locally (fast for small changes) or delegate to a cloud agent (useful for broader or automated work).
+   - Options to trigger automated work (00:00:16 — 00:00:40)
+     - Two primary approaches:
+       1. Create a GitHub Issue describing the missing unit tests and have Copilot solve it.
+       2. Activate Copilot features / GitHub tools (MCP) and assign the issue to Copilot.
+   - Tips:
+     - Use the issue-based approach when you want traceability and CI-backed PRs.
+     - Confirm your repository allows bots/forks if you expect Copilot to create a fork.
 
-Follow the step-by-step instructions below to replicate the process.
+2) Enable and authorize GitHub tools (00:00:40)
+   - When prompted to use repository search or other GitHub tools, allow the execution/permissions required by the tool.
+   - Action:
+     - Approve the permissions prompt for the GitHub tools so the cloud agent can search issues, create forks, and open PRs.
+   - Warning:
+     - Granting permissions lets the tool read and modify repo data per the scopes requested. Review requested scopes before accepting.
 
-## Step-by-step Instructions
+3) Search for existing issues (00:00:40 — 00:01:13)
+   - Purpose: avoid duplicating work; find issues that already request unit tests.
+   - Steps:
+     1. Use repository search or the GitHub Issues UI to query keywords like "missing unit tests", "add tests", or specific areas (e.g., "products", "store", "domain entity").
+     2. Identify a relevant issue (example found: issue #18).
+   - Expected UI elements:
+     - Search tool (GitHub tools), Issues list
+   - Tip:
+     - Narrow searches with labels or filenames (e.g., "tests", "unit") to find existing requests quickly.
 
-### 1. Enable GitHub tooling and search for repository issues (00:00:18 — 00:01:07)
-1. Open the repository on GitHub.
-2. Ensure GitHub tooling / Copilot integration is enabled for the repository and that you have the required permissions:
-   - If prompted, *allow tool execution* or enable the GitHub Copilot action for the repository.
-3. Use the repository Issues search to look for missing unit tests. Example search text: `missing unit tests` or search by keywords like `unit test`, `tests`, `coverage`.
-4. Locate the relevant issue (example: Issue #18 — "add missing unit tests for products, store and domain entity").
+4) Inspect the target issue (00:01:14 — 00:01:38)
+   - Action:
+     1. Open the issue (example: #18).
+     2. Review scope, acceptance criteria, task checklist, labels, and any attached metadata.
+   - What to look for:
+     - Clear acceptance criteria for the tests
+     - Specific affected areas (e.g., products, store, domain entities)
+     - Tasks that Copilot can complete (e.g., "add tests for X", "verify behavior Y")
+   - Tip:
+     - If the issue is ambiguous, update it with precise expectations before assigning Copilot.
 
-Tips:
-- If you cannot find an issue, open a new Issue with a clear scope and acceptance criteria so Copilot can act on it.
-- You must have permissions to assign issues and allow Copilot to create forks/PRs.
+5) Assign Copilot to the issue (00:01:38 — 00:02:02)
+   - Two methods:
+     - Preferred: Use the GitHub web UI to assign Copilot to the issue.
+     - Alternative: Use Visual Studio integration to assign Copilot directly (if your environment supports it).
+   - Steps (GitHub UI):
+     1. On the issue page, open the assignees control.
+     2. Select GitHub Copilot (or the Copilot automation entry) to assign the issue.
+     3. Save/confirm assignment.
+   - Expected result:
+     - Copilot recognizes the assignment and begins a cloud session to address the issue.
+   - Tip:
+     - Use the GitHub UI when possible for clearer audit trails and easier tracking.
 
-Warning:
-- Enabling tool execution may grant the agent permission to read/write code and create forks — confirm organization policies before enabling.
+6) Monitor Copilot’s cloud-isolated session and PR creation (00:02:02 — 00:03:02)
+   - After assignment:
+     - Refresh the issue page to see Copilot pickup status.
+     - Copilot will create a pull request and run isolated in the cloud.
+   - Session steps you may see:
+     - Creating an environment
+     - Creating a fork (if required)
+     - Checking out the repository
+     - Running planning steps, generating code, and running tests
+   - Expected UI elements:
+     - Pull Request page, Session/automation activity view, Fork creation workflow
+   - Tip:
+     - Sessions may take several minutes. The example session for a similar task ran about 18 minutes (see step 7).
 
-### 2. Inspect the issue and decide how to assign work (00:01:07 — 00:02:02)
-1. Open the issue detail page (example: Issue #18).
-2. Review:
-   - Scope and description
-   - Acceptance criteria
-   - Task checklist and labels
-3. Choose how to assign the work:
-   - Preferred: Use the GitHub UI to run Copilot from the issue page (assign to Copilot).
-   - Alternative: Assign to Copilot from an IDE such as Visual Studio (if integrated).
-4. Execute the "Assign to Copilot" action.
+7) Review an example completed PR and new test files (00:03:02 — 00:03:55)
+   - Actions:
+     1. Open the pull request created by Copilot (example: PR #17 was completed earlier).
+     2. Inspect "Files changed" (diff view) to see added unit tests (e.g., for products, store, frontend).
+     3. Open the session timeline/log view to inspect automated steps (plan, view source, test runs).
+   - Things to verify:
+     - Tests added cover the acceptance criteria from the issue.
+     - No undesirable code changes were introduced outside scope.
+     - Session runtime and logs (example runtime ~18 minutes).
+   - Tip:
+     - Use the session log to understand how Copilot approached test generation and to identify any manual checks needed.
 
-What to expect:
-- The issue shows an assignment to Copilot and a status indicating an agent has started work.
+8) Inspect Continuous Integration (CI) run and logs (00:03:55 — 00:04:34)
+   - Purpose: confirm tests run in CI and see detailed execution traces.
+   - Steps:
+     1. From the PR, open the GitHub Actions run associated with the PR.
+     2. Open the action run details and inspect the build/test logs.
+     3. Trace the logs to see steps executed (install, build, run tests) and final status.
+   - Expected UI elements:
+     - GitHub Actions run view, full action/build logs
+   - Tip:
+     - Logs reveal failures or flaky tests; use them to create follow-up tasks if the PR’s tests fail.
 
-Tip:
-- Include specific acceptance criteria and example tests in the issue to improve the accuracy of Copilot's changes.
+Helpful Tips and Warnings
+-------------------------
+- Refresh to update status: After assigning Copilot, refresh the issue or PR page to view live progress and PR creation.
+- Permissions: Authorizing GitHub tools is required for search, fork, and PR creation. Only grant what you trust and review the requested scopes.
+- Forks and branches: Copilot often creates a fork and a branch to submit PRs — expect fork creation if you do not permit direct pushes to the main repo.
+- CI can take time: Automated sessions plus CI runs add time. Example end-to-end PR session and CI in the demo took roughly 18 minutes for the session, plus CI time.
+- Review everything: Automated code generation speeds work, but always review diffs, tests, and CI logs to ensure correctness and adherence to repository standards.
+- Use clear issue descriptions: The more specific the issue acceptance criteria, the higher the chance Copilot creates correct and focused tests.
 
-### 3. Trigger Copilot to create a pull request (cloud execution) (00:02:02 — 00:03:02)
-1. After assigning Copilot, refresh the issue list or issue page.
-2. Look for a new pull request entry created by Copilot (the UI shows a Copilot PR starting).
-3. Open the PR details to see status updates.
-   - The PR workflow typically shows steps such as: create environment, fork repository, make changes, run tests, create PR.
-4. Note that work runs isolated in the cloud and a fork is created for the agent to push changes.
+Reference Timestamps
+--------------------
+- Introduction — Local vs Cloud: 00:00:00.160 – 00:00:16.461
+- Options to trigger automated work: 00:00:16.461 – 00:00:40.978
+- Search for existing issues: 00:00:40.978 – 00:01:13.760
+- Open and inspect issue #18: 00:01:14.240 – 00:01:38.680
+- Assign Copilot to the issue: 00:01:38.680 – 00:02:02.600
+- Copilot creates a PR and works in cloud: 00:02:02.600 – 00:03:02.360
+- Reviewing completed PRs and new test files: 00:03:02.360 – 00:03:55.400
+- CI execution: GitHub Actions and logs: 00:03:55.400 – 00:04:34.480
 
-Expected outcome:
-- A pull request appears in the repository (or in a forked repo) with a reference to the issue and details of the agent session.
-
-Warning:
-- The agent will create a fork and push commits automatically. Always review the generated code before merging.
-
-### 4. Review completed PRs and changed files (example PR #17) (00:03:02 — 00:04:07)
-1. Open an example completed PR (e.g., PR #17) to inspect the results.
-2. Go to the "Files changed" tab:
-   - Review new unit test files (e.g., tests for product and store entities).
-   - Inspect modifications to existing files.
-3. Open the session summary / timeline or agent session view:
-   - Review the steps performed by the agent (e.g., "get repository", "make a plan", "view source code", "implement tests").
-   - Note the session runtime (example shown ~18 minutes).
-4. Ensure the tests address the issue's acceptance criteria and that code style and structure follow your repo conventions.
-
-Tips:
-- Run the tests locally (or trigger CI) against the PR branch to confirm behavior before merging.
-- Use code review checklist items (security, secrets, performance) when validating agent-created code.
-
-### 5. Monitor current PR run and examine GitHub Actions logs (00:04:07 — 00:04:34)
-1. Open the current PR details page.
-2. Navigate to the GitHub Actions tab or the workflow run linked from the PR.
-3. Open the relevant workflow run and inspect the full logs:
-   - Follow individual job steps and logs to see progress and results.
-   - Look for failures or warnings in test execution, build steps, or deployment steps.
-4. If a workflow fails, open the logs to identify failing tests or errors introduced by the changes and address them:
-   - Comment on the PR with required changes or push fixes to the branch (if allowed).
-
-Tip:
-- Use the action logs to verify that the cloud environment executed tasks as expected (dependencies installed, tests run, results reported).
-
-## Helpful Tips and Warnings
-- Tip: Provide clear, itemized acceptance criteria and sample inputs/outputs in the issue to get better results from Copilot.
-- Tip: Use the PR session summary to understand what the agent read and the plan it executed.
-- Warning: Always perform a manual code review. The cloud agent may introduce unexpected code or miss repository-specific conventions.
-- Warning: Verify that no secrets, credentials, or sensitive info are committed by the agent. Use repository secret scanning and review diffs carefully.
-- Warning: Ensure organization policies allow automated agents to create forks and run actions.
-
----
-
-Follow these steps to delegate test implementation to GitHub Copilot running in a cloud agent, track progress, and validate the generated changes using PR review and CI logs.
+This manual should enable you to reproduce the demonstrated workflow and confidently delegate missing unit tests to a cloud-isolated Copilot agent while keeping oversight through issues, PR review, and CI logs.

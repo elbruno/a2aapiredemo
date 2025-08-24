@@ -1,11 +1,12 @@
 # Video: [brk447-05 add mcp servers.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:02:42
 
-1. Decide to extend GitHub Copilot by adding MCP servers. [00:00:02.760]  
-2. Open the MCP tools list and review built-in tools like GitHub Copilot local and .NET aggregate assistance. [00:00:16.080]  
-3. Select the additional MCP servers to add, such as GitHub and Microsoft Learn/Microsoft Docs. [00:00:36.680]  
-4. In Visual Studio, add a new file in the solution root and name it <name>.mcp.json. [00:00:56.528]  
-5. Copy the GitHub server configuration into mcp.json, save the file, and authenticate using Visual Studio local credentials when prompted. [00:01:25.952]  
-6. Add the Microsoft Docs (Microsoft Learn) configuration to mcp.json, open GitHub Copilot assistant (chat), and confirm the Microsoft Docs and GitHub tools appear in the Tools pane. [00:01:55.680]
+1. Open your solution in Visual Studio and inspect the default MCP tools via the MCP servers list. [00:00:16.080]  
+2. Decide to add GitHub and Microsoft Learn/Docs servers and follow the instructions to create an MCP config file in the solution root. [00:00:32.268]  
+3. In Solution Explorer choose Add → New File, name the file mcp.json, and create it in the solution root. [00:00:56.528]  
+4. Paste the GitHub server configuration entry into mcp.json and save the file. [00:01:22.090]  
+5. When Visual Studio prompts, select your local authenticated credentials to connect and authenticate the GitHub server. [00:01:22.090]  
+6. Insert the Microsoft Docs / Microsoft Learn server entry into mcp.json, save, and allow any connection/authentication prompts. [00:01:56.000]  
+7. Open GitHub Copilot chat in assistant mode, open the Tools panel, and verify both the Microsoft Docs and GitHub tools are listed. [00:01:56.000]
 
 Related guides:
 

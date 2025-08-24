@@ -1,183 +1,141 @@
 # Video: [brk447-06-query mcp ms learn.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:03:45
 
-# DB Initializer Review and EF Core 9 Migration Guide (Using GitHub Copilot Agent)
+# User Manual — Using GitHub Copilot Agent to Update EF Core 9 DB Initialization
 
-This manual guides you through the exact process demonstrated in the video: using GitHub Copilot agent mode to consult Microsoft Docs, grant tool permissions, request documentation-based recommendations, and apply code changes that align a product backend's database initializer with Entity Framework Core 9 best practices — including switching from EnsureCreatedAsync to MigrateAsync when appropriate.
+This manual guides you through the workflow demonstrated in the video: inspecting a backend "products" project, using the GitHub Copilot agent with Microsoft Docs as a tool, and updating the Entity Framework Core database initialization pattern (moving from EnsureCreatedAsync to MigrateAsync when appropriate). Timestamps link to the video sections for quick reference.
 
-- Total demo duration: 00:03:44.720
-- Language level: suitable for all skill levels
-- Includes step-by-step instructions, tips, and snapshots for reference
+---
 
 ## Overview
-(00:00:01.840 – 00:00:17.920)
 
-This scenario evaluates an existing DB initializer implementation in a products backend using Entity Framework. The goal is to confirm whether the current initializer is appropriate for EF Core 9 and, if not, update code to match EF Core 9 recommendations.
+This guide covers:
 
-Key topics:
-- Use GitHub Copilot agent to consult Microsoft Docs
-- Grant and manage tool permissions safely
-- Apply agent-driven code modifications or choose to edit manually
-- Understand EF Core 9 guidance: prefer MigrateAsync when using migrations; use EnsureCreated* only for simple scenarios without migrations
+- Inspecting the existing project and database initializer pattern (00:00:01.840 – 00:00:23.520)
+- Enabling the GitHub Copilot agent and granting it access to Microsoft Docs (00:00:23.520 – 00:01:14.800)
+- Handling the tool permission prompt (00:00:57.240 – 00:01:24.960)
+- Reviewing the agent's documentation-backed recommendations (00:01:24.960 – 00:02:12.360)
+- Starting a new agent session, selecting a model, and allowing file access for code changes (00:02:12.360 – 00:02:51.653)
+- Applying the agent’s code changes (e.g., using MigrateAsync instead of EnsureCreatedAsync) and reviewing diffs (00:02:51.653 – 00:03:44.720)
+
+This manual assumes you want a reproducible, documented way to let an AI agent review docs and apply safe EF Core changes.
+
+---
 
 ## Step-by-step Instructions
 
-Follow the steps below to reproduce the demonstrated workflow. Timestamps are provided for reference to the video.
+Follow these steps to reproduce the workflow and update your database initialization approach.
 
-### 1. Prepare to consult Microsoft Docs with GitHub Copilot agent
-- Purpose: Let the agent search authoritative docs and analyze your project.
-- Video reference: 00:00:23.520 – 00:00:38.838
+### 1. Inspect the project and identify the DB initializer (00:00:01.840)
+- Open your "products" backend project in your IDE.
+- Open the files of interest:
+  - Products model(s)
+  - Your DbContext class
+  - The DB initializer class (a class that calls EnsureCreatedAsync or similar)
+- Confirm the current initialization pattern. Common patterns:
+  - Using EnsureCreatedAsync directly (often not recommended if you also use migrations)
+  - Using migrations with MigrateAsync
 
-Steps:
-1. Open your project in the environment that supports GitHub Copilot agent mode.
-2. Enable **GitHub Copilot agent mode** in the UI.
-   - Tip: Agent mode allows Copilot to use external tool access (Microsoft Docs) and read project files when permitted.
-3. Grant the agent permission to access **Microsoft Docs** (for the current session).
-   - Use the option to allow only this time if you want minimal persistence.
+Tip: Take note of any comments or custom logic in the initializer — the agent will need to see context.
 
-Snapshot: see image at 00:00:23.520 for the Copilot agent UI state.
+Inline snapshot:
+![Project open showing Products, DbContext and DB initializer (00:00:01.840)](./snapshots/00-00-01-840.png)
 
-Warning: Only grant access to third-party tools when you trust the documentation source and the session. Use "Allow (this time)" if unsure.
+### 2. Enable GitHub Copilot agent mode (00:00:23.520)
+- Locate the GitHub Copilot agent toggle in your IDE or Copilot UI.
+- Switch the agent mode to "enabled" so it can act on prompts and use tools.
+- Prepare a concise prompt for the agent. Example prompt:
+  - "Is the current DB initializer implementation correct for EF Core 9? Please search Microsoft Docs and base your answer on the full documentation."
 
-### 2. Ask the agent to search Microsoft Docs and produce a guidance-based answer
-- Video reference: 00:00:38.838 – 00:00:57.240
+Inline snapshot:
+![Enable GitHub Copilot agent mode and Microsoft Docs tool (00:00:23.520)](./snapshots/00-00-23-520.png)
 
-Steps:
-1. Formulate a clear question for the agent, for example:
-   - "Is the DB initializer implemented correctly for Entity Framework Core 9? Please search Microsoft Docs and base your answer on the full document content."
-2. Specify that the agent should use the complete docs content when forming recommendations.
+### 3. Enable the Microsoft Docs tool for the agent (00:00:23.520)
+- In the agent tool list, enable Microsoft Docs (or a docs search tool) so the agent can consult official documentation.
+- Confirm that the tool is active in the session.
 
-Tip: Be explicit about which docs or topics to search (e.g., "EF Core 9 database initialization, migrations, EnsureCreatedAsync, MigrateAsync").
+Tip: Using the official docs tool ensures recommendations are grounded in authoritative guidance.
 
-Snapshot: see agent search request state around 00:00:38.838.
+### 4. Respond to the tool permission prompt (00:00:57.240)
+- When the agent attempts to use an external tool, your environment should show a permission dialog (for safety).
+- Choose one of the options:
+  - "Always allow" — grants persistent permission for this tool from this agent
+  - "Allow only this time" — grants permission for this session only
+- For exploratory sessions, choose "Allow only this time" to limit long-term tool access.
 
-### 3. Review and respond to the tool permission prompt
-- Video reference: 00:00:57.240 – 00:01:14.800
+Warning: Only grant tool permissions to trusted agents and tools. Tool access allows the agent to fetch external content.
 
-Steps:
-1. When the permissions dialog appears, review:
-   - Which tools the agent will access
-   - The scope of permission (this session vs always)
-2. Choose an appropriate permission scope:
-   - Select **Allow (this time)** for one-off checks.
-   - Select **Always allow** only if you trust the agent and want persistent access.
-3. Confirm the selection to proceed.
+Inline snapshot:
+![Permission dialog offering 'Always allow' or 'Allow only this time' (00:00:57.240)](./snapshots/00-00-57-240.png)
 
-Warning: Granting "Always allow" increases exposure; prefer scoped session permission for unfamiliar repos or docs.
+### 5. Wait for the agent’s analysis and review results (00:01:24.960)
+- The agent will run searches against Microsoft Docs and analyze your prompt. This can take a couple of minutes.
+- Review the agent's response panel. Typical output:
+  - Confirmation if the current initializer is acceptable
+  - Recommended alternate approach(es) for EF Core 9
+  - Links to Microsoft Docs and specific references
+- Note: The agent may list two or more implementation options (e.g., use MigrateAsync with migrations, or keep EnsureCreatedAsync only for non-migration scenarios).
 
-Snapshot: permissions prompt at 00:00:57.240.
+Inline snapshot:
+![Agent response panel with documentation-backed recommendation (00:01:24.960)](./snapshots/00-01-24-960.png)
 
-### 4. Wait for the agent analysis and review recommendations
-- Video reference: 00:01:24.960 – 00:01:55.560
+### 6. Start a new agent session to implement changes and select a model (00:02:12.360)
+- Start a new agent session when you want the agent to modify code.
+- Select which model to run this session with (examples: GPT-4.1, GPT-5). Note: each agent session is tied to a specific model.
+- Grant the agent permission to read the project files it needs (e.g., Program.cs, DbContext, initializer class).
+- Explicitly request the agent to implement the recommended changes from the Microsoft Docs references.
 
-Steps:
-1. Allow the agent time to process the docs and analyze your codebase.
-2. Review the agent's recommendation panel which will:
-   - Confirm whether the existing initializer works
-   - Suggest changes aligned with EF Core 9 (with links to docs)
-3. Click any reference links provided to inspect the source docs if desired.
+Tip: Use a stronger model for code edits if available. Models can differ in code quality and understanding of context.
 
-What to expect:
-- The agent may confirm current implementation is valid but recommend a pattern change — typically moving to MigrateAsync when using migrations.
+Inline snapshot:
+![Starting a new agent session and selecting a model (00:02:12.360)](./snapshots/00-02-12-360.png)
 
-Snapshot: agent recommendation panel at 00:01:24.960.
+### 7. Let the agent modify code and review diffs (00:02:51.653)
+- The agent will open and edit files to implement the recommended pattern. Typical edits include:
+  - Replacing EnsureCreatedAsync with MigrateAsync when you are using EF Core migrations
+  - Adjusting Program.cs or startup code to call MigrateAsync during application startup
+  - Updating the DB initializer class to be migration-aware
+- Review the agent’s diffs or change previews carefully.
+- If your environment supports it, either:
+  - Accept and apply the changes directly from the agent UI, or
+  - Manually review and merge the changes via your version control workflow.
 
-### 5. Trigger an agent session to implement suggested code changes
-- Video reference: 00:01:55.560 – 00:02:41.122
+Key code guidance:
+- When you rely on EF Core migrations, prefer:
+  - await context.Database.MigrateAsync();
+- Avoid EnsureCreatedAsync when you plan to use migrations; EnsureCreated bypasses migrations and may create schema incompatible with migration history.
 
-Steps:
-1. If you want the agent to implement changes, start a new agent session specifically: choose the action to "Apply changes" or similar in the Copilot UI.
-2. Select the model/session for the work (sessions are tied to a model). Common choices:
-   - GPT-4
-   - GPT-5 (if available)
-3. Confirm the agent can read your project files (Program.cs, DbContext, DB initializer classes).
-4. Let the agent scan project files to identify where to change code.
+Inline snapshot:
+![Agent applies code changes and shows diff/preview (00:02:51.653)](./snapshots/00-02-51-653.png)
 
-Tip: Choose a model with the right balance of cost and capability for heavier code edits; sessions persist per model.
+### 8. Final review and confirmation (00:03:44.720)
+- Run unit tests, integration tests, or start the application to confirm the new initialization approach behaves as expected.
+- Validate that migrations are applied correctly and that the migration history table (__EFMigrationsHistory) exists and reflects applied migrations.
 
-Snapshot: model/session selection UI at 00:01:55.560 and agent reading project files ~00:02:05.000.
+Inline snapshot:
+![Final state after agent-modified files and recommendations (00:03:44.720)](./snapshots/00-03-44-720.png)
 
-### 6. Review the agent-applied changes and migration guidance
-- Video reference: 00:02:41.122 – 00:03:07.970
+---
 
-Steps:
-1. When the agent completes changes, open the modified files:
-   - DB initializer
-   - DbContext (if modified)
-   - Program.cs or application startup logic
-2. Verify the specific recommended adjustment:
-   - If your project uses EF Core migrations, the agent should replace EnsureCreatedAsync(...) with MigrateAsync(...) in initialization paths that rely on migrations.
-   - Keep EnsureCreatedAsync only for scenarios without migrations (e.g., quick demo or in-memory/simple setups).
-3. Confirm conditional logic for sync vs async execution is correct:
-   - The agent might add branches to call synchronous APIs when running in sync paths, and async ones when in async initialization paths.
+## Tips and Best Practices
 
-Key change:
-- Use context.Database.MigrateAsync() when using migrations to apply pending migrations at startup.
-- Avoid calling EnsureCreatedAsync when migrations are used — it can bypass migrations metadata.
+- Use "Allow only this time" for tool access during initial exploratory sessions; escalate to "Always allow" only for trusted automation.
+- Keep migrations in source control and apply them with MigrateAsync during startup if you rely on migrations for schema changes.
+- Avoid EnsureCreatedAsync in production environments if you also use migrations — it bypasses the migrations pipeline.
+- Review all agent-proposed code changes manually before merging them into main branches.
 
-Snapshot: modified code and migration guidance at 00:02:41.122 and review screen at 00:03:07.970.
+## Warnings
 
-### 7. Verify and test the updated initializer
-Steps:
-1. Build your project.
-2. Run the application and observe startup logs to ensure migrations are applied (if configured).
-3. Run database-related unit/integration tests:
-   - Verify schema matches expected migrations.
-   - Ensure initialization logic runs without exceptions.
-4. If something fails, inspect the startup initializer and the exact database calls made (MigrateAsync vs EnsureCreatedAsync).
+- Automated agents can make incorrect or incomplete changes. Always review diffs and run tests.
+- Grant tool access only when you trust the tool and the agent's intent. Tool access can expose code and environment details to external services.
 
-Tip: Run migrations manually in a staging environment first before enabling automatic MigrateAsync on production startup.
-
-### 8. Decide to accept agent changes or edit manually
-- Video reference: 00:03:07.970 – 00:03:44.720
-
-Steps:
-1. If agent changes look correct, accept/commit them.
-2. If you prefer manual control, use the agent's diffs as guidance:
-   - Copy the suggested code into your codebase and adjust naming/logic as needed.
-3. Consider further refinements based on documentation links the agent provided.
-
-Tip: Keep a review checklist: code compiles, migrations are recognized, startup logs show migrations applied (or no-op if none), and tests pass.
-
-Warning: Automated code changes may need small stylistic or structural tweaks to integrate with your project conventions.
-
-## Inline Snapshots / Image Placeholders
-
-(These images indicate where to capture visuals for a step; replace placeholders with actual frames)
-
-- Enable Copilot agent and grant Microsoft Docs access (00:00:23.520)  
-  ![Enable Copilot Agent and grant MS Docs access @ 00:00:23.520](./snapshot-00-00-23-520.png)
-
-- Tool permission prompt dialog (00:00:57.240)  
-  ![Permissions dialog - Allow this time / Always allow @ 00:00:57.240](./snapshot-00-00-57-240.png)
-
-- Agent recommendation panel with documentation links (00:01:24.960)  
-  ![Agent recommendation with reference links @ 00:01:24.960](./snapshot-00-01-24-960.png)
-
-- Model/session selection and agent session starter (00:01:55.560)  
-  ![Model/session selection (GPT-4/GPT-5) @ 00:01:55.560](./snapshot-00-01-55-560.png)
-
-- Agent reading project files (Program.cs, Context, classes) (00:02:05.000)  
-  ![Agent scanning project files @ 00:02:05.000](./snapshot-00-02-05-000.png)
-
-- Modified code and guidance note to use MigrateAsync (00:02:41.122)  
-  ![Modified DB initializer / switch to MigrateAsync @ 00:02:41.122](./snapshot-00-02-41-122.png)
-
-- Final review and conditional logic explanation (00:03:07.970)  
-  ![Review final implementation and sync vs async branches @ 00:03:07.970](./snapshot-00-03-07-970.png)
-
-## Tips and Warnings (quick reference)
-- Tip: Use "Allow (this time)" for documentation access until you trust the workflow.
-- Tip: Prefer MigrateAsync when your app uses EF Core migrations; EnsureCreatedAsync is for lightweight scenarios without migrations.
-- Warning: EnsureCreated bypasses the migrations system and can lead to schema mismatch if you've committed migrations.
-- Tip: Use agent diffs as a starting point — review and test before committing to main branches.
-- Warning: Sessions are tied to the selected model; switching models may require re-running the agent session.
+---
 
 ## Snapshots
 
+[00:00:01.840]  
 [00:00:23.520]  
 [00:00:57.240]  
 [00:01:24.960]  
-[00:01:55.560]  
-[00:02:05.000]  
-[00:02:41.122]  
-[00:03:07.970]
+[00:02:12.360]  
+[00:02:51.653]  
+[00:03:44.720]

@@ -2,22 +2,6 @@
   "vtt": "brk447-07-Implement unit tests using GH Issue-en-US.vtt",
   "video": "brk447-07-Implement unit tests using GH Issue.mp4",
   "duration": "00:04:35.3333333",
-  "timestampsRequested": [
-    "[00:00:00.160]",
-    "[00:00:18.240]",
-    "[00:01:07.800]",
-    "[00:02:02.600]",
-    "[00:03:02.360]",
-    "[00:04:07.880]",
-    "[00:04:34.480]"
-  ],
-  "timestampToImage": {
-    "[00:00:00.160]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-00-00-160.png",
-    "[00:00:18.240]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-00-18-240.png",
-    "[00:01:07.800]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-01-07-800.png",
-    "[00:02:02.600]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-02-02-600.png",
-    "[00:03:02.360]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-03-02-360.png",
-    "[00:04:07.880]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-04-07-880.png",
-    "[00:04:34.480]": "images/brk447-07-Implement%20unit%20tests%20using%20GH%20Issue-en-US-snapshot-00-04-34-480.png"
-  }
+  "timestampsRequested": [],
+  "timestampToImage": {}
 }

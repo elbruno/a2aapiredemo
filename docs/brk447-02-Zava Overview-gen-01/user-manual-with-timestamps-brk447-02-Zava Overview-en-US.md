@@ -1,110 +1,173 @@
 # Video: [brk447-02-Zava Overview.mkv](./REPLACE_WITH_VIDEO_LINK) — 00:00:57
 
-# SAVA — E-commerce Integration User Manual
+# SAVA Migration — E‑commerce Quick User Manual
 
-This manual documents the demonstrated SAVA migration and e-commerce flows shown in the referenced video. It guides users through adding items to the cart, validating search behavior, checking out, and noting known limitations. Each major step includes a reference timestamp and an image snapshot placeholder for quick visual reference.
+This manual documents the flows shown in the recorded session for migrating e‑commerce sites to the new SAVA experience. It explains how to add products to the cart, verify cart contents, investigate search results behavior, and test checkout behavior. Each section includes step‑by‑step instructions and inline snapshots (images) to help you reproduce and validate the same states demonstrated in the video.
+
+- Video duration referenced: 00:00:55.480
+- UI referenced throughout: SAVA application
 
 ---
 
 ## Overview
 
-Duration: 00:00:55.480
+(00:00:03.720 — 00:00:14.240)
 
-This project integrates e-commerce sites into the new SAVA experience. The demonstration covers:
+This session demonstrates:
 
-- Adding items to the cart from product listings  
-- Verifying cart contents and count  
-- Searching for products and validating actions in search results  
-- Proceeding from cart to checkout (note: automatic cart clearing after checkout is not implemented)  
-- Action items for the team: fix add-to-cart in search results, implement cart clearing after checkout, and polish localization / look-and-feel
+- Migrating e‑commerce functionality into the SAVA application.
+- Adding products to a shopping cart from the product listing.
+- Checking search result behavior where the "Add to cart" option may be missing.
+- Proceeding to checkout from the cart and noting that the cart-clearing behavior is not yet implemented.
+- Identifying items for validation and further development (checkout behavior, search-list consistency, locale/localization settings).
 
-Key topics: SAVA migration/integration, cart flows, search result behavior, checkout behavior, UI localization.
+Primary UI elements shown:
+- Product listing
+- Add to cart button
+- Cart view / cart count
+- Search input and search results
+- Proceed to checkout button
+
+Snapshot:  
+![SAVA application context — initial view at 00:00:03.720](./snapshot_00_00_03_720.png)
 
 ---
 
-## Step-by-step instructions
+## Step-by-step Instructions
 
-All timestamps below reference the recorded demonstration. Use them to locate the exact moment in the video.
+The steps below reproduce what was shown in the recording and include validation and task-creation guidance for any missing or unimplemented behaviors.
 
-### 1. Open SAVA and review project scope
-Timestamp: [00:00:03.720]  
+### A. Add products to the cart (00:00:14.240 — 00:00:30.954)
 
-Steps:
-1. Open the SAVA application and confirm you are on the e-commerce integration workspace.  
-2. Verify target e-commerce sites are listed for migration/integration tasks.  
+1. Open the SAVA application and navigate to the product listing page.  
+   Snapshot:  
+   ![Product listing view at 00:00:14.240](./snapshot_00_00_14_240.png)
 
-Snapshot:  
-![SAVA - Project scope and e-commerce targets (00:00:03.720)](./snapshot-00_00_03.720.png)
+2. From the product listing, locate Product A (example: "paint wall").  
+   - Tip: Use visible thumbnails or hover details to confirm the exact item.
 
-Tip: If you cannot find the workspace, confirm your user role has access to e-commerce integration settings.
+3. Click the product’s "Add to cart" button.  
+   - Expected: The cart item count increments and the item is added to cart.
 
----
+4. Find Product B (example: "good stain") in the listing and click its "Add to cart" button.  
+   - Expected: Cart count should further increment.
 
-### 2. Add products to the cart from product listings
-Timestamp: [00:00:14.240]
+5. Open the cart (click the cart icon or cart link).  
+   - Verify the cart shows 2 items (Product A and Product B).  
+   Snapshot:  
+   ![Cart with 2 items visible at 00:00:30.954](./snapshot_00_00_30_954.png)
 
-Steps:
-1. From the product listing view, locate the desired product (e.g., paint, stain).  
-2. Click the product to open details if necessary.  
-3. Click the "Add to cart" button for each item you want to purchase.  
-4. Verify the cart count updates (example: count shows 2 items after adding paint and stain).  
-
-Snapshot:  
-![Product listing with items added and cart count = 2 (00:00:14.240)](./snapshot-00_00_14.240.png)
-
-Tip: Watch the cart icon/count after each "Add to cart" action to ensure the front-end updates properly.
-
-Warning: If the count does not update, do not assume the server recorded the item—check network/console logs and reproduce the issue for debugging.
+Tips and Warnings:
+- If the cart count does not update immediately, refresh the cart view and re-check item list.
+- If an item looks added but details are missing, capture a screenshot and log a validation task (see section C).
 
 ---
 
-### 3. Search for products and validate available actions
-Timestamp: [00:00:27.400]
+### B. Search and verify add‑to‑cart availability (00:00:30.954 — 00:00:38.440)
 
-Steps:
-1. Use the search field to locate a product (e.g., type "paint").  
-2. Review the search results list for the expected actions (e.g., "Add to cart").  
-3. If the "Add to cart" action is missing in search results:
-   - Document the issue with a short description and steps to reproduce.  
-   - Capture a screenshot of the search results (include the search query and visible results).  
-   - Log the issue in your tracking system for the development team to validate and fix.  
+1. In the SAVA app, enter a product name into the search input (e.g., type "paint wall" and submit).  
+   Snapshot:  
+   ![Search input/results view at 00:00:30.954](./snapshot_00_00_30_954.png)
 
-Snapshot:  
-![Search results showing missing "Add to cart" action (00:00:27.400)](./snapshot-00_00_27.400.png)
+2. Inspect the search results list for the expected UI controls:
+   - Expected: Each search result item should offer an "Add to cart" control (button or quick action).
+   - Observed: The "Add to cart" control is missing in the search results (as shown in the video).
 
-Tip: When filing a bug, include browser/OS, user role, and network console output if available.
+3. If "Add to cart" is missing from search results:
+   - Use the product result link to open the product detail page and add from there as a workaround.
+   - Create a validation/task item to track this missing quick‑add behavior (see next section).
 
----
-
-### 4. Review the cart and proceed to checkout
-Timestamp: [00:00:38.440]
-
-Steps:
-1. Open the cart view to review selected items and quantities.  
-2. Confirm items and totals match expected selections.  
-3. Click "Proceed to checkout" to complete the purchase flow.  
-4. Note that, in the current implementation, the cart-clear (reset cart after successful checkout) is not implemented—items may remain in the cart after checkout.
-
-Snapshot:  
-![Cart view and Proceed to checkout action (00:00:38.440)](./snapshot-00_00_38.440.png)
-
-Warning: Because cart clearing is not implemented, do not assume a successful checkout will empty the cart. Manually verify cart contents after checkout and advise users accordingly until the fix is deployed.
+Tip:
+- Users may need to rely on product pages until the quick-add from search is implemented.
 
 ---
 
-### 5. Action items — validate and implement fixes, and update localization/UI
-Timestamp: [00:00:47.760]
+### C. Create and assign a validation task for missing add‑to‑cart in search (guidance)
 
-Checklist for team members:
-- Validate and reproduce the missing "Add to cart" action in search results.  
-- Implement cart-clearing behavior after successful checkout.  
-- Review and update general localization (locale strings) and look-and-feel to match SAVA style guidelines.  
-- Add unit/integration tests to cover the search-result actions and post-checkout cart state.
+When you discover a missing feature (like "Add to cart" missing in search results), follow these steps to create a clear validation task for developers or QA.
 
-Snapshot:  
-![Summary of action items for SAVA migration (00:00:47.760)](./snapshot-00_00_47.760.png)
+Suggested task content and steps:
 
-Tip: Prioritize fixes that affect core purchase flow (search add-to-cart and cart clearing) to reduce user friction.
+- Title: "Missing 'Add to cart' in search results — quick‑add not present"
+- Description: Short summary of the issue and why it’s a problem (affects conversion and quick purchase flow).
+- Steps to reproduce:
+  1. Go to SAVA product search.
+  2. Enter product name "X".
+  3. Observe search results do not show "Add to cart" button.
+- Actual behavior: Search results list lacks quick "Add to cart" control.
+- Expected behavior: Each search result should include a quick "Add to cart" control consistent with product listing.
+- Attachments: Include screenshots of the search results showing the missing control.
+  - Attach snapshot: snapshot_00_00_30_954.png
+- Priority: Assign based on business needs (e.g., High for rapid conversion products).
+- Assignee: Assign to appropriate frontend/UX owner or SAVA integration engineer.
+- Tags/Labels: search, quick-add, cart, validation
+
+Tip:
+- Include the product types tested and browser/device info if available to help reproduce.
+
+---
+
+### D. Checkout from cart and note cart-clearing behavior (00:00:38.440 — 00:00:55.480)
+
+1. Open the cart containing your selected items (ensure items added earlier are present).  
+   Snapshot:  
+   ![Cart open; ready to proceed at 00:00:38.440](./snapshot_00_00_38_440.png)
+
+2. Click "Proceed to checkout".  
+   - Expected (future/target behavior): After completing checkout, the cart should be cleared of purchased items.
+   - Observed (current implementation): The cart-clearing behavior is not yet implemented — the cart remains populated after checkout.
+
+3. Verify behavior:
+   - If your test environment supports checkout, complete the checkout flow and then check the cart contents.
+   - Record observed behavior and create a task if cart-clearing is not working as expected (template in section C).
+
+4. If you require an immediate workaround in testing:
+   - Manually remove items from the cart after checkout, or
+   - Use the cart UI to clear items one by one.
+
+Tip:
+- Mark the cart-clearing bug with clear reproduction steps and indicate whether this also affects session persistence or user accounts.
+
+Warning:
+- Do not rely on cart-clearing behavior in production until the feature is confirmed implemented and tested.
+
+---
+
+### E. Localization / local feel considerations
+
+- The video references "local feel" or localization settings as additional UI areas to review during the SAVA migration.
+- When testing:
+  - Check language strings, currency formatting, and locale-specific date/time formats.
+  - Ensure product names and UI labels are correct for the target locale.
+- Create validation tasks for any locale/UI inconsistency you find, including screenshots and environment settings.
+
+---
+
+## Tips & Best Practices
+
+- Always capture screenshots or short recordings of any UI mismatch or missing control — attach these to validation tickets.
+- When filing tasks, include the exact URL, environment (staging/dev), and user/account context to help reproduce.
+- Prioritize quick-add behaviors (search and listing) if they affect conversion metrics.
+- Keep a consistent checklist for migration testing: product listing, search, cart, checkout, session persistence, localization.
+
+---
+
+## Snapshots (inline references)
+
+- SAVA application context (initial) — 00:00:03.720  
+  ![SAVA application context — 00:00:03.720](./snapshot_00_00_03_720.png)
+
+- Product listing / add to cart action — 00:00:14.240  
+  ![Product listing view — 00:00:14.240](./snapshot_00_00_14_240.png)
+
+- Cart showing 2 items — 00:00:30.954  
+  ![Cart with 2 items — 00:00:30.954](./snapshot_00_00_30_954.png)
+
+- Search results showing missing "Add to cart" — 00:00:30.954  
+  ![Search results missing quick-add — 00:00:30.954](./snapshot_00_00_30_954.png)
+
+- Cart open / proceed to checkout — 00:00:38.440  
+  ![Cart open; ready to proceed — 00:00:38.440](./snapshot_00_00_38_440.png)
 
 ---
 
@@ -112,6 +175,6 @@ Tip: Prioritize fixes that affect core purchase flow (search add-to-cart and car
 
 [00:00:03.720]  
 [00:00:14.240]  
-[00:00:27.400]  
+[00:00:30.954]  
 [00:00:38.440]  
-[00:00:47.760]
+[00:00:55.480]

@@ -1,28 +1,17 @@
 # Video: [brk447-08-update ui using agent based on images.mp4](./REPLACE_WITH_VIDEO_LINK) — 00:05:05
 
-1. State the goal to update the website style using the multimodal agent and SAVA branding. [00:00:00.080]
-
-2. Locate repository branding assets like images and color info. [00:00:09.080]
-
-3. Copy the branding/style file into the project. [00:00:09.080]
-
-4. Paste the style file into the GitHub Copilot/Compiler context. [00:00:09.080]
-
-5. Open and attach the two reference images to the compiler context. [00:00:35.200]
-
-6. Send a prompt to Copilot/Compiler asking it to improve the UI using the reference images. [00:00:35.200]
-
-7. Allow Copilot to scan the project, locate front-end files, and plan edits. [00:01:09.380]
-
-8. Let Copilot apply edits (notably to app.css) and respond to the popup to stop the running application if prompted. [00:01:09.380]
-
-9. Restart the application and refresh the browser to load updated styles. [00:02:09.720]
-
-10. Inspect the UI for color and contrast issues, take a screenshot of the problematic view, and paste it into Copilot with a description requesting improvements. [00:02:09.720]
-
-11. Wait for Copilot to analyze and apply further edits, making smaller incremental changes and using Blazor hot reload to verify quickly. [00:03:16.391]
-
-12. Run the app, navigate to product pages, add items to the cart to inspect product cards and cart UI, and iterate with Copilot until satisfied. [00:04:33.417]
+1. Copy the SAVA style files and reference images from the repository. [00:00:25.120]  
+2. Open GitHub Copilot / Compiler and paste the style files and images into the compiler context. [00:00:25.120]  
+3. Send a prompt asking the compiler to apply the SAVA brand styles to the Blazor front-end. [00:00:25.120]  
+4. Allow Copilot to scan the repository (CSS and .razor component files) and generate an implementation plan. [00:01:09.380]  
+5. Approve or trigger Copilot’s edits to app.css and any other style files. [00:02:09.720]  
+6. If a popup requests stopping the running application, accept and stop the app to allow changes. [00:02:09.720]  
+7. Restart/run the Blazor application and refresh the browser to view the applied changes. [00:02:09.720]  
+8. If visual issues persist, take a screenshot of the problematic UI and paste it into Copilot with a concise improvement request. [00:03:03.040]  
+9. Wait for Copilot to analyze the screenshot and implement further CSS or component edits. [00:03:03.040]  
+10. Rerun the application and refresh the page to observe iterative updates. [00:03:56.709]  
+11. Test the product page and product cards by adding items to the cart and inspect layout and readability. [00:03:56.709]  
+12. Repeat screenshot-driven prompts and Copilot-driven edits until the SAVA styles and UI layout are satisfactory. [00:05:04.920]
 
 Related guides:
 

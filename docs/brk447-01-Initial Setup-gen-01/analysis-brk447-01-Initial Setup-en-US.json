@@ -3,149 +3,119 @@
     {
       "title": "Intro \u0026 Prerequisites",
       "start_time": "00:00:00.360",
-      "end_time": "00:00:12.480",
-      "summary": "Presenter states the goal (deploy two models used by the demo locally) and lists required tools and dependencies.",
+      "end_time": "00:00:09.688",
+      "summary": "Introduces the goal (deploying two models used by the demo) and lists required tools to run the demo locally.",
       "key_actions": [
-        "Outline deployment steps for demo models",
-        "List required tools: Visual Studio, Docker, PowerShell, .NET 9, Azure CLI"
+        "Understand demo goal: deploy two models used locally",
+        "Ensure prerequisites are installed"
       ],
       "ui_elements": [
-        "Visual Studio",
-        "Docker",
-        "PowerShell",
-        ".NET 9",
-        "Azure CLI"
+        "none (terminal/tools mentioned)"
       ]
     },
     {
-      "title": "Azure CLI Login / Tenant Selection",
+      "title": "Login to Azure (tenant) and Prepare to Create Resources",
       "start_time": "00:00:13.360",
-      "end_time": "00:00:27.640",
-      "summary": "Log in to Azure using the tenant option to access the Cloud Advocate tenant and select the correct subscription.",
+      "end_time": "00:00:31.316",
+      "summary": "Logs into Azure using the tenant option to access the correct subscription and prepares to run the command that creates the resource group.",
       "key_actions": [
-        "Run az login with tenant option",
-        "Ensure correct subscription / tenant is selected"
+        "Run \u0060az login --tenant \u003Ctenant-id\u003E\u0060 (or equivalent) to authenticate to the Cloud Advocate tenant",
+        "Prepare to run the resource-group creation command"
       ],
       "ui_elements": [
-        "Azure CLI (login / tenant option)"
+        "Console / Azure CLI"
       ]
     },
     {
-      "title": "Create Resource Group with Deployment Script",
-      "start_time": "00:00:27.640",
-      "end_time": "00:00:46.242",
-      "summary": "Run a command to create a new resource group (example name given) which provisions necessary resources; process completes in about 2 minutes and outputs JSON.",
-      "key_actions": [
-        "Run command to create resource group (example: RGBR CAR 447)",
-        "Wait ~2 minutes for deployment to complete",
-        "Inspect JSON output for resource information"
-      ],
-      "ui_elements": [
-        "Azure CLI command output (JSON)",
-        "Resource group"
-      ]
-    },
-    {
-      "title": "Retrieve Outputs: Keys and Endpoints",
-      "start_time": "00:00:41.720",
+      "title": "Create Resource Group \u0026 Capture Output",
+      "start_time": "00:00:31.316",
       "end_time": "00:00:58.409",
-      "summary": "Demonstrates getting the deployment output values (keys, endpoint, foundry name) from the CLI output and copying the foundry name for later use.",
+      "summary": "Runs the command to create a resource group (named in the demo), waits for completion, and retrieves the output JSON including keys and IDs.",
       "key_actions": [
-        "Use \u0027get output\u0027 or equivalent to retrieve keys from deployment JSON",
-        "Copy foundry name and endpoint from output"
+        "Run the command that creates the new resource group (e.g., scripted deployment)",
+        "Wait for the process to complete (~2 minutes)",
+        "Use CLI output to retrieve resource IDs and keys"
       ],
       "ui_elements": [
-        "CLI \u0027get output\u0027 command",
-        "Output JSON with keys and endpoints",
-        "Foundry name field"
+        "Console output (JSON)",
+        "Copy buttons/helpers implied for copying IDs/keys"
       ]
     },
     {
-      "title": "Update Script with Resource/Account Names",
-      "start_time": "00:01:00.200",
-      "end_time": "00:01:22.000",
-      "summary": "Populate a small script with the retrieved resource group name and account name, then paste and prepare to run it in the console.",
+      "title": "Get Endpoint \u0026 Foundry Name, Update Script",
+      "start_time": "00:00:58.409",
+      "end_time": "00:01:37.120",
+      "summary": "Shows commands to display endpoint and \u0027foundry\u0027 name, copies those values, updates a local script with resource and account names, then runs it to obtain a connection string.",
       "key_actions": [
-        "Edit script to include resource group name and account name",
-        "Copy updated script into console application",
-        "Clear console and prepare to run script"
+        "Run command to show the endpoint and foundry name",
+        "Copy the foundry/resource/account name",
+        "Edit the small script to insert resource group and account name",
+        "Run the script to produce the connection string"
       ],
       "ui_elements": [
-        "Local script/console",
-        "Resource name and account name variables"
+        "Terminal/console (where script is edited and executed)"
       ]
     },
     {
-      "title": "Run Script =\u003E Obtain Connection String, Endpoint, Key; Dashboard Prompt",
-      "start_time": "00:01:22.000",
-      "end_time": "00:02:05.149",
-      "summary": "Run the script to generate connection strings, endpoints, and keys. On first run the application dashboard opens and prompts for an AI Foundry parameter which must be pasted and saved to user secrets.",
-      "key_actions": [
-        "Execute script to produce connection string, endpoint, and key",
-        "Open application dashboard when first run",
-        "Paste AI Foundry parameter into prompted field",
-        "Save the parameter to user secrets to avoid re-entering"
-      ],
-      "ui_elements": [
-        "Application dashboard",
-        "AI Foundry parameter input",
-        "User secrets (save option)"
-      ]
-    },
-    {
-      "title": "Application Running \u2014 Browse \u0026 Semantic Search",
-      "start_time": "00:02:05.149",
+      "title": "Dashboard Prompt: AI Foundry Parameter \u0026 Save to User Secrets",
+      "start_time": "00:01:37.120",
       "end_time": "00:02:14.440",
-      "summary": "With the parameter saved and the app running, demonstrate browsing the product and performing a semantic search to test functionality.",
+      "summary": "When running the app for the first time, the dashboard indicates the missing AI Foundry parameter. The value is pasted and saved to user secrets so the app can run and be tested (including semantic search).",
       "key_actions": [
-        "Browse application UI",
-        "Perform semantic search to verify embeddings and search features"
+        "Locate the AI Foundry parameter prompt in the dashboard",
+        "Paste the connection/parameter value into the dashboard field",
+        "Save the value to user secrets to persist it",
+        "Start and browse the running application",
+        "Test features such as semantic search"
       ],
       "ui_elements": [
-        "Application UI (product browsing)",
-        "Semantic search feature"
+        "Dashboard (prompting for AI Foundry parameter)",
+        "User secrets (save option)",
+        "App UI (product browsing and semantic search)"
       ]
     },
     {
-      "title": "Editing User Secrets / Switching Resources",
+      "title": "Edit User Secrets to Point to a Different Resource",
       "start_time": "00:02:18.160",
       "end_time": "00:02:39.848",
-      "summary": "Show how to change which resource the app points to by editing the App host user secrets: remove existing AI Foundry line, rerun, and add a different line as needed.",
+      "summary": "Shows how to edit the APP host\u0027s user secrets to change or remove the AI Foundry parameter and re-add it when switching to another resource.",
       "key_actions": [
-        "Open App host and edit user secrets",
-        "Delete existing AI Foundry entry",
-        "Rerun application and add a new AI Foundry value"
+        "Open APP host and edit user secrets",
+        "Locate AI Foundry entry, delete it, then run and re-add updated value"
       ],
       "ui_elements": [
-        "App host (user secrets editor)",
-        "AI Foundry entry in user secrets"
+        "APP host (project/settings)",
+        "User secrets editor"
       ]
     },
     {
-      "title": "Check Resource Group in Azure Portal \u0026 Inspect OpenAI Deployments",
+      "title": "Inspect Resource Group \u0026 Azure OpenAI Deployments",
       "start_time": "00:02:39.848",
       "end_time": "00:03:00.480",
-      "summary": "Navigate to the created resource group in the Azure portal, open the Azure OpenAI resource to view deployments (example: GPT 41 mini for chats/text embedding and ADI O2 for embeddings) and retrieve endpoints and keys from the portal.",
+      "summary": "Navigate to the created Azure resource group and open the Azure OpenAI (or OpenAI) blade to verify deployments. Confirms two deployments: GPT-4o-mini for chats/text generation and ADI O2 for embeddings, and notes endpoints/keys are available in portal.",
       "key_actions": [
-        "Open Azure Portal -\u003E Resource Groups -\u003E select created group",
-        "Open Azure OpenAI resource",
-        "View deployments list and specific deployment names",
-        "Copy endpoints and keys from portal as needed"
+        "Open Azure Portal -\u003E Resource Group",
+        "Open Azure OpenAI (OpenAI) resource in the group",
+        "Verify deployments (GPT-4o-mini, text embedding, ADI O2 for embeddings)",
+        "Copy endpoint and key values from portal"
       ],
       "ui_elements": [
-        "Azure Portal -\u003E Resource Group blade",
-        "Azure OpenAI resource page",
-        "Deployments list (e.g., GPT 41 mini, ADI O2)",
-        "Endpoints and Keys fields"
+        "Azure Portal",
+        "Resource Group blade",
+        "Azure OpenAI / OpenAI resource page",
+        "Deployments list",
+        "Endpoint and Key fields (copy)"
       ]
     }
   ],
   "main_topics": [
-    "Deploying demo models/resources via Azure CLI",
-    "Retrieving deployment outputs: endpoints and keys",
-    "Configuring local application (scripts and user secrets)",
-    "Using the application dashboard and testing semantic search",
-    "Inspecting Azure Portal resources and OpenAI deployments"
+    "Deploying demo models and required prerequisites",
+    "Azure CLI authentication and resource group creation",
+    "Retrieving outputs: endpoints, keys, and foundry/account names",
+    "Configuring local application with AI Foundry parameter",
+    "Saving and editing user secrets for configuration",
+    "Verifying Azure OpenAI deployments in the Azure portal",
+    "Testing the running application (semantic search)"
   ],
   "total_duration": "00:03:00.480",
   "video": "brk447-01-Initial Setup.mp4",
