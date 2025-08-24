@@ -8,13 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add Aspire service defaults - provides service discovery, telemetry, health checks
 builder.AddServiceDefaults();
 
-// Add Entity Framework with SQLite for local development
-// Connection string will be provided by Aspire host via configuration
-var connectionString = builder.Configuration.GetConnectionString("PaymentsDb") 
-                       ?? "Data Source=Data/payments.db";
-
-builder.Services.AddDbContext<PaymentsDbContext>(options =>
-    options.UseSqlite(connectionString));
+// Use Aspire helper to configure SQL Server DbContext like Products project
+builder.AddSqlServerDbContext<PaymentsDbContext>("paymentsDb");
 
 // Add repository for payment data access
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
@@ -38,12 +33,19 @@ var app = builder.Build();
 // Map Aspire default endpoints (health checks, etc.)
 app.MapDefaultEndpoints();
 
-// Ensure database is created and migrated
+// Ensure database is created and ready. For production, prefer migrations (context.Database.Migrate()).
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<PaymentsDbContext>();
-    // Use EnsureCreated for local development - in production, use proper migrations
-    await context.Database.EnsureCreatedAsync();
+    try
+    {
+        app.Logger.LogInformation("Ensure Payments database created");
+        context.Database.EnsureCreated();
+    }
+    catch (Exception exc)
+    {
+        app.Logger.LogError(exc, "Error creating Payments database");
+    }
 }
 
 // Configure the HTTP request pipeline.
