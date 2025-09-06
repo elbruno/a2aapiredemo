@@ -1,13 +1,14 @@
 ﻿@page "/"
 @using DataEntities
 @using OpenAI.Chat
-@using OpenAI.RealtimeConversation
 @using System.IO.Pipelines
+@using OpenAI.Realtime
 @using StoreRealtime.ContextManagers
 @using StoreRealtime.Models
 @implements IDisposable
-@inject RealtimeConversationClient RealtimeConversationClient
-@inject ContosoProductContext contosoProductContext
+
+@inject RealtimeClient RealtimeClient
+@inject StoreRealtime.ContextManagers.ContosoProductContext contosoProductContext
 @inject ILogger<Program> logger
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
@@ -111,7 +112,7 @@
 
     private void OnMicAvailable(PipeReader micReader)
     {
-        conversationManager = new(RealtimeConversationClient, contosoProductContext, logger);
+        conversationManager = new(RealtimeClient, contosoProductContext, logger);
         _ = RunAsBackgroundTask(() => conversationManager.RunAsync(micReader.AsStream(), speaker!,
 
         AddMessageAsync,
