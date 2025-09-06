@@ -5,19 +5,19 @@ namespace VectorEntities
 {
     public class ProductVector : Product
     {
-        [VectorStoreKey]
+        [VectorStoreRecordKey]
         public override int Id { get => base.Id; set => base.Id = value; }
 
-        [VectorStoreData]
+        [VectorStoreRecordData]
         public override string? Name { get => base.Name; set => base.Name = value; }
 
-        [VectorStoreData]
+        [VectorStoreRecordData]
         public override string? Description { get => base.Description; set => base.Description = value; }
 
-        [VectorStoreData]
+        [VectorStoreRecordData]
         public override decimal Price { get => base.Price; set => base.Price = value; }
 
-        [VectorStoreVector(384)]
+        [VectorStoreRecordVector(384, DistanceFunction.CosineSimilarity)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }

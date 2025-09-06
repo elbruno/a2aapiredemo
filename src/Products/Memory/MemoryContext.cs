@@ -1,9 +1,10 @@
 ﻿using DataEntities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Newtonsoft.Json;
+using OpenAI.Chat;
+using OpenAI.Embeddings;
 using Products.Models;
 using SearchEntities;
 using System.Text;
@@ -13,36 +14,39 @@ namespace Products.Memory;
 
 public class MemoryContext
 {
-    private ILogger _logger;
-    public IChatClient? _chatClient;
-    public IEmbeddingGenerator<string, Embedding<float>>? _embeddingGenerator;
-    public VectorStoreCollection<int, ProductVector>? _productsCollection;
-    private string _systemPrompt = "";
-    private bool _isMemoryCollectionInitialized = false;
+    private const string SystemPrompt = "You are a useful assistant. You always reply with a short and funny message. If you do not know an answer, you say 'I don't know that.' You only answer questions related to outdoor camping products. For any other type of questions, explain to the user that you only answer outdoor camping products questions. Do not store memory of the chat conversation.";
 
-    public MemoryContext(ILogger logger, IChatClient? chatClient, IEmbeddingGenerator<string, Embedding<float>>? embeddingGenerator)
+    private readonly ILogger _logger;
+    private readonly ChatClient? _chatClient;
+    private readonly EmbeddingClient? _embeddingClient;
+    private IVectorStoreRecordCollection<int, ProductVector>? _productsCollection;
+    private bool _isMemoryCollectionInitialized;
+
+    public MemoryContext(ILogger logger, ChatClient? chatClient, EmbeddingClient? embeddingClient)
     {
         _logger = logger;
         _chatClient = chatClient;
-        _embeddingGenerator = embeddingGenerator;
+        _embeddingClient = embeddingClient;
 
         _logger.LogInformation("Memory context created");
         _logger.LogInformation($"Chat Client is null: {_chatClient is null}");
-        _logger.LogInformation($"Embedding Generator is null: {_embeddingGenerator is null}");
+        _logger.LogInformation($"Embedding Client is null: {_embeddingClient is null}");
     }
 
     public async Task<bool> InitMemoryContextAsync(Context db)
     {
+        if (_isMemoryCollectionInitialized)
+        {
+            _logger.LogInformation("Memory context already initialized");
+            return true;
+        }
+
         _logger.LogInformation("Initializing memory context");
         var vectorProductStore = new InMemoryVectorStore();
         _productsCollection = vectorProductStore.GetCollection<int, ProductVector>("products");
-        await _productsCollection.EnsureCollectionExistsAsync();
-
-        // define system prompt
-        _systemPrompt = "You are a useful assistant. You always reply with a short and funny message. If you do not know an answer, you say 'I don't know that.' You only answer questions related to outdoor camping products. For any other type of questions, explain to the user that you only answer outdoor camping products questions. Do not store memory of the chat conversation.";
+        await _productsCollection.CreateCollectionIfNotExistsAsync();
 
         _logger.LogInformation("Get a copy of the list of products");
-        // get a copy of the list of products
         var products = await db.Product.ToListAsync();
 
         _logger.LogInformation("Filling products in memory");
@@ -64,15 +68,17 @@ public class MemoryContext
                     Price = product.Price,
                     ImageUrl = product.ImageUrl
                 };
-                var result = await _embeddingGenerator.GenerateVectorAsync(productInfo);
+                var result = await _embeddingClient!.GenerateEmbeddingAsync(productInfo);
 
-                productVector.Vector = result.ToArray();
-                await _productsCollection.UpsertAsync(productVector);
-                _logger.LogInformation("Product added to memory: {Product}", product.Name);
+                productVector.Vector = result.Value.ToFloats();
+                var recordId = await _productsCollection.UpsertAsync(productVector);
+                _logger.LogInformation("Product added to memory: {Product} with recordId: {RecordId}", product.Name, recordId);
             }
             catch (Exception exc)
             {
-                _logger.LogError(exc, "Error adding product to memory");
+                _logger.LogError(exc, $"Error adding product {product.Name} to memory");
+                _isMemoryCollectionInitialized = false;
+                return false;
             }
         }
 
@@ -81,7 +87,7 @@ public class MemoryContext
         return true;
     }
 
-    public virtual async Task<SearchResponse> Search(string search, Context db)
+    public async Task<SearchResponse> Search(string search, Context db)
     {
         if (!_isMemoryCollectionInitialized)
         {
@@ -92,28 +98,32 @@ public class MemoryContext
         {
             Response = $"I don't know the answer for your question. Your question is: [{search}]"
         };
-
         try
         {
-            var result = await _embeddingGenerator.GenerateVectorAsync(search);
-            var vectorSearchQuery = result.ToArray();
+            var result = await _embeddingClient!.GenerateEmbeddingAsync(search);
+            var vectorSearchQuery = result.Value.ToFloats();
+
+            var searchOptions = new VectorSearchOptions<ProductVector>
+            {
+                Top = 2
+            };
 
             // search the vector database for the most similar product        
+            var searchResults = await _productsCollection!.VectorizedSearchAsync(vectorSearchQuery, searchOptions);
             var sbFoundProducts = new StringBuilder();
             int productPosition = 1;
-
-            await foreach (var resultItem in _productsCollection.SearchAsync(vectorSearchQuery, top: 3))
+            await foreach (var searchItem in searchResults.Results)
             {
-                if (resultItem.Score > 0.5)
+                if (searchItem.Score > 0.5)
                 {
-                    var product = await db.FindAsync<Product>(resultItem.Record.Id);
-                    if (product != null)
+                    var foundProduct = await db.FindAsync<Product>(searchItem.Record.Id);
+                    if (foundProduct != null)
                     {
-                        response.Products.Add(product);
+                        response.Products.Add(foundProduct);
                         sbFoundProducts.AppendLine($"- Product {productPosition}:");
-                        sbFoundProducts.AppendLine($"  - Name: {product.Name}");
-                        sbFoundProducts.AppendLine($"  - Description: {product.Description}");
-                        sbFoundProducts.AppendLine($"  - Price: {product.Price}");
+                        sbFoundProducts.AppendLine($"  - Name: {foundProduct.Name}");
+                        sbFoundProducts.AppendLine($"  - Description: {foundProduct.Description}");
+                        sbFoundProducts.AppendLine($"  - Price: {foundProduct.Price}");
                         productPosition++;
                     }
                 }
@@ -130,20 +140,19 @@ Include products details.
 
             var messages = new List<ChatMessage>
             {
-                new(ChatRole.System, _systemPrompt),
-                new(ChatRole.System, prompt)
+                new SystemChatMessage(SystemPrompt),
+                new UserChatMessage(prompt)
             };
 
             _logger.LogInformation("{ChatHistory}", JsonConvert.SerializeObject(messages));
 
-            var resultPrompt = await _chatClient.GetResponseAsync(messages);
-            response.Response = resultPrompt.Text!;
-
+            var resultPrompt = await _chatClient!.CompleteChatAsync(messages);
+            response.Response = resultPrompt.Value.Content[0].Text!;
         }
         catch (Exception ex)
         {
+            // Handle exceptions (log them, rethrow, etc.)
             response.Response = $"An error occurred: {ex.Message}";
-            _logger.LogError(ex, "Error during search");
         }
         return response;
     }

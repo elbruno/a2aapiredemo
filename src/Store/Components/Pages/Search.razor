@@ -1,7 +1,6 @@
 ﻿@page "/search"
-@using Store.Services
 
-@inject IProductService ProductService
+@inject Store.Services.ProductService ProductService
 @inject IConfiguration Configuration
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
@@ -24,6 +23,9 @@
     </div>
     <hr />
     <p class="quote">@aiResponse</p>
+
+    @* Uncomment this to show elapsed time *@
+    @* <p class="smallquote">Elapsed Time: [@elapsedTime]</p> *@
 </div>
 
 
@@ -44,14 +46,10 @@ else
         </thead>
         <tbody>
             @foreach (var product in products)
-                {
+            {
                 <tr>
-                    <!-- Always use locally-hosted images under Store/wwwroot/images -->
-                    @{ var imgSrc = $"/images/{product.ImageUrl}"; }
-                    <td>
-                        <img height="80" width="80" src="@imgSrc" alt="@product.Name"
-                             onerror="this.onerror=null; this.src='/images/placeholder.svg';" />
-                    </td>
+                    <!-- Simulating images being hosted on a CDN -->
+                    <td><img height="80" width="80" src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" /></td>
                     <td>@product.Name</td>
                     <td>@product.Description</td>
                     <td>@product.Price</td>
@@ -65,6 +63,7 @@ else
     private string searchTerm = "";
     private List<DataEntities.Product>? products;
     private string aiResponse = "";
+    private string elapsedTime = "";
     private bool smartSearch = false;
 
     private async Task DoSearch(MouseEventArgs e)
@@ -73,5 +72,6 @@ else
         var response = await ProductService.Search(searchTerm, smartSearch);
         aiResponse = response.Response;
         products = response.Products;
+        elapsedTime = response.ElapsedTime.ToString();
     }
 }
