@@ -27,6 +27,7 @@
 		<PackageReference Include="Azure.AI.OpenAI" Version="2.3.0-beta.2" />
 		<PackageReference Include="Microsoft.Extensions.AI" Version="9.8.0" />
 		<PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.4.2-preview.1.25428.12" />
+		<PackageReference Include="OpenAI" Version="2.3.0-beta.1" />
 	</ItemGroup>
 
 	<ItemGroup>

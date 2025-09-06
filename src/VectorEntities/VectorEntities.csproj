@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.0.0-preview.1.24523.1" />
+    <ProjectReference Include="..\DataEntities\DataEntities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataEntities\DataEntities.csproj" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.64.0" />
   </ItemGroup>
 
 </Project>
