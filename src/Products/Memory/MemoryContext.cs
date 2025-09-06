@@ -1,6 +1,5 @@
 ﻿using DataEntities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Newtonsoft.Json;
 using OpenAI.Chat;
@@ -19,7 +18,7 @@ public class MemoryContext
     private readonly ILogger _logger;
     private readonly ChatClient? _chatClient;
     private readonly EmbeddingClient? _embeddingClient;
-    private IVectorStoreRecordCollection<int, ProductVector>? _productsCollection;
+    private Dictionary<int, ProductVector>? _productsCollection;
     private bool _isMemoryCollectionInitialized;
 
     public MemoryContext(ILogger logger, ChatClient? chatClient, EmbeddingClient? embeddingClient)
@@ -42,9 +41,7 @@ public class MemoryContext
         }
 
         _logger.LogInformation("Initializing memory context");
-        var vectorProductStore = new InMemoryVectorStore();
-        _productsCollection = vectorProductStore.GetCollection<int, ProductVector>("products");
-        await _productsCollection.CreateCollectionIfNotExistsAsync();
+        _productsCollection = new Dictionary<int, ProductVector>();
 
         _logger.LogInformation("Get a copy of the list of products");
         var products = await db.Product.ToListAsync();
@@ -71,8 +68,8 @@ public class MemoryContext
                 var result = await _embeddingClient!.GenerateEmbeddingAsync(productInfo);
 
                 productVector.Vector = result.Value.ToFloats();
-                var recordId = await _productsCollection.UpsertAsync(productVector);
-                _logger.LogInformation("Product added to memory: {Product} with recordId: {RecordId}", product.Name, recordId);
+                _productsCollection[product.Id] = productVector;
+                _logger.LogInformation("Product added to memory: {Product} with recordId: {RecordId}", product.Name, product.Id);
             }
             catch (Exception exc)
             {
@@ -103,29 +100,26 @@ public class MemoryContext
             var result = await _embeddingClient!.GenerateEmbeddingAsync(search);
             var vectorSearchQuery = result.Value.ToFloats();
 
-            var searchOptions = new VectorSearchOptions<ProductVector>
-            {
-                Top = 2
-            };
+            // Simple text-based search for now (to be replaced with vector search when SDK supports it)
+            var matchingProducts = _productsCollection!.Values
+                .Where(p => p.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) == true ||
+                           p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) == true)
+                .Take(2)
+                .ToList();
 
-            // search the vector database for the most similar product        
-            var searchResults = await _productsCollection!.VectorizedSearchAsync(vectorSearchQuery, searchOptions);
             var sbFoundProducts = new StringBuilder();
             int productPosition = 1;
-            await foreach (var searchItem in searchResults.Results)
+            foreach (var productVector in matchingProducts)
             {
-                if (searchItem.Score > 0.5)
+                var foundProduct = await db.FindAsync<Product>(productVector.Id);
+                if (foundProduct != null)
                 {
-                    var foundProduct = await db.FindAsync<Product>(searchItem.Record.Id);
-                    if (foundProduct != null)
-                    {
-                        response.Products.Add(foundProduct);
-                        sbFoundProducts.AppendLine($"- Product {productPosition}:");
-                        sbFoundProducts.AppendLine($"  - Name: {foundProduct.Name}");
-                        sbFoundProducts.AppendLine($"  - Description: {foundProduct.Description}");
-                        sbFoundProducts.AppendLine($"  - Price: {foundProduct.Price}");
-                        productPosition++;
-                    }
+                    response.Products.Add(foundProduct);
+                    sbFoundProducts.AppendLine($"- Product {productPosition}:");
+                    sbFoundProducts.AppendLine($"  - Name: {foundProduct.Name}");
+                    sbFoundProducts.AppendLine($"  - Description: {foundProduct.Description}");
+                    sbFoundProducts.AppendLine($"  - Price: {foundProduct.Price}");
+                    productPosition++;
                 }
             }
 
