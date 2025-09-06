@@ -41,21 +41,13 @@ builder.Services.AddSingleton<RealtimeClient>(serviceProvider =>
     var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("Configuring RealtimeClient for model {Model}", chatDeploymentName);
 
-    OpenAI.OpenAIClientOptions options = new()
+    AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential());
+    if (!string.IsNullOrEmpty(apiKey))
     {
-        Endpoint = new Uri(endpoint)
-        
-    };
+        azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey));
+    }
 
-    if (!string.IsNullOrWhiteSpace(apiKey))
-    {
-        var azureClient = serviceProvider.GetService<AzureOpenAIClient>();
-        return azureClient.GetRealtimeClient();
-    }
-    else
-    {
-        return new RealtimeClient(new ApiKeyCredential(apiKey), options: options);
-    }
+    return azureClient.GetRealtimeClient();
 
 });
 
