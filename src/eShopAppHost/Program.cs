@@ -2,48 +2,54 @@ using Aspire.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sqldb = builder.AddSqlServer("sql")
+var sql = builder.AddSqlServer("sql")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithImageTag("2025-latest")
+    .WithEnvironment("ACCEPT_EULA", "Y");
+
+var productsDb = sql
     .WithDataVolume()
-    .AddDatabase("sqldb");
+    .AddDatabase("productsDb");
+
+IResourceBuilder<IResourceWithConnectionString>? openai;
+var chatDeploymentName = "gpt-5-mini";
+var realtimeDeploymentName = "gpt-realtime";
+var embeddingsDeploymentName = "text-embedding-ada-002";
 
 var products = builder.AddProject<Projects.Products>("products")
-    .WithReference(sqldb)
-    .WaitFor(sqldb);
+    .WithReference(productsDb)
+    .WaitFor(productsDb);
 
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
+
 var storeRealtime = builder.AddProject<Projects.StoreRealtime>("realtimestore")
     .WithReference(products)
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
-// OpenAI resource configuration
-IResourceBuilder<IResourceWithConnectionString>? openai;
-var chatDeploymentName = "gpt-4o-mini";
-var realtimeDeploymentName = "gpt-4o-realtime-preview";  // Updated to GA model name
-var embeddingsDeploymentName = "text-embedding-ada-002";
-
 if (builder.ExecutionContext.IsPublishMode)
 {
     // production code uses Azure services, so we need to add them here
     var appInsights = builder.AddAzureApplicationInsights("appInsights");
-    var aoai = builder.AddAzureOpenAI("openai")
-        .AddDeployment(new AzureOpenAIDeployment(chatDeploymentName,
-        "gpt-4o-mini",
-        "2024-07-18",
-        "GlobalStandard",
-        10))
-        .AddDeployment(new AzureOpenAIDeployment(realtimeDeploymentName,
-        "gpt-4o-realtime-preview",  // Updated to GA model name
-        "2024-12-17",  // Keep version until GA version is confirmed
-        "GlobalStandard",
-        1))
-        .AddDeployment(new AzureOpenAIDeployment(embeddingsDeploymentName,
-        "text-embedding-ada-002",
-        "2"));
+    var aoai = builder.AddAzureOpenAI("openai");
+
+    var gpt5mini = aoai.AddDeployment(name: chatDeploymentName,
+            modelName: "gpt-5-mini",
+            modelVersion: "2025-08-07");
+    gpt5mini.Resource.SkuName = "GlobalStandard";
+
+    var gptRealtime = aoai.AddDeployment(name: realtimeDeploymentName,
+        modelName: "gpt-realtime",
+        modelVersion: "2025-08-28");
+    //gptRealtime.Resource.SkuName = "GlobalStandard";
+
+    var embeddingsDeployment = aoai.AddDeployment(name: embeddingsDeploymentName,
+        modelName: "text-embedding-ada-002",
+        modelVersion: "2");
 
     products.WithReference(appInsights);
     storeRealtime.WithReference(appInsights);
