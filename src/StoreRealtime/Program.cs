@@ -41,10 +41,17 @@ builder.Services.AddSingleton<RealtimeClient>(serviceProvider =>
     var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("Configuring RealtimeClient for model {Model}", chatDeploymentName);
 
-    AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential());
+    endpoint = "https://bruno-brk445-resource.cognitiveservices.azure.com/"; // openai/realtime?api-version=2024-10-01-preview&deployment=gpt-realtime";
+
+    AzureOpenAIClientOptions? options = new(version: AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview)
+    ;
+#pragma warning disable AOAI001 
+    options.DefaultQueryParameters.Add("deployment", chatDeploymentName);
+
+    AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential(), options);
     if (!string.IsNullOrEmpty(apiKey))
     {
-        azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey));
+        azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey), options);
     }
 
     return azureClient.GetRealtimeClient();
