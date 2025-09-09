@@ -9,6 +9,9 @@ using System.ClientModel;
 using System.Text.RegularExpressions;
 using System.Web;
 
+#pragma warning disable AOAI001 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // add aspire service defaults
@@ -41,20 +44,21 @@ builder.Services.AddSingleton<RealtimeClient>(serviceProvider =>
     var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("Configuring RealtimeClient for model {Model}", chatDeploymentName);
 
-    endpoint = "https://bruno-brk445-resource.cognitiveservices.azure.com/"; // openai/realtime?api-version=2024-10-01-preview&deployment=gpt-realtime";
+    // endpoint = "https://bruno-brk445-resource.cognitiveservices.azure.com/"; // openai/realtime?api-version=2024-10-01-preview&deployment=gpt-realtime";
 
-    AzureOpenAIClientOptions? options = new(version: AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview)
-    ;
-#pragma warning disable AOAI001 
-    options.DefaultQueryParameters.Add("deployment", chatDeploymentName);
+    //AzureOpenAIClientOptions? options = new(version: AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview)
+    //;
+    //options.DefaultQueryParameters.Add("deployment", chatDeploymentName);
 
-    AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential(), options);
-    if (!string.IsNullOrEmpty(apiKey))
-    {
-        azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey), options);
-    }
+    //AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential(), options);
+    //if (!string.IsNullOrEmpty(apiKey))
+    //{
+    //    azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey), options);
+    //}
 
-    return azureClient.GetRealtimeClient();
+    AzureOpenAIClient aoaiClient = new(new Uri(endpoint), new ApiKeyCredential(apiKey));
+    var c = aoaiClient.GetRealtimeClient();
+    return c;
 
 });
 

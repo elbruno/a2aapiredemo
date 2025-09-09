@@ -49,103 +49,113 @@ public class ConversationManager : IDisposable
         await addMessageAsync("Connecting...");
         await addChatMessageAsync("Hello, how can I help?", false);
 
-        // Build tool functions (reflection based invocation later when/if the model calls them via function calling).
-        var semanticSearchTool = AIFunctionFactory.Create(_contosoProductContext.SemanticSearchOutdoorProductsAsync).ToConversationFunctionTool();
-        var searchByNameTool = AIFunctionFactory.Create(_contosoProductContext.SearchOutdoorProductsByNameAsync).ToConversationFunctionTool();
-        List<AIFunction> tools = [semanticSearchTool, searchByNameTool];
-
-        var modelName = Environment.GetEnvironmentVariable("AI_RealtimeDeploymentName")
-                        ?? Environment.GetEnvironmentVariable("OPENAI_REALTIME_MODEL")
-                        ?? "gpt-realtime"; // sensible default
-
-        _logger.LogInformation("Starting realtime session with model {Model}", modelName);
-
-        _session = await _client.StartConversationSessionAsync(
-            model: modelName, cancellationToken: cancellationToken);
-        await addMessageAsync("Session started...");
-
-        ConversationSessionOptions conversationSessionOptions = CreateConversationSessionOptions(prompt, tools);
-        await _session.ConfigureConversationSessionAsync(conversationSessionOptions);
-
-        var outputTranscription = new StringBuilder();
-        var functionCallOutputs = new ConcurrentQueue<object>();
-
-        await foreach (RealtimeUpdate update in _session.ReceiveUpdatesAsync(cancellationToken))
+        try
         {
-            switch (update)
+
+
+            // Build tool functions (reflection based invocation later when/if the model calls them via function calling).
+            var semanticSearchTool = AIFunctionFactory.Create(_contosoProductContext.SemanticSearchOutdoorProductsAsync).ToConversationFunctionTool();
+            var searchByNameTool = AIFunctionFactory.Create(_contosoProductContext.SearchOutdoorProductsByNameAsync).ToConversationFunctionTool();
+            List<AIFunction> tools = [semanticSearchTool, searchByNameTool];
+
+            var modelName = Environment.GetEnvironmentVariable("AI_RealtimeDeploymentName")
+                            ?? Environment.GetEnvironmentVariable("OPENAI_REALTIME_MODEL")
+                            ?? "gpt-realtime"; // sensible default
+
+            _logger.LogInformation("Starting realtime session with model {Model}", modelName);
+
+            _session = await _client.StartConversationSessionAsync(model: modelName);
+            await addMessageAsync("Session started...");
+
+            ConversationSessionOptions conversationSessionOptions = CreateConversationSessionOptions(prompt, tools);
+            await _session.ConfigureConversationSessionAsync(conversationSessionOptions);
+
+            var outputTranscription = new StringBuilder();
+            var functionCallOutputs = new ConcurrentQueue<object>();
+
+            await foreach (RealtimeUpdate update in _session.ReceiveUpdatesAsync(cancellationToken))
             {
-                case ConversationSessionStartedUpdate:
-                    await addMessageAsync("Conversation started");
-                    _ = Task.Run(async () => await _session.SendInputAudioAsync(audioInput, cancellationToken));
-                    break;
+                switch (update)
+                {
+                    case ConversationSessionStartedUpdate:
+                        await addMessageAsync("Conversation started");
+                        _ = Task.Run(async () => await _session.SendInputAudioAsync(audioInput, cancellationToken));
+                        break;
 
-                // INPUT AUDIO UPDATES
+                    // INPUT AUDIO UPDATES
 
-                case InputAudioSpeechStartedUpdate:
-                    await addMessageAsync("Speech started");
-                    await audioOutput.ClearPlaybackAsync();
-                    break;
+                    case InputAudioSpeechStartedUpdate:
+                        await addMessageAsync("Speech started");
+                        await audioOutput.ClearPlaybackAsync();
+                        break;
 
-                case InputAudioSpeechFinishedUpdate:
-                    await addMessageAsync("Speech finished");
-                    break;
+                    case InputAudioSpeechFinishedUpdate:
+                        await addMessageAsync("Speech finished");
+                        break;
 
-                case InputAudioTranscriptionFinishedUpdate:
-                    var transcript = update as InputAudioTranscriptionFinishedUpdate;
-                    await addMessageAsync($"User: {transcript.Transcript}");
-                    await addChatMessageAsync(transcript.Transcript, true);
-                    break;
+                    case InputAudioTranscriptionFinishedUpdate:
+                        var transcript = update as InputAudioTranscriptionFinishedUpdate;
+                        await addMessageAsync($"User: {transcript.Transcript}");
+                        await addChatMessageAsync(transcript.Transcript, true);
+                        break;
 
-                case InputAudioTranscriptionDeltaUpdate: //ConversationItemStreamingPartDeltaUpdate outputDelta:
+                    case InputAudioTranscriptionDeltaUpdate: //ConversationItemStreamingPartDeltaUpdate outputDelta:
 
-                    var deltaUpdate = update as InputAudioTranscriptionDeltaUpdate;
-                    // Append the delta text to the output transcription
-                    outputTranscription.Append(deltaUpdate.Delta);
-                    await addMessageAsync($"Assistant: {outputTranscription}");
-                    break;
+                        var deltaUpdate = update as InputAudioTranscriptionDeltaUpdate;
+                        // Append the delta text to the output transcription
+                        outputTranscription.Append(deltaUpdate.Delta);
+                        await addMessageAsync($"Assistant: {outputTranscription}");
+                        break;
 
-                // OUTPUT AUDIO UPDATES
+                    // OUTPUT AUDIO UPDATES
 
-                case OutputStreamingStartedUpdate:
-                    var outputUpdate = update as OutputStreamingStartedUpdate;
+                    case OutputStreamingStartedUpdate:
+                        var outputUpdate = update as OutputStreamingStartedUpdate;
 
-                    if (!string.IsNullOrEmpty(outputUpdate.FunctionName))
-                    {
-                        await addMessageAsync($"Calling function: {outputUpdate.FunctionName}({outputUpdate.FunctionCallArguments})");
-
-                    }
-                    break;
-
-                case OutputDeltaUpdate outputDelta:
-
-                    outputTranscription.Clear();
-                    await addMessageAsync($"Assistant: {outputDelta.AudioTranscript}");
-                    await addChatMessageAsync($"{outputDelta.AudioTranscript}", false);
-                    outputTranscription.Clear();
-                    break;
-
-                case OutputStreamingFinishedUpdate outputStreamingFinishedUpdate:
-
-                    addMessageAsync($"  -- Item streaming finished, item_id={outputStreamingFinishedUpdate.ItemId}");
-
-                    if (outputStreamingFinishedUpdate.FunctionCallId is not null)
-                    {
-                        addMessageAsync($"    + Responding to tool invoked by item: {outputStreamingFinishedUpdate.FunctionName}");
-                        RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
-                            callId: outputStreamingFinishedUpdate.FunctionCallId,
-                            output: "70 degrees Fahrenheit and sunny");
-                        await _session.AddItemAsync(functionOutputItem);
-                    }
-                    else if (outputStreamingFinishedUpdate.MessageContentParts?.Count > 0)
-                    {
-                        addMessageAsync($"+ [{outputStreamingFinishedUpdate.MessageRole}]: ");
-                        foreach (ConversationContentPart contentPart in outputStreamingFinishedUpdate.MessageContentParts)
+                        if (!string.IsNullOrEmpty(outputUpdate.FunctionName))
                         {
-                            addMessageAsync(contentPart.AudioTranscript);
+                            await addMessageAsync($"Calling function: {outputUpdate.FunctionName}({outputUpdate.FunctionCallArguments})");
+
                         }
-                    }
-                    break;
+                        break;
+
+                    case OutputDeltaUpdate outputDelta:
+
+                        outputTranscription.Clear();
+                        await addMessageAsync($"Assistant: {outputDelta.AudioTranscript}");
+                        await addChatMessageAsync($"{outputDelta.AudioTranscript}", false);
+                        outputTranscription.Clear();
+                        break;
+
+                    case OutputStreamingFinishedUpdate outputStreamingFinishedUpdate:
+
+                        addMessageAsync($"  -- Item streaming finished, item_id={outputStreamingFinishedUpdate.ItemId}");
+
+                        if (outputStreamingFinishedUpdate.FunctionCallId is not null)
+                        {
+                            addMessageAsync($"    + Responding to tool invoked by item: {outputStreamingFinishedUpdate.FunctionName}");
+                            RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
+                                callId: outputStreamingFinishedUpdate.FunctionCallId,
+                                output: "70 degrees Fahrenheit and sunny");
+                            await _session.AddItemAsync(functionOutputItem);
+                        }
+                        else if (outputStreamingFinishedUpdate.MessageContentParts?.Count > 0)
+                        {
+                            addMessageAsync($"+ [{outputStreamingFinishedUpdate.MessageRole}]: ");
+                            foreach (ConversationContentPart contentPart in outputStreamingFinishedUpdate.MessageContentParts)
+                            {
+                                addMessageAsync(contentPart.AudioTranscript);
+                            }
+                        }
+                        break;
+                }
             }
+
+        }
+        catch (Exception exc)
+        {
+            _logger.LogError(exc, "Error occurred while processing conversation updates");
+            await addMessageAsync($"Error: {exc.Message}");
         }
     }
 
