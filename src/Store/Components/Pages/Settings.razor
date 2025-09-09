@@ -1,0 +1,304 @@
+@page "/settings"
+@using Store.Services
+@using DataSources.Models
+@inject IDataSourcesService DataSourcesService
+@inject ILogger<Settings> Logger
+@attribute [StreamRendering(true)]
+@rendermode InteractiveServer
+
+<PageTitle>Settings - Web Page Indexing</PageTitle>
+
+<h1>Settings</h1>
+<p>Configure web pages for enhanced search and chat functionality.</p>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Index Web Pages</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Add up to 5 URLs to index their content for semantic search. The AI chat will be able to reference information from these pages.
+                    </p>
+                    
+                    <EditForm Model="@indexRequest" OnValidSubmit="@IndexUrls">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Web Page URLs (1-5 URLs)</label>
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                var index = i; // Capture for closure
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">@(index + 1)</span>
+                                    <input type="url" 
+                                           class="form-control" 
+                                           @bind="@urls[index]" 
+                                           placeholder="https://example.com/article"
+                                           disabled="@isIndexing" />
+                                </div>
+                            }
+                            <small class="form-text text-muted">
+                                Enter valid HTTP/HTTPS URLs. Empty fields will be ignored.
+                            </small>
+                        </div>
+                        
+                        <button type="submit" 
+                                class="btn btn-primary" 
+                                disabled="@(isIndexing || !HasValidUrls())">
+                            @if (isIndexing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Indexing...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-cloud-upload me-2"></i>
+                                <span>Index Web Pages</span>
+                            }
+                        </button>
+                    </EditForm>
+                    
+                    @if (!string.IsNullOrEmpty(statusMessage))
+                    {
+                        <div class="alert @(isError ? "alert-danger" : "alert-success") mt-3">
+                            @statusMessage
+                        </div>
+                    }
+                    
+                    @if (indexingResults.Any())
+                    {
+                        <div class="mt-4">
+                            <h5>Indexing Results</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>URL</th>
+                                            <th>Title</th>
+                                            <th>Chunks</th>
+                                            <th>Status</th>
+                                            <th>Indexed At</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var result in indexingResults)
+                                        {
+                                            <tr class="@(result.Success ? "" : "table-danger")">
+                                                <td>
+                                                    <a href="@result.Url" target="_blank" class="text-truncate" style="max-width: 200px; display: inline-block;">
+                                                        @result.Url
+                                                    </a>
+                                                </td>
+                                                <td>@result.Title</td>
+                                                <td>@result.ChunkCount</td>
+                                                <td>
+                                                    @if (result.Success)
+                                                    {
+                                                        <span class="badge bg-success">Success</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger" title="@result.ErrorMessage">Failed</span>
+                                                    }
+                                                </td>
+                                                <td>@result.IndexedAt.ToString("MM/dd HH:mm")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Currently Indexed Pages</h5>
+                </div>
+                <div class="card-body">
+                    @if (currentIndexedUrls == null)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span class="ms-2">Loading...</span>
+                        </div>
+                    }
+                    else if (!currentIndexedUrls.Any())
+                    {
+                        <p class="text-muted">No pages indexed yet.</p>
+                    }
+                    else
+                    {
+                        @foreach (var indexedUrl in currentIndexedUrls)
+                        {
+                            <div class="card mb-2 border-0 bg-light">
+                                <div class="card-body p-2">
+                                    <h6 class="card-title mb-1 text-truncate">@indexedUrl.Title</h6>
+                                    <p class="card-text small text-muted mb-1">
+                                        <a href="@indexedUrl.Url" target="_blank" class="text-decoration-none">
+                                            @GetDomainFromUrl(indexedUrl.Url)
+                                        </a>
+                                    </p>
+                                    <small class="text-muted">
+                                        @indexedUrl.ChunkCount chunks • @indexedUrl.IndexedAt.ToString("MM/dd HH:mm")
+                                    </small>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>How it works</h6>
+                </div>
+                <div class="card-body">
+                    <ol class="small">
+                        <li>Enter web page URLs you want to reference</li>
+                        <li>The system crawls and extracts main content</li>
+                        <li>Content is chunked and embedded for search</li>
+                        <li>AI chat can now reference this information</li>
+                        <li>Use the search page to find relevant content</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IndexUrlsRequest indexRequest = new() { Urls = new List<string>() };
+    private string[] urls = new string[5];
+    private bool isIndexing = false;
+    private string statusMessage = "";
+    private bool isError = false;
+    private List<IndexedUrl> indexingResults = new();
+    private List<IndexedUrl>? currentIndexedUrls = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize empty URLs
+        for (int i = 0; i < 5; i++)
+        {
+            urls[i] = "";
+        }
+        
+        // Load currently indexed URLs
+        await LoadIndexedUrls();
+    }
+
+    private async Task LoadIndexedUrls()
+    {
+        try
+        {
+            currentIndexedUrls = await DataSourcesService.GetIndexedUrlsAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading indexed URLs");
+            currentIndexedUrls = new List<IndexedUrl>();
+        }
+    }
+
+    private bool HasValidUrls()
+    {
+        return urls.Any(url => !string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out _));
+    }
+
+    private async Task IndexUrls()
+    {
+        isIndexing = true;
+        statusMessage = "";
+        isError = false;
+        indexingResults.Clear();
+
+        try
+        {
+            // Get non-empty URLs
+            var validUrls = urls.Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
+            
+            if (!validUrls.Any())
+            {
+                statusMessage = "Please enter at least one valid URL.";
+                isError = true;
+                return;
+            }
+
+            indexRequest.Urls = validUrls;
+            
+            Logger.LogInformation("Indexing {Count} URLs", validUrls.Count);
+            
+            var response = await DataSourcesService.IndexUrlsAsync(indexRequest);
+            
+            if (response != null)
+            {
+                indexingResults = response.IndexedUrls;
+                
+                var successCount = response.IndexedUrls.Count(u => u.Success);
+                var errorCount = response.IndexedUrls.Count - successCount;
+                
+                if (errorCount == 0)
+                {
+                    statusMessage = $"Successfully indexed {successCount} web page(s)!";
+                    isError = false;
+                    
+                    // Clear the form
+                    for (int i = 0; i < 5; i++)
+                    {
+                        urls[i] = "";
+                    }
+                }
+                else
+                {
+                    statusMessage = $"Indexed {successCount} page(s) successfully, {errorCount} failed. Check details below.";
+                    isError = errorCount > successCount;
+                }
+                
+                // Add errors if any
+                if (response.Errors.Any())
+                {
+                    statusMessage += $" Errors: {string.Join(", ", response.Errors)}";
+                }
+                
+                // Refresh the indexed URLs list
+                await LoadIndexedUrls();
+            }
+            else
+            {
+                statusMessage = "Failed to index URLs. Please try again.";
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error indexing URLs");
+            statusMessage = $"An error occurred: {ex.Message}";
+            isError = true;
+        }
+        finally
+        {
+            isIndexing = false;
+        }
+    }
+
+    private string GetDomainFromUrl(string url)
+    {
+        try
+        {
+            var uri = new Uri(url);
+            return uri.Host;
+        }
+        catch
+        {
+            return url;
+        }
+    }
+}
