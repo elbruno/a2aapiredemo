@@ -7,6 +7,7 @@
     <Project Path="Products/Products.csproj" />
     <Project Path="Store/Store.csproj" />
     <Project Path="StoreRealtime/StoreRealtime.csproj" />
+    <Project Path="DataSources/DataSources.csproj" />
   </Folder>
   <Folder Name="/3 Models/">
     <Project Path="CartEntities/CartEntities.csproj" />
