@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Linq; // Added for LINQ Select used in tool result serialization
 
 namespace StoreRealtime;
 
@@ -70,83 +71,203 @@ public class ConversationManager : IDisposable
             ConversationSessionOptions conversationSessionOptions = CreateConversationSessionOptions(prompt, tools);
             await _session.ConfigureConversationSessionAsync(conversationSessionOptions);
 
-            var outputTranscription = new StringBuilder();
-            var functionCallOutputs = new ConcurrentQueue<object>();
+            var userPartialTranscript = new StringBuilder();      // Collects streaming user speech until finished
+            var assistantPartialTranscript = new StringBuilder(); // Collects streaming assistant speech until finished
+
+            // Local function to invoke model requested tool by name and JSON args
+            async Task<(string toolResultText, List<Product>? products)> InvokeToolAsync(string functionName, string? rawArgs)
+            {
+                try
+                {
+                    // Parse single string argument for both existing context functions which expect a single string parameter
+                    string? extracted = null;
+                    if (!string.IsNullOrWhiteSpace(rawArgs))
+                    {
+                        try
+                        {
+                            using var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(rawArgs) ? "{}" : rawArgs);
+                            // Accept common keys
+                            if (doc.RootElement.ValueKind == JsonValueKind.Object)
+                            {
+                                if (doc.RootElement.TryGetProperty("searchCriteria", out var sc)) extracted = sc.GetString();
+                                else if (doc.RootElement.TryGetProperty("name", out var nm)) extracted = nm.GetString();
+                                else if (doc.RootElement.TryGetProperty("query", out var q)) extracted = q.GetString();
+                                else if (doc.RootElement.EnumerateObject().FirstOrDefault().Value.ValueKind == JsonValueKind.String)
+                                {
+                                    extracted = doc.RootElement.EnumerateObject().First().Value.GetString();
+                                }
+                            }
+                        }
+                        catch { /* swallow parse errors; fallback below */ }
+                    }
+                    extracted ??= rawArgs?.Trim('"'); // fallback if rawArgs was already a simple JSON string
+
+                    // Provide a safe default
+                    if (string.IsNullOrWhiteSpace(extracted)) extracted = "outdoor"; // generic fallback
+
+                    if (functionName.Equals("SemanticSearchOutdoorProducts", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var json = await _contosoProductContext.SemanticSearchOutdoorProductsAsync(extracted);
+                        // Try to parse products from json (List<Product>)
+                        List<Product>? prods = null;
+                        try
+                        {
+                            prods = JsonSerializer.Deserialize<SearchResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Products;
+                        }
+                        catch { /* ignore */ }
+                        return ($"Semantic search results for '{extracted}'", prods ?? new List<Product>());
+                    }
+                    if (functionName.Equals("SearchOutdoorProductsByName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var text = await _contosoProductContext.SearchOutdoorProductsByNameAsync(extracted);
+                        // name search returns plain text list (?) – attempt parse first
+                        List<Product>? prods = null;
+                        try
+                        {
+                            var sr = JsonSerializer.Deserialize<SearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            prods = sr?.Products;
+                        }
+                        catch { /* ignore, treat as plain text */ }
+                        return (text, prods ?? new List<Product>());
+                    }
+                    return ($"Tool '{functionName}' not recognized", new List<Product>());
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Tool invocation error for {Function}", functionName);
+                    return ($"Error invoking {functionName}: {ex.Message}", new List<Product>());
+                }
+            }
+
+            // NOTE: Previous implementation pushed a chat bubble on every OutputDeltaUpdate which caused
+            // multiple fragmented bubbles for a single assistant response. We now:
+            //  1. Buffer user transcription deltas until InputAudioTranscriptionFinishedUpdate, then send ONE user bubble
+            //  2. Buffer assistant output deltas until OutputStreamingFinishedUpdate (non function-call), then send ONE assistant bubble
+            //  3. Keep function calling path; when a function call completes we inject a tool result item (still simple placeholder)
+            //  4. Provide log updates (addMessageAsync) for granular progress without polluting chat UI
 
             await foreach (RealtimeUpdate update in _session.ReceiveUpdatesAsync(cancellationToken))
             {
                 switch (update)
                 {
+                    // SESSION LIFECYCLE -----------------------------------------------------------
                     case ConversationSessionStartedUpdate:
                         await addMessageAsync("Conversation started");
+                        // Fire-and-forget streaming of input audio
                         _ = Task.Run(async () => await _session.SendInputAudioAsync(audioInput, cancellationToken));
                         break;
 
-                    // INPUT AUDIO UPDATES
-
+                    // USER INPUT (MIC) -----------------------------------------------------------
                     case InputAudioSpeechStartedUpdate:
                         await addMessageAsync("Speech started");
-                        await audioOutput.ClearPlaybackAsync();
+                        await audioOutput.ClearPlaybackAsync(); // make sure no overlapping playback
+                        userPartialTranscript.Clear();
+                        break;
+
+                    case InputAudioTranscriptionDeltaUpdate userDelta:
+                        // Buffer only (no logging of partials to avoid noisy UI)
+                        userPartialTranscript.Append(userDelta.Delta);
+                        break;
+
+                    case InputAudioTranscriptionFinishedUpdate userDone:
+                        // Final user transcript -> single chat bubble
+                        var finalUser = userDone.Transcript?.Trim();
+                        if (!string.IsNullOrEmpty(finalUser))
+                        {
+                            await addMessageAsync($"User: {finalUser}");
+                            await addChatMessageAsync(finalUser, true);
+                        }
+                        userPartialTranscript.Clear();
                         break;
 
                     case InputAudioSpeechFinishedUpdate:
                         await addMessageAsync("Speech finished");
                         break;
 
-                    case InputAudioTranscriptionFinishedUpdate:
-                        var transcript = update as InputAudioTranscriptionFinishedUpdate;
-                        await addMessageAsync($"User: {transcript.Transcript}");
-                        await addChatMessageAsync(transcript.Transcript, true);
-                        break;
-
-                    case InputAudioTranscriptionDeltaUpdate: //ConversationItemStreamingPartDeltaUpdate outputDelta:
-
-                        var deltaUpdate = update as InputAudioTranscriptionDeltaUpdate;
-                        // Append the delta text to the output transcription
-                        outputTranscription.Append(deltaUpdate.Delta);
-                        await addMessageAsync($"Assistant: {outputTranscription}");
-                        break;
-
-                    // OUTPUT AUDIO UPDATES
-
-                    case OutputStreamingStartedUpdate:
-                        var outputUpdate = update as OutputStreamingStartedUpdate;
-
-                        if (!string.IsNullOrEmpty(outputUpdate.FunctionName))
+                    // ASSISTANT OUTPUT STREAMING -------------------------------------------------
+                    case OutputStreamingStartedUpdate started:
+                        assistantPartialTranscript.Clear();
+                        if (!string.IsNullOrWhiteSpace(started.FunctionName))
                         {
-                            await addMessageAsync($"Calling function: {outputUpdate.FunctionName}({outputUpdate.FunctionCallArguments})");
-
+                            // Model announced it's about to call a function
+                            await addMessageAsync($"Calling function: {started.FunctionName}({started.FunctionCallArguments})");
+                        }
+                        else
+                        {
+                            await addMessageAsync("Assistant answering...");
                         }
                         break;
 
-                    case OutputDeltaUpdate outputDelta:
-
-                        outputTranscription.Clear();
-                        await addMessageAsync($"Assistant: {outputDelta.AudioTranscript}");
-                        await addChatMessageAsync($"{outputDelta.AudioTranscript}", false);
-                        outputTranscription.Clear();
+                    case OutputDeltaUpdate delta:
+                        // Accumulate assistant streaming transcript only (no partial logging)
+                        if (!string.IsNullOrEmpty(delta.AudioTranscript))
+                        {
+                            assistantPartialTranscript.Append(delta.AudioTranscript);
+                        }
                         break;
 
-                    case OutputStreamingFinishedUpdate outputStreamingFinishedUpdate:
-
-                        addMessageAsync($"  -- Item streaming finished, item_id={outputStreamingFinishedUpdate.ItemId}");
-
-                        if (outputStreamingFinishedUpdate.FunctionCallId is not null)
+                    case OutputStreamingFinishedUpdate finished:
+                        // Record final outcome only
+                        if (finished.FunctionCallId is not null)
                         {
-                            addMessageAsync($"    + Responding to tool invoked by item: {outputStreamingFinishedUpdate.FunctionName}");
-                            RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
-                                callId: outputStreamingFinishedUpdate.FunctionCallId,
-                                output: "70 degrees Fahrenheit and sunny");
-                            await _session.AddItemAsync(functionOutputItem);
-                        }
-                        else if (outputStreamingFinishedUpdate.MessageContentParts?.Count > 0)
-                        {
-                            addMessageAsync($"+ [{outputStreamingFinishedUpdate.MessageRole}]: ");
-                            foreach (ConversationContentPart contentPart in outputStreamingFinishedUpdate.MessageContentParts)
+                            // Real tool invocation
+                            var (toolText, products) = await InvokeToolAsync(finished.FunctionName ?? string.Empty, finished.FunctionCallArguments);
+
+                            // Build tool output item for the model with textual summary (keep concise)
+                            var toolOutput = toolText;
+                            if (products?.Count > 0)
                             {
-                                addMessageAsync(contentPart.AudioTranscript);
+                                // Provide a terse JSON with minimal fields to keep token usage low
+                                var compact = JsonSerializer.Serialize(products.Select(p => new { p.Name, p.Description, p.Price }));
+                                toolOutput = compact;
+                            }
+                            RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
+                                callId: finished.FunctionCallId,
+                                output: toolOutput);
+                            await _session.AddItemAsync(functionOutputItem);
+
+                            await addMessageAsync($"Tool executed: {finished.FunctionName}");
+                            if (products?.Count > 0)
+                            {
+                                await addMessageAsync($"Products returned: {products.Count}");
+                                await addChatProductMessageAsync(products); // show product cards/bubble
+                            }
+                            else
+                            {
+                                await addChatMessageAsync(toolText, false);
                             }
                         }
+                        else
+                        {
+                            string assistantText;
+                            if (finished.MessageContentParts?.Count > 0)
+                            {
+                                var assembled = new StringBuilder();
+                                foreach (ConversationContentPart part in finished.MessageContentParts)
+                                {
+                                    if (!string.IsNullOrEmpty(part.AudioTranscript)) assembled.Append(part.AudioTranscript);
+                                    else if (!string.IsNullOrEmpty(part.Text)) assembled.Append(part.Text);
+                                }
+                                assistantText = assembled.Length > 0 ? assembled.ToString() : assistantPartialTranscript.ToString();
+                            }
+                            else
+                            {
+                                assistantText = assistantPartialTranscript.ToString();
+                            }
+                            assistantText = assistantText.Trim();
+                            if (!string.IsNullOrEmpty(assistantText))
+                            {
+                                await addMessageAsync($"Assistant: {assistantText}");
+                                await addChatMessageAsync(assistantText, false);
+                            }
+                        }
+                        assistantPartialTranscript.Clear();
+                        break;
+
+                    // DEFAULT / UNHANDLED --------------------------------------------------------
+                    default:
+                        // Suppress noisy low-signal updates (ResponseStartedUpdate, ItemCreatedUpdate, etc.)
+                        // If troubleshooting, temporarily re-enable logging here.
                         break;
                 }
             }
