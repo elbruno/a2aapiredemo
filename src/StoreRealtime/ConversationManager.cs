@@ -198,6 +198,32 @@ public class ConversationManager : IDisposable
                         }
                         break;
 
+                    // AUDIO OUTPUT DELTAS (reflection-based to avoid tight coupling to SDK shape) -----------------------
+                    case var audioDelta when audioDelta.GetType().Name == "OutputAudioDeltaUpdate":
+                        {
+                            // Attempt to retrieve base64 audio chunk property (common names tried)
+                            if (TryExtractAudioBytes(audioDelta, out var audioBytes))
+                            {
+                                try { await audioOutput.EnqueueAsync(audioBytes); } catch { /* ignore playback errors */ }
+                            }
+                        }
+                        break;
+
+                    case var audioTranscriptFinished when audioTranscriptFinished.GetType().Name == "OutputAudioTranscriptionFinishedUpdate":
+                        {
+                            // Capture final transcript for this audio segment if we haven't yet
+                            var tProp = audioTranscriptFinished.GetType().GetProperty("Transcript")
+                                       ?? audioTranscriptFinished.GetType().GetProperty("AudioTranscript");
+                            var text = tProp?.GetValue(audioTranscriptFinished) as string;
+                            if (!string.IsNullOrWhiteSpace(text))
+                            {
+                                // Accumulate; final assembly still handled at OutputStreamingFinishedUpdate
+                                if (assistantPartialTranscript.Length == 0)
+                                    assistantPartialTranscript.Append(text);
+                            }
+                        }
+                        break;
+
                     case OutputDeltaUpdate delta:
                         // Accumulate assistant streaming transcript only (no partial logging)
                         if (!string.IsNullOrEmpty(delta.AudioTranscript))
@@ -302,6 +328,40 @@ public class ConversationManager : IDisposable
             sessionOptions.Tools.Add(tool.AsOpenAIConversationFunctionTool());
         }
         return sessionOptions;
+    }
+
+    // Attempts to extract audio bytes from a SDK update object in a resilient way.
+    private static bool TryExtractAudioBytes(object update, out byte[] bytes)
+    {
+        bytes = Array.Empty<byte>();
+        try
+        {
+            var t = update.GetType();
+            // Common property names that might hold base64 data or raw byte[]
+            string[] candidateNames = ["AudioChunk", "Audio", "Delta", "Bytes"];
+            foreach (var name in candidateNames)
+            {
+                var prop = t.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                if (prop == null) continue;
+                var val = prop.GetValue(update);
+                if (val is byte[] b && b.Length > 0)
+                {
+                    bytes = b; return true;
+                }
+                if (val is string s && !string.IsNullOrWhiteSpace(s))
+                {
+                    // assume base64
+                    try
+                    {
+                        bytes = Convert.FromBase64String(s);
+                        return true;
+                    }
+                    catch { /* not base64 */ }
+                }
+            }
+        }
+        catch { }
+        return false;
     }
 
 
