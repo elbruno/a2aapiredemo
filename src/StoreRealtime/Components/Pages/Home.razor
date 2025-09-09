@@ -72,13 +72,25 @@
 
         @* REALTIME AUDIO LOG SECTION *@
         <div class="info-log-section">
-
-            <h4>Realtime Audio Log</h4>
-            <i class="icon-top-right">🔊</i>
-            <ul class="info-log">
-                @foreach (var message in messages)
+            <div class="log-header">
+                <h4 class="log-title">Realtime Audio Log</h4>
+                <div class="log-legend">
+                    <span class="log-badge user">User</span>
+                    <span class="log-badge assistant">Assistant</span>
+                    <span class="log-badge function">Function</span>
+                    <span class="log-badge audio">Audio</span>
+                    <span class="log-badge system">Sys</span>
+                </div>
+            </div>
+            <ul class="info-log grouped">
+                @foreach (var entry in messages)
                 {
-                    <li>@message</li>
+                    var categoryClass = entry.Category.ToString().ToLower();
+                    <li class="log-entry @categoryClass">
+                        <div class="log-time">@entry.Timestamp.ToString("HH:mm:ss")</div>
+                        <div class="log-icon">@entry.Icon</div>
+                        <div class="log-msg">@entry.Message</div>
+                    </li>
                 }
             </ul>
         </div>
@@ -155,7 +167,21 @@
 
     private async Task AddMessageAsync(string message)
     {
-        messages.Add(new LogMessage(message));
+        // Basic categorization heuristics (keeps ConversationManager unchanged):
+        LogMessage log = message switch
+        {
+            var m when m.StartsWith("User:") => LogMessage.User(message["User:".Length..].Trim()),
+            var m when m.StartsWith("Assistant:") => LogMessage.Assistant(message["Assistant:".Length..].Trim()),
+            var m when m.StartsWith("Calling function:") => LogMessage.Function(message),
+            var m when m.StartsWith("Tool executed:") => LogMessage.Function(message),
+            var m when m.Contains("Speech started", StringComparison.OrdinalIgnoreCase) => LogMessage.Audio(message),
+            var m when m.Contains("Speech finished", StringComparison.OrdinalIgnoreCase) => LogMessage.Audio(message),
+            var m when m.Contains("Session started", StringComparison.OrdinalIgnoreCase) => LogMessage.System(message),
+            var m when m.Contains("Conversation started", StringComparison.OrdinalIgnoreCase) => LogMessage.System(message),
+            var m when m.StartsWith("Error:") => LogMessage.Error(message),
+            _ => LogMessage.System(message)
+        };
+        messages.Add(log);
         await InvokeAsync(StateHasChanged);
     }
 
