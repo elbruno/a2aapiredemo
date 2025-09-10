@@ -12,7 +12,7 @@ namespace DataSources.Memory;
 /// </summary>
 public class DataSourcesMemoryContext
 {
-    private readonly ILogger<DataSourcesMemoryContext> _logger;
+    private readonly ILogger _logger;
     private readonly IChatClient? _chatClient;
     private readonly IEmbeddingGenerator<string, Embedding<float>>? _embeddingGenerator;
     private readonly WebCrawlerService _webCrawlerService;
@@ -21,7 +21,7 @@ public class DataSourcesMemoryContext
     private int _nextId = 1;
 
     public DataSourcesMemoryContext(
-        ILogger<DataSourcesMemoryContext> logger, 
+        ILogger logger, 
         IChatClient? chatClient, 
         IEmbeddingGenerator<string, Embedding<float>>? embeddingGenerator,
         WebCrawlerService webCrawlerService)

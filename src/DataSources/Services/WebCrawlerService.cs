@@ -10,9 +10,9 @@ namespace DataSources.Services;
 public class WebCrawlerService
 {
     private readonly HttpClient _httpClient;
-    private readonly ILogger<WebCrawlerService> _logger;
+    private readonly ILogger<Program> _logger;
 
-    public WebCrawlerService(HttpClient httpClient, ILogger<WebCrawlerService> logger)
+    public WebCrawlerService(HttpClient httpClient, ILogger<Program> logger)
     {
         _httpClient = httpClient;
         _logger = logger;
@@ -179,15 +179,4 @@ public class WebCrawlerService
         
         return spaceIndex > 0 ? overlapText.Substring(spaceIndex + 1) : overlapText;
     }
-}
-
-/// <summary>
-/// Information extracted from a web page
-/// </summary>
-public class WebPageInfo
-{
-    public required string Url { get; set; }
-    public required string Title { get; set; }
-    public required string Content { get; set; }
-    public DateTime CrawledAt { get; set; }
 }
