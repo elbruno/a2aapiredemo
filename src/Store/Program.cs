@@ -9,13 +9,9 @@ builder.AddServiceDefaults();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
-builder.Services.AddScoped<IDataSourcesService, DataSourcesService>();
 
 builder.Services.AddHttpClient<IProductService, ProductService>(
     static client => client.BaseAddress = new("https+http://products"));
-
-builder.Services.AddHttpClient<IDataSourcesService, DataSourcesService>(
-    static client => client.BaseAddress = new("https+http://datasources"));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

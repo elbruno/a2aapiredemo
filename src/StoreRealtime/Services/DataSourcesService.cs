@@ -2,7 +2,7 @@ using DataSources.Models;
 using SearchEntities;
 using System.Text.Json;
 
-namespace Store.Services;
+namespace StoreRealtime.Services;
 
 /// <summary>
 /// Service for communicating with the DataSources API

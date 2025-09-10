@@ -21,6 +21,10 @@ builder.Services.AddSingleton<ProductService>();
 builder.Services.AddHttpClient<ProductService>(
     static client => client.BaseAddress = new("https+http://products"));
 
+builder.Services.AddScoped<StoreRealtime.Services.IDataSourcesService, StoreRealtime.Services.DataSourcesService>();
+builder.Services.AddHttpClient<StoreRealtime.Services.IDataSourcesService, StoreRealtime.Services.DataSourcesService>(
+    static client => client.BaseAddress = new("https+http://datasources"));
+
 var azureOpenAiClientName = "openai";
 
 (string endpoint, string apiKey) = GetEndpointAndKey(builder, azureOpenAiClientName);

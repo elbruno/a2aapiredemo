@@ -1,6 +1,6 @@
 using DataSources.Models;
 
-namespace Store.Services;
+namespace StoreRealtime.Services;
 
 /// <summary>
 /// Interface for DataSources service communication

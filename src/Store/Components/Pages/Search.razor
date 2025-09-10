@@ -1,8 +1,7 @@
-﻿@page "/search"
+@page "/search"
 @using Store.Services
 
 @inject IProductService ProductService
-@inject IDataSourcesService DataSourcesService
 @inject IConfiguration Configuration
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
@@ -23,26 +22,8 @@
         <InputCheckbox id="smartSearch2" @bind-Value="smartSearch" />
         <label class="form-check-label" for="smartSearch">Use Semantic Search</label>
     </div>
-    <div class="form-check form-switch mb-3">
-        <InputCheckbox id="includeWebPages" @bind-Value="includeWebPages" />
-        <label class="form-check-label" for="includeWebPages">Include Web Pages</label>
-    </div>
     <hr />
-    @if (!string.IsNullOrEmpty(aiResponse))
-    {
-        <div class="alert alert-info">
-            <h5>AI Response</h5>
-            <p class="quote">@aiResponse</p>
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(webPageResponse))
-    {
-        <div class="alert alert-success">
-            <h5>Web Page Insights</h5>
-            <p class="quote">@webPageResponse</p>
-        </div>
-    }
+    <p class="quote">@aiResponse</p>
 </div>
 
 
@@ -66,7 +47,7 @@ else
             {
                 <tr>
                     <!-- Simulating images being hosted on a CDN -->
-                    <td><img height="80" width="80" src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" /></td>
+                    <td><img height="80" width="80" src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet- cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" /></td>
                     <td>@product.Name</td>
                     <td>@product.Description</td>
                     <td>@product.Price</td>
@@ -80,29 +61,13 @@ else
     private string searchTerm = "";
     private List<DataEntities.Product>? products;
     private string aiResponse = "";
-    private string webPageResponse = "";
     private bool smartSearch = false;
-    private bool includeWebPages = false;
 
     private async Task DoSearch(MouseEventArgs e)
     {
         await Task.Delay(500);
-        
-        // Clear previous responses
-        aiResponse = "";
-        webPageResponse = "";
-        products = new List<DataEntities.Product>();
-
-        // Search products
-        var productResponse = await ProductService.Search(searchTerm, smartSearch);
-        aiResponse = productResponse?.Response ?? "";
-        products = productResponse?.Products ?? new List<DataEntities.Product>();
-
-        // Search web pages if enabled
-        if (includeWebPages)
-        {
-            var webPageSearchResponse = await DataSourcesService.SearchAsync(searchTerm);
-            webPageResponse = webPageSearchResponse?.Response ?? "";
-        }
+        var response = await ProductService.Search(searchTerm, smartSearch);
+        aiResponse = response.Response;
+        products = response.Products;
     }
 }

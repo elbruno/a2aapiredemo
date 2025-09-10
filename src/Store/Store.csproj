@@ -14,6 +14,5 @@
     <ProjectReference Include="..\eShopServiceDefaults\eShopServiceDefaults.csproj" />
     <ProjectReference Include="..\SearchEntities\SearchEntities.csproj" />
     <ProjectReference Include="..\CartEntities\CartEntities.csproj" />
-    <ProjectReference Include="..\DataSources\DataSources.csproj" />
   </ItemGroup>
 </Project>
