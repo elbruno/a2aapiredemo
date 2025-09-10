@@ -56,13 +56,13 @@ public class DataSourcesService
     /// <summary>
     /// Search indexed web content
     /// </summary>
-    public async Task<SearchResponse?> SearchAsync(string query)
+    public async Task<ProductSearchResponse?> SearchAsync(string query)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return new SearchResponse { Response = "Query cannot be empty", Products = new List<DataEntities.Product>() };
+                return new ProductSearchResponse { Response = "Query cannot be empty", Products = new List<DataEntities.Product>() };
             }
 
             _logger.LogInformation("Searching web content for: {Query}", query);
@@ -76,7 +76,7 @@ public class DataSourcesService
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<SearchResponse>();
+                var result = await response.Content.ReadFromJsonAsync<ProductSearchResponse>();
                 _logger.LogInformation("Successfully searched web content");
                 return result;
             }
@@ -91,7 +91,7 @@ public class DataSourcesService
             _logger.LogError(ex, "Error searching web content");
         }
 
-        return new SearchResponse { Response = "Error searching web content", Products = new List<DataEntities.Product>() };
+        return new ProductSearchResponse { Response = "Error searching web content", Products = new List<DataEntities.Product>() };
     }
 
     /// <summary>

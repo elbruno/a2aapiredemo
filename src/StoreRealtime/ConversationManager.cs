@@ -189,7 +189,7 @@ public partial class ConversationManager : IDisposable
                 List<Product>? prods = null;
                 try
                 {
-                    prods = JsonSerializer.Deserialize<SearchResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Products;
+                    prods = JsonSerializer.Deserialize<ProductSearchResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Products;
                 }
                 catch { }
                 return ($"Semantic search results for '{extracted}'", prods ?? new List<Product>());
@@ -200,7 +200,7 @@ public partial class ConversationManager : IDisposable
                 List<Product>? prods = null;
                 try
                 {
-                    var sr = JsonSerializer.Deserialize<SearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var sr = JsonSerializer.Deserialize<ProductSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     prods = sr?.Products;
                 }
                 catch { }
@@ -212,7 +212,7 @@ public partial class ConversationManager : IDisposable
                 List<Product>? prods = null;
                 try
                 {
-                    var sr = JsonSerializer.Deserialize<SearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var sr = JsonSerializer.Deserialize<ProductSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     prods = sr?.Products;
                 }
                 catch { }

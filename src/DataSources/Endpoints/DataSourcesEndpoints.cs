@@ -29,7 +29,7 @@ public static class DataSourcesEndpoints
         group.MapGet("/search/{query}", SearchWebContent)
             .WithName("SearchWebContent")
             .WithSummary("Search indexed web content")
-            .Produces<SearchResponse>(StatusCodes.Status200OK)
+            .Produces<ProductSearchResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         // Get indexed URLs endpoint
@@ -81,21 +81,13 @@ public static class DataSourcesEndpoints
 
             if (validUrls.Count == 0)
             {
-                return Results.BadRequest(new IndexUrlsResponse 
-                { 
-                    IndexedUrls = new List<IndexedUrl>(), 
-                    Errors = errors 
-                });
+                return Results.BadRequest(new IndexUrlsResponse(new List<IndexedUrl>(), errors));
             }
 
             // Index the URLs
             var indexedUrls = await memoryContext.IndexUrlsAsync(validUrls);
 
-            var response = new IndexUrlsResponse
-            {
-                IndexedUrls = indexedUrls,
-                Errors = errors
-            };
+            var response = new IndexUrlsResponse(indexedUrls, errors);
 
             logger.LogInformation("Indexing completed. Success: {Success}, Errors: {Errors}", 
                 indexedUrls.Count(u => u.Success), errors.Count);
@@ -130,7 +122,7 @@ public static class DataSourcesEndpoints
             
             if (string.IsNullOrEmpty(searchResponse.Response))
             {
-                return Results.NotFound(new SearchResponse 
+                return Results.NotFound(new ProductSearchResponse 
                 { 
                     Response = "No relevant content found", 
                     Products = new List<DataEntities.Product>() 

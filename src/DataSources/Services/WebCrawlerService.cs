@@ -1,3 +1,4 @@
+using DataEntities;
 using HtmlAgilityPack;
 using System.Text;
 using System.Text.RegularExpressions;

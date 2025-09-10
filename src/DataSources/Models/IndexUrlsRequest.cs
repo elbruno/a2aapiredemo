@@ -16,21 +16,6 @@ public class IndexUrlsRequest
 /// <summary>
 /// Response model for indexing URLs
 /// </summary>
-public class IndexUrlsResponse
-{
-    public required List<IndexedUrl> IndexedUrls { get; set; }
-    public required List<string> Errors { get; set; }
-}
-
-/// <summary>
-/// Information about an indexed URL
-/// </summary>
-public class IndexedUrl
-{
-    public required string Url { get; set; }
-    public required string Title { get; set; }
-    public int ChunkCount { get; set; }
-    public DateTime IndexedAt { get; set; }
-    public bool Success { get; set; }
-    public string? ErrorMessage { get; set; }
-}
+/// <param name="IndexedUrls"></param>
+/// <param name="Errors"></param>
+public record IndexUrlsResponse(List<IndexedUrl> IndexedUrls, List<string> Errors);

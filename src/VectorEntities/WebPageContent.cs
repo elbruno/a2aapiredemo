@@ -1,7 +1,6 @@
 using Microsoft.Extensions.VectorData;
-using System.Text.Json.Serialization;
 
-namespace DataSources.Models;
+namespace VectorEntities;
 
 /// <summary>
 /// Represents web page content stored in the vector database

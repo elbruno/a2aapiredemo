@@ -1,4 +1,4 @@
-namespace DataSources.Services;
+namespace DataEntities;
 
 /// <summary>
 /// Information extracted from a web page

@@ -81,7 +81,7 @@ public static class ProductEndpoints
         #region AI Search Endpoint
         routes.MapGet("/api/aisearch/{search}", ProductAiActions.AISearch)
             .WithName("AISearch")
-            .Produces<SearchResponse>(StatusCodes.Status200OK)
+            .Produces<ProductSearchResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
         #endregion
     }

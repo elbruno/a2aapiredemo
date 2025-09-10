@@ -1,9 +1,8 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.InMemory;
 using DataSources.Models;
 using SearchEntities;
 using DataSources.Services;
+using VectorEntities;
 
 namespace DataSources.Memory;
 
@@ -186,9 +185,9 @@ public class DataSourcesMemoryContext
     /// <summary>
     /// Search for web page content using semantic search
     /// </summary>
-    public async Task<SearchResponse> SearchAsync(string query, int maxResults = 5)
+    public async Task<ProductSearchResponse> SearchAsync(string query, int maxResults = 5)
     {
-        var response = new SearchResponse { Products = new List<DataEntities.Product>() };
+        var response = new ProductSearchResponse { Products = new List<DataEntities.Product>() };
 
         try
         {

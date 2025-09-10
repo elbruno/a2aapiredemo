@@ -55,7 +55,7 @@ public static class ProductApiActions
             .Where(p => EF.Functions.Like(p.Name, $"%{search}%"))
             .ToListAsync();
 
-        var response = new SearchResponse();
+        var response = new ProductSearchResponse();
         response.Products = products;
         response.Response = products.Count > 0 ?
             $"{products.Count} Products found for [{search}]" :
