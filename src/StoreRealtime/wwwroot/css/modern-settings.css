@@ -1,14 +1,32 @@
 /* Modern Settings Styles */
 .modern-settings-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Slightly softer gradient so cards (white) contrast well */
+    background: linear-gradient(135deg, #6b7ff0 0%, #7b61b6 100%);
     padding: 2rem;
+}
+
+/* Page-level variables tuned for good contrast on the settings page */
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --background-primary: #f6f8fb;
+    --background-secondary: #ffffff; /* card backgrounds */
+    --background-tertiary: #f8fafc; /* subtle UI surfaces */
+    --text-primary: #0f172a; /* main readable text */
+    --text-secondary: #475569; /* secondary text */
+    --text-muted: #64748b; /* muted text */
+    --border-color: #e6eef8; /* gentle border */
+    --border-light: #f1f5f9;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --shadow-lg: 0 8px 24px rgba(15,23,42,0.08);
 }
 
 .settings-header {
     text-align: center;
     margin-bottom: 3rem;
-    color: white;
+    color: var(--text-primary);
 }
 
 .settings-header h1 {
@@ -61,7 +79,7 @@
 .card-header {
     padding: 2rem 2rem 1rem 2rem;
     border-bottom: 1px solid var(--border-light);
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(139, 92, 246, 0.05));
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03), rgba(139, 92, 246, 0.03));
 }
 
 .card-header h4, .card-header h5 {
@@ -116,12 +134,12 @@
 .form-control {
     width: 100%;
     padding: 0.875rem 1rem;
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     font-size: 0.9rem;
     line-height: 1.5;
     color: var(--text-primary);
-    background-color: var(--background-secondary);
+    background-color: #ffffff; /* make inputs white for max contrast */
     transition: all 0.2s ease;
 }
 
@@ -132,7 +150,7 @@
 }
 
 .form-control:disabled {
-    background-color: var(--background-tertiary);
+    background-color: #f3f6fa;
     color: var(--text-muted);
     cursor: not-allowed;
 }
@@ -143,6 +161,8 @@
     font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
     font-size: 0.85rem;
     line-height: 1.6;
+    color: var(--text-primary);
+    background-color: #ffffff;
 }
 
 .input-group {
@@ -151,8 +171,8 @@
 }
 
 .input-group-text {
-    background: var(--background-tertiary);
-    border: 2px solid var(--border-color);
+    background: #f3f6fa;
+    border: 1px solid var(--border-color);
     border-right: none;
     border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
     padding: 0.875rem 1rem;
@@ -188,7 +208,7 @@
 }
 
 .prompt-preview {
-    background: var(--background-secondary);
+    background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     padding: 1rem;
@@ -208,8 +228,8 @@
 }
 
 .validation-summary {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.14);
     border-radius: var(--border-radius-sm);
     padding: 1rem;
     margin-bottom: 1.5rem;
@@ -266,7 +286,7 @@
 }
 
 .result-card {
-    background: var(--background-tertiary);
+    background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     padding: 1.25rem;
@@ -358,6 +378,11 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+.settings-sidebar .sidebar-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
 }
 
 .sidebar-card .card-header {
