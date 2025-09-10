@@ -6,6 +6,7 @@ using Products.Memory;
 using Products.Models;
 using OpenAI.Embeddings;
 using OpenAI.Chat;
+using Microsoft.Extensions.AI;
 
 namespace Products.Endpoints;
 
@@ -74,9 +75,11 @@ public static class ProductEndpoints
             .Produces<Product>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
-        group.MapGet("/search/{search}", ProductApiActions.SearchAllProducts)
+        group.MapGet("/search/{search}", 
+            (string search, Products.Models.Context db, IChatClient? chatClient) => 
+                ProductApiActions.SearchAllProducts(search, db, chatClient))
             .WithName("SearchAllProducts")
-            .Produces<List<Product>>(StatusCodes.Status200OK);
+            .Produces<ProductSearchResponse>(StatusCodes.Status200OK);
 
         #region AI Search Endpoint
         routes.MapGet("/api/aisearch/{search}", ProductAiActions.AISearch)

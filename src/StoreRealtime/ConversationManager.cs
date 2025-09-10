@@ -30,6 +30,7 @@ public partial class ConversationManager : IDisposable
     private readonly DataSourcesUrlContext _dataSourcesUrlContext;
     private readonly ILogger _logger;
     private readonly string? _customSystemPrompt;
+    private readonly Services.SystemPromptService _systemPromptService;
     private RealtimeSession? _session; // Nullable until started (clarifies lifecycle)
     private bool _disposed;
 
@@ -37,6 +38,7 @@ public partial class ConversationManager : IDisposable
         ContosoProductContext contosoProductContext,
         DataSourcesUrlContext dataSourcesUrlContext,
         ILogger logger,
+        Services.SystemPromptService systemPromptService,
         string? customSystemPrompt = null)
     {
         _client = client;
@@ -44,6 +46,7 @@ public partial class ConversationManager : IDisposable
         _dataSourcesUrlContext = dataSourcesUrlContext;
         _logger = logger;
         _customSystemPrompt = customSystemPrompt;
+        _systemPromptService = systemPromptService;
     }
 
     /// <summary>
@@ -209,6 +212,22 @@ public partial class ConversationManager : IDisposable
                 try
                 {
                     dataSourcesResp = JsonSerializer.Deserialize<DataSourcesSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    
+                    // Apply relevance filtering based on user settings
+                    if (dataSourcesResp?.SourcePages != null)
+                    {
+                        var relevanceThreshold = _systemPromptService.GetRelevanceThreshold() / 100f; // Convert percentage to decimal
+                        var filteredSources = dataSourcesResp.SourcePages
+                            .Where(source => source.RelevanceScore >= relevanceThreshold)
+                            .ToList();
+                        
+                        dataSourcesResp.SourcePages = filteredSources;
+                        
+                        _logger.LogInformation("Applied relevance filter: {Threshold}%, filtered from {Original} to {Filtered} sources", 
+                            _systemPromptService.GetRelevanceThreshold(), 
+                            dataSourcesResp.SourcePages.Count + (dataSourcesResp.SourcePages.Count - filteredSources.Count), 
+                            filteredSources.Count);
+                    }
                 }
                 catch { }
                 return (text, null, dataSourcesResp);

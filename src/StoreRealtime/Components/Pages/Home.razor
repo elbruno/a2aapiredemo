@@ -178,7 +178,7 @@
     private void OnMicAvailable(PipeReader micReader)
     {
         var systemPrompt = SystemPromptService.GetCurrentPrompt();
-        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger, systemPrompt);
+        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger, SystemPromptService, systemPrompt);
         _ = RunAsBackgroundTask(() => conversationManager.RunAsync(micReader.AsStream(), speaker!,
 
         AddMessageAsync,
