@@ -27,15 +27,26 @@ public partial class ConversationManager : IDisposable
 {
     private readonly RealtimeClient _client;
     private readonly ContosoProductContext _contosoProductContext;
+    private readonly DataSourcesUrlContext _dataSourcesUrlContext;
     private readonly ILogger _logger;
+    private readonly string? _customSystemPrompt;
+    private readonly Services.SystemPromptService _systemPromptService;
     private RealtimeSession? _session; // Nullable until started (clarifies lifecycle)
     private bool _disposed;
 
-    public ConversationManager(RealtimeClient client, ContosoProductContext contosoProductContext, ILogger logger)
+    public ConversationManager(RealtimeClient client,
+        ContosoProductContext contosoProductContext,
+        DataSourcesUrlContext dataSourcesUrlContext,
+        ILogger logger,
+        Services.SystemPromptService systemPromptService,
+        string? customSystemPrompt = null)
     {
         _client = client;
         _contosoProductContext = contosoProductContext;
+        _dataSourcesUrlContext = dataSourcesUrlContext;
         _logger = logger;
+        _customSystemPrompt = customSystemPrompt;
+        _systemPromptService = systemPromptService;
     }
 
     /// <summary>
@@ -51,17 +62,16 @@ public partial class ConversationManager : IDisposable
         Func<string, Task> addMessageAsync,
         Func<string, bool, Task> addChatMessageAsync,
         Func<List<Product>, Task> addChatProductMessageAsync,
+        Func<DataSourcesSearchResponse, Task> addChatDataSourcesMessageAsync,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(audioInput);
         ArgumentNullException.ThrowIfNull(audioOutput);
 
-        // Prepare system instructions similar to original sample.
-        var prompt = $"""
+        // Prepare system instructions - use custom prompt if provided, otherwise default
+        var prompt = _customSystemPrompt ?? $"""
             You are a useful assistant.
             Respond as succinctly as possible, in just a few words.
-            Your main field of expertise is outdoor products.
-            You are able to answer questions about outdoor products, including their features, specifications, and availability.
             Check the product database and external sources for information.
             The current date is {DateTime.Now.ToLongDateString()}
             """;
@@ -77,7 +87,7 @@ public partial class ConversationManager : IDisposable
 
             // Central streaming loop now delegated to small per-update handlers.
             var state = new ConversationState();
-            await ProcessUpdatesAsync(state, audioInput, audioOutput, addMessageAsync, addChatMessageAsync, addChatProductMessageAsync, cancellationToken);
+            await ProcessUpdatesAsync(state, audioInput, audioOutput, addMessageAsync, addChatMessageAsync, addChatProductMessageAsync, addChatDataSourcesMessageAsync, cancellationToken);
         }
         catch (Exception exc)
         {
@@ -146,7 +156,7 @@ public partial class ConversationManager : IDisposable
 
     // Invokes a tool (function call) requested by the model, parsing a single string argument
     // and returning a short textual summary plus any products for UI rendering.
-    private async Task<(string toolResultText, List<Product>? products)> InvokeToolAsync(string functionName, string? rawArgs)
+    private async Task<(string toolResultText, List<Product>? products, DataSourcesSearchResponse? dataSourcesResponse)> InvokeToolAsync(string functionName, string? rawArgs)
     {
         try
         {
@@ -178,10 +188,10 @@ public partial class ConversationManager : IDisposable
                 List<Product>? prods = null;
                 try
                 {
-                    prods = JsonSerializer.Deserialize<SearchResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Products;
+                    prods = JsonSerializer.Deserialize<ProductSearchResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Products;
                 }
                 catch { }
-                return ($"Semantic search results for '{extracted}'", prods ?? new List<Product>());
+                return ($"Semantic search results for '{extracted}'", prods ?? new List<Product>(), null);
             }
             if (functionName.Equals("SearchOutdoorProductsByName", StringComparison.OrdinalIgnoreCase))
             {
@@ -189,30 +199,59 @@ public partial class ConversationManager : IDisposable
                 List<Product>? prods = null;
                 try
                 {
-                    var sr = JsonSerializer.Deserialize<SearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var sr = JsonSerializer.Deserialize<ProductSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     prods = sr?.Products;
                 }
                 catch { }
-                return (text, prods ?? new List<Product>());
+                return (text, prods ?? new List<Product>(), null);
             }
-            return ($"Tool '{functionName}' not recognized", new List<Product>());
+            if (functionName.Equals("SemanticSearchDataSources", StringComparison.OrdinalIgnoreCase))
+            {
+                var text = await _dataSourcesUrlContext.SemanticSearchDataSourcesAsync(extracted);
+                DataSourcesSearchResponse? dataSourcesResp = null;
+                try
+                {
+                    dataSourcesResp = JsonSerializer.Deserialize<DataSourcesSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    // Apply relevance filtering based on user settings
+                    if (dataSourcesResp?.SourcePages != null)
+                    {
+                        var relevanceThreshold = _systemPromptService.GetRelevanceThreshold() / 100f; // Convert percentage to decimal
+                        var filteredSources = dataSourcesResp.SourcePages
+                            .Where(source => source.RelevanceScore >= relevanceThreshold)
+                            .ToList();
+
+                        dataSourcesResp.SourcePages = filteredSources;
+
+                        _logger.LogInformation("Applied relevance filter: {Threshold}%, filtered from {Original} to {Filtered} sources",
+                            _systemPromptService.GetRelevanceThreshold(),
+                            dataSourcesResp.SourcePages.Count + (dataSourcesResp.SourcePages.Count - filteredSources.Count),
+                            filteredSources.Count);
+                    }
+                }
+                catch { }
+                return (text, null, dataSourcesResp);
+            }
+            return ($"Tool '{functionName}' not recognized", new List<Product>(), null);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Tool invocation error for {Function}", functionName);
-            return ($"Error invoking {functionName}: {ex.Message}", new List<Product>());
+            return ($"Error invoking {functionName}: {ex.Message}", new List<Product>(), null);
         }
     }
 
 
     #region Helper Methods (extracted for clarity)
 
-    // Creates tool list (previously inline in RunAsync) – isolates knowledge of available functions
     private List<AIFunction> BuildTools()
     {
         var semanticSearchTool = AIFunctionFactory.Create(_contosoProductContext.SemanticSearchOutdoorProductsAsync).ToConversationFunctionTool();
         var searchByNameTool = AIFunctionFactory.Create(_contosoProductContext.SearchOutdoorProductsByNameAsync).ToConversationFunctionTool();
-        return [semanticSearchTool, searchByNameTool];
+        var searchCrawledUrlsTool = AIFunctionFactory.Create(_dataSourcesUrlContext.SemanticSearchDataSourcesAsync).ToConversationFunctionTool();
+
+        // return the array of tools
+        return [semanticSearchTool, searchByNameTool, searchCrawledUrlsTool];
     }
 
     // Starts session + configures options (separates lifecycle setup from streaming logic)
@@ -238,6 +277,7 @@ public partial class ConversationManager : IDisposable
         Func<string, Task> addMessageAsync,
         Func<string, bool, Task> addChatMessageAsync,
         Func<List<Product>, Task> addChatProductMessageAsync,
+        Func<DataSourcesSearchResponse, Task> addChatDataSourcesMessageAsync,
         CancellationToken cancellationToken)
     {
         if (_session is null) throw new InvalidOperationException("Session not started");
@@ -266,7 +306,7 @@ public partial class ConversationManager : IDisposable
                     break;
                 case OutputDeltaUpdate delta:
                     OnAssistantDelta(state, delta);
-                    if(delta.AudioBytes is not null && delta.AudioBytes.Length > 0)
+                    if (delta.AudioBytes is not null && delta.AudioBytes.Length > 0)
                     {
                         // If we have audio bytes in the delta, play them immediately
                         await PlayAudio(delta.AudioBytes.ToArray(), audioOutput);
@@ -275,7 +315,7 @@ public partial class ConversationManager : IDisposable
                 case OutputStreamingFinishedUpdate finished:
                     await OnAssistantStreamingFinishedAsync(
                         state, finished, audioOutput,
-                        addMessageAsync, addChatMessageAsync, addChatProductMessageAsync);
+                        addMessageAsync, addChatMessageAsync, addChatProductMessageAsync, addChatDataSourcesMessageAsync);
                     break;
                 default:
                     // Reflection based handling for dynamic audio related updates (keeps SDK future proof)
@@ -339,39 +379,92 @@ public partial class ConversationManager : IDisposable
             state.AssistantPartial.Append(delta.AudioTranscript);
     }
 
-    private async Task OnAssistantStreamingFinishedAsync(ConversationState state, 
+    private async Task OnAssistantStreamingFinishedAsync(ConversationState state,
         OutputStreamingFinishedUpdate finished,
         Components.Speaker audioOutput,
         Func<string, Task> addMessageAsync,
         Func<string, bool, Task> addChatMessageAsync,
-        Func<List<Product>, Task> addChatProductMessageAsync)
+        Func<List<Product>, Task> addChatProductMessageAsync,
+        Func<DataSourcesSearchResponse, Task> addChatDataSourcesMessageAsync)
     {
         if (_session is null) return;
 
         if (finished.FunctionCallId is not null)
         {
             // Tool invocation path
-            var (toolText, products) = await InvokeToolAsync(finished.FunctionName ?? string.Empty, finished.FunctionCallArguments);
+            var (toolText, products, dataSourcesResponse) = await InvokeToolAsync(finished.FunctionName ?? string.Empty, finished.FunctionCallArguments);
             var toolOutput = toolText;
+
             if (products?.Count > 0)
             {
                 var compact = JsonSerializer.Serialize(products.Select(p => new { p.Name, p.Description, p.Price }));
                 toolOutput = compact; // concise JSON for model
             }
+            else if (dataSourcesResponse?.HasResults == true)
+            {
+                // For DataSources, provide compact source information to the model
+                var compactSources = JsonSerializer.Serialize(dataSourcesResponse.SourcePages.Select(s => new
+                {
+                    s.Title,
+                    s.Url,
+                    s.Excerpt,
+                    RelevanceScore = Math.Round(s.RelevanceScore, 2)
+                }));
+                toolOutput = $"Response: {dataSourcesResponse.Response}\nSources: {compactSources}";
+            }
+
             RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
                 callId: finished.FunctionCallId,
                 output: toolOutput);
             await _session.AddItemAsync(functionOutputItem);
 
             await addMessageAsync($"Tool executed: {finished.FunctionName}");
+
             if (products?.Count > 0)
             {
                 await addMessageAsync($"Products returned: {products.Count}");
                 await addChatProductMessageAsync(products);
             }
+            else if (dataSourcesResponse?.HasResults == true)
+            {
+                await addMessageAsync($"DataSources search found {dataSourcesResponse.SourceCount} relevant sources");
+                await addChatDataSourcesMessageAsync(dataSourcesResponse);
+            }
             else
             {
                 await addChatMessageAsync(toolText, false);
+            }
+
+            // After supplying the tool (function) output to the model we must explicitly
+            // request the assistant to generate the follow‑up response (with audio).
+            // In earlier behavior we only rendered the UI card / text; no new assistant
+            // streaming cycle was triggered, so no audio was produced for tool answers.
+            // The OpenAI realtime .NET SDK (preview) exposes a CreateResponseAsync (name may
+            // evolve). To keep this resilient across SDK versions we attempt a small set of
+            // likely method names via reflection instead of taking a hard compile dependency.
+            try
+            {
+                if (_session is not null)
+                {
+                    string[] candidateNames = ["CreateResponseAsync", "RespondAsync", "GenerateResponseAsync", "CreateResponse"];
+                    MethodInfo? m = candidateNames
+                        .Select(n => _session.GetType().GetMethod(n, BindingFlags.Public | BindingFlags.Instance, Array.Empty<Type>()))
+                        .FirstOrDefault(mi => mi is not null);
+                    if (m is not null)
+                    {
+                        var invokeResult = m.Invoke(_session, null);
+                        if (invokeResult is Task t) await t; // await async method
+                        await addMessageAsync("Requested follow-up assistant response after tool output");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Could not locate method to trigger follow-up assistant response (SDK method name may have changed)");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to trigger follow-up assistant response after tool output");
             }
         }
         else
@@ -403,7 +496,7 @@ public partial class ConversationManager : IDisposable
 
     private async Task PlayAudio(byte[] audioBytes, Components.Speaker audioOutput)
     {
-            try { await audioOutput.EnqueueAsync(audioBytes); } catch { /* swallow playback errors */ }
+        try { await audioOutput.EnqueueAsync(audioBytes); } catch { /* swallow playback errors */ }
     }
 
 

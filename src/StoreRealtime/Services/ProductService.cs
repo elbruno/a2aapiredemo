@@ -43,7 +43,7 @@ public class ProductService
 		return products ?? new List<Product>();
     }
 
-    public async Task<SearchResponse?> Search(string searchTerm, bool semanticSearch = false)
+    public async Task<ProductSearchResponse?> Search(string searchTerm, bool semanticSearch = false)
     {
         try
         {
@@ -67,7 +67,7 @@ public class ProductService
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SearchResponse>();
+                return await response.Content.ReadFromJsonAsync<ProductSearchResponse>();
             }
         }
         catch (Exception ex)
@@ -75,6 +75,6 @@ public class ProductService
             _logger.LogError(ex, "Error during Search.");
         }
 
-        return new SearchResponse { Response = "No response" };
+        return new ProductSearchResponse { Response = "No response" };
     }    
 }

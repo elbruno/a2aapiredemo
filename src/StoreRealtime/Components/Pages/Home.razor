@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using DataEntities
+@using SearchEntities
 @using OpenAI.Chat
 @using System.IO.Pipelines
 @using OpenAI.Realtime
@@ -9,9 +10,11 @@
 
 @inject RealtimeClient RealtimeClient
 @inject StoreRealtime.ContextManagers.ContosoProductContext contosoProductContext
+@inject StoreRealtime.ContextManagers.DataSourcesUrlContext dataSourcesUrlContext
 @inject ILogger<Program> logger
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
+@inject StoreRealtime.Services.SystemPromptService SystemPromptService
 
 <PageTitle>eShopLite - Realtime chat support</PageTitle>
 
@@ -27,8 +30,8 @@
         <div class="chat-column-wrapper">
             <button class="btn-log-toggle" title="Show/Hide log" @onclick="ToggleLogPanel">@(_showLog ? "⯈" : "⯇")</button>
             @* CHAT SECTION *@
-            <div class="chat-section" @ref="chatSectionRef">
-            <div class="messages">
+            <div class="chat-section">
+            <div class="messages" @ref="chatSectionRef">
                 @foreach (var chatMessage in chatMessages)
                 {
                     var messageStyle = chatMessage.IsUser ? "message message-user visible" : "message message-assistant visible";
@@ -60,6 +63,33 @@
                                         </div>
                                     </div>
                                 }
+                            }
+
+                            @if (chatMessage.DataSourcesResponse != null && chatMessage.DataSourcesResponse.HasResults)
+                            {
+                                <div class="datasources-response">
+                                    <div class="datasources-header">
+                                        <h5 class="datasources-title">📄 Information from Web Sources</h5>
+                                        <span class="source-count">@chatMessage.DataSourcesResponse.SourceCount source(s)</span>
+                                    </div>
+                                    
+                                    @foreach (var source in chatMessage.DataSourcesResponse.SourcePages)
+                                    {
+                                        <div class="source-card">
+                                            <div class="source-header">
+                                                <h6 class="source-title">@source.Title</h6>
+                                                <span class="relevance-score">@((source.RelevanceScore * 100).ToString("F1"))% relevant</span>
+                                            </div>
+                                            <div class="source-body">
+                                                <div class="source-excerpt">@source.Excerpt</div>
+                                                <div class="source-footer">
+                                                    <a href="@source.Url" target="_blank" class="source-link">🔗 @source.Url</a>
+                                                    <small class="source-indexed">Indexed: @source.IndexedAt.ToString("g")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
                             }
                             <div class="message-time">@chatMessage.Timestamp.ToString("G")</div>
                         </div>
@@ -147,12 +177,14 @@
 
     private void OnMicAvailable(PipeReader micReader)
     {
-        conversationManager = new(RealtimeClient, contosoProductContext, logger);
+        var systemPrompt = SystemPromptService.GetCurrentPrompt();
+        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger, SystemPromptService, systemPrompt);
         _ = RunAsBackgroundTask(() => conversationManager.RunAsync(micReader.AsStream(), speaker!,
 
         AddMessageAsync,
         AddChatMessageAsync,
         AddChatProductMessageAsync,
+        AddChatDataSourcesMessageAsync,
         disposalCts.Token));
     }
 
@@ -186,6 +218,20 @@
         chatMessages.Add(productMessage);
         await InvokeAsync(StateHasChanged);
     ScrollToBottom(chatSectionRef);
+    }
+
+    private async Task AddChatDataSourcesMessageAsync(DataSourcesSearchResponse dataSourcesResponse)
+    {
+        var dataSourcesMessage = new RealtimeChatMessage
+        {
+            IsUser = false,
+            Message = dataSourcesResponse.Response,
+            DataSourcesResponse = dataSourcesResponse,
+            Timestamp = DateTime.Now
+        };
+        chatMessages.Add(dataSourcesMessage);
+        await InvokeAsync(StateHasChanged);
+        ScrollToBottom(chatSectionRef);
     }
 
     private async Task AddMessageAsync(string message)

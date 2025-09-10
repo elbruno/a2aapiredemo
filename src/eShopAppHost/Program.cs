@@ -20,14 +20,18 @@ var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
     .WaitFor(productsDb);
 
+var dataSourcesService = builder.AddProject<Projects.DataSources>("datasources");
+
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
+    .WithReference(dataSourcesService)
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
 
 var storeRealtime = builder.AddProject<Projects.StoreRealtime>("realtimestore")
     .WithReference(products)
+    .WithReference(dataSourcesService)
     .WaitFor(products)
     .WithExternalHttpEndpoints();
 
@@ -54,6 +58,7 @@ if (builder.ExecutionContext.IsPublishMode)
     products.WithReference(appInsights);
     storeRealtime.WithReference(appInsights);
     store.WithReference(appInsights);
+    dataSourcesService.WithReference(appInsights);
 
     openai = aoai;
 }
@@ -65,6 +70,11 @@ else
 
 // Configure OpenAI references for all projects that need it
 products.WithReference(openai)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
+    .WithEnvironment("AI_RealtimeDeploymentName", realtimeDeploymentName)
+    .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+dataSourcesService.WithReference(openai)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_RealtimeDeploymentName", realtimeDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);

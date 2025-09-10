@@ -2,9 +2,9 @@
 
 namespace SearchEntities;
 
-public class SearchResponse
+public class ProductSearchResponse
 {
-    public SearchResponse()
+    public ProductSearchResponse()
     {
         Products = new List<DataEntities.Product>();
         Response = string.Empty;
@@ -19,7 +19,7 @@ public class SearchResponse
 }
 
 
-[JsonSerializable(typeof(SearchResponse))]
-public sealed partial class SearchResponseSerializerContext : JsonSerializerContext
+[JsonSerializable(typeof(ProductSearchResponse))]
+public sealed partial class ProductSearchResponseSerializerContext : JsonSerializerContext
 {
 }
