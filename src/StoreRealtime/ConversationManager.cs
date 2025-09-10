@@ -56,6 +56,7 @@ public partial class ConversationManager : IDisposable
         Func<string, Task> addMessageAsync,
         Func<string, bool, Task> addChatMessageAsync,
         Func<List<Product>, Task> addChatProductMessageAsync,
+        Func<DataSourcesSearchResponse, Task> addChatDataSourcesMessageAsync,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(audioInput);
@@ -88,7 +89,7 @@ public partial class ConversationManager : IDisposable
 
             // Central streaming loop now delegated to small per-update handlers.
             var state = new ConversationState();
-            await ProcessUpdatesAsync(state, audioInput, audioOutput, addMessageAsync, addChatMessageAsync, addChatProductMessageAsync, cancellationToken);
+            await ProcessUpdatesAsync(state, audioInput, audioOutput, addMessageAsync, addChatMessageAsync, addChatProductMessageAsync, addChatDataSourcesMessageAsync, cancellationToken);
         }
         catch (Exception exc)
         {
@@ -157,7 +158,7 @@ public partial class ConversationManager : IDisposable
 
     // Invokes a tool (function call) requested by the model, parsing a single string argument
     // and returning a short textual summary plus any products for UI rendering.
-    private async Task<(string toolResultText, List<Product>? products)> InvokeToolAsync(string functionName, string? rawArgs)
+    private async Task<(string toolResultText, List<Product>? products, DataSourcesSearchResponse? dataSourcesResponse)> InvokeToolAsync(string functionName, string? rawArgs)
     {
         try
         {
@@ -192,7 +193,7 @@ public partial class ConversationManager : IDisposable
                     prods = JsonSerializer.Deserialize<ProductSearchResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Products;
                 }
                 catch { }
-                return ($"Semantic search results for '{extracted}'", prods ?? new List<Product>());
+                return ($"Semantic search results for '{extracted}'", prods ?? new List<Product>(), null);
             }
             if (functionName.Equals("SearchOutdoorProductsByName", StringComparison.OrdinalIgnoreCase))
             {
@@ -204,26 +205,25 @@ public partial class ConversationManager : IDisposable
                     prods = sr?.Products;
                 }
                 catch { }
-                return (text, prods ?? new List<Product>());
+                return (text, prods ?? new List<Product>(), null);
             }
             if (functionName.Equals("SemanticSearchDataSources", StringComparison.OrdinalIgnoreCase))
             {
                 var text = await _dataSourcesUrlContext.SemanticSearchDataSourcesAsync(extracted);
-                List<Product>? prods = null;
+                DataSourcesSearchResponse? dataSourcesResp = null;
                 try
                 {
-                    var sr = JsonSerializer.Deserialize<ProductSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    prods = sr?.Products;
+                    dataSourcesResp = JsonSerializer.Deserialize<DataSourcesSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
                 catch { }
-                return (text, prods ?? new List<Product>());
+                return (text, null, dataSourcesResp);
             }
-            return ($"Tool '{functionName}' not recognized", new List<Product>());
+            return ($"Tool '{functionName}' not recognized", new List<Product>(), null);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Tool invocation error for {Function}", functionName);
-            return ($"Error invoking {functionName}: {ex.Message}", new List<Product>());
+            return ($"Error invoking {functionName}: {ex.Message}", new List<Product>(), null);
         }
     }
 
@@ -263,6 +263,7 @@ public partial class ConversationManager : IDisposable
         Func<string, Task> addMessageAsync,
         Func<string, bool, Task> addChatMessageAsync,
         Func<List<Product>, Task> addChatProductMessageAsync,
+        Func<DataSourcesSearchResponse, Task> addChatDataSourcesMessageAsync,
         CancellationToken cancellationToken)
     {
         if (_session is null) throw new InvalidOperationException("Session not started");
@@ -300,7 +301,7 @@ public partial class ConversationManager : IDisposable
                 case OutputStreamingFinishedUpdate finished:
                     await OnAssistantStreamingFinishedAsync(
                         state, finished, audioOutput,
-                        addMessageAsync, addChatMessageAsync, addChatProductMessageAsync);
+                        addMessageAsync, addChatMessageAsync, addChatProductMessageAsync, addChatDataSourcesMessageAsync);
                     break;
                 default:
                     // Reflection based handling for dynamic audio related updates (keeps SDK future proof)
@@ -369,30 +370,51 @@ public partial class ConversationManager : IDisposable
         Components.Speaker audioOutput,
         Func<string, Task> addMessageAsync,
         Func<string, bool, Task> addChatMessageAsync,
-        Func<List<Product>, Task> addChatProductMessageAsync)
+        Func<List<Product>, Task> addChatProductMessageAsync,
+        Func<DataSourcesSearchResponse, Task> addChatDataSourcesMessageAsync)
     {
         if (_session is null) return;
 
         if (finished.FunctionCallId is not null)
         {
             // Tool invocation path
-            var (toolText, products) = await InvokeToolAsync(finished.FunctionName ?? string.Empty, finished.FunctionCallArguments);
+            var (toolText, products, dataSourcesResponse) = await InvokeToolAsync(finished.FunctionName ?? string.Empty, finished.FunctionCallArguments);
             var toolOutput = toolText;
+            
             if (products?.Count > 0)
             {
                 var compact = JsonSerializer.Serialize(products.Select(p => new { p.Name, p.Description, p.Price }));
                 toolOutput = compact; // concise JSON for model
             }
+            else if (dataSourcesResponse?.HasResults == true)
+            {
+                // For DataSources, provide compact source information to the model
+                var compactSources = JsonSerializer.Serialize(dataSourcesResponse.SourcePages.Select(s => new 
+                { 
+                    s.Title, 
+                    s.Url, 
+                    s.Excerpt, 
+                    RelevanceScore = Math.Round(s.RelevanceScore, 2) 
+                }));
+                toolOutput = $"Response: {dataSourcesResponse.Response}\nSources: {compactSources}";
+            }
+            
             RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
                 callId: finished.FunctionCallId,
                 output: toolOutput);
             await _session.AddItemAsync(functionOutputItem);
 
             await addMessageAsync($"Tool executed: {finished.FunctionName}");
+            
             if (products?.Count > 0)
             {
                 await addMessageAsync($"Products returned: {products.Count}");
                 await addChatProductMessageAsync(products);
+            }
+            else if (dataSourcesResponse?.HasResults == true)
+            {
+                await addMessageAsync($"DataSources search found {dataSourcesResponse.SourceCount} relevant sources");
+                await addChatDataSourcesMessageAsync(dataSourcesResponse);
             }
             else
             {

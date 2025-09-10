@@ -435,3 +435,123 @@
     margin-bottom: 5px;
 }
 
+/* DataSources response styles */
+.datasources-response {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 15px 0;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    width: 100%;
+    max-width: 600px;
+}
+
+.datasources-header {
+    background-color: #0078D4;
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.datasources-title {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: white;
+}
+
+.source-count {
+    font-size: 0.9em;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.source-card {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.source-card:last-child {
+    border-bottom: none;
+}
+
+.source-card:hover {
+    background-color: #f8f9fa;
+}
+
+.source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.source-title {
+    margin: 0;
+    font-size: 1.0em;
+    font-weight: 600;
+    color: #333333;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.relevance-score {
+    font-size: 0.8em;
+    background-color: #e8f4fd;
+    color: #0078D4;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.source-body {
+    margin-top: 8px;
+}
+
+.source-excerpt {
+    color: #555555;
+    font-size: 0.9em;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    overflow-wrap: break-word;
+}
+
+.source-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.source-link {
+    color: #0078D4;
+    text-decoration: none;
+    font-size: 0.85em;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.source-link:hover {
+    text-decoration: underline;
+}
+
+.source-indexed {
+    color: #888888;
+    font-size: 0.8em;
+}
+
+/* Ensure the datasources response works well within message bubbles */
+.message-assistant .datasources-response {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+

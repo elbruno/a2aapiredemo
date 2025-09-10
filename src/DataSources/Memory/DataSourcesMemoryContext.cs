@@ -185,9 +185,9 @@ public class DataSourcesMemoryContext
     /// <summary>
     /// Search for web page content using semantic search
     /// </summary>
-    public async Task<ProductSearchResponse> SearchAsync(string query, int maxResults = 5)
+    public async Task<DataSourcesSearchResponse> SearchAsync(string query, int maxResults = 5)
     {
-        var response = new ProductSearchResponse { Products = new List<DataEntities.Product>() };
+        var response = new DataSourcesSearchResponse();
 
         try
         {
@@ -220,17 +220,35 @@ public class DataSourcesMemoryContext
                 .Where(x => x.Similarity > 0.1) // Basic similarity threshold
                 .ToList();
 
-            var relevantContent = new List<string>();
-            foreach (var result in searchResults)
-            {
-                relevantContent.Add($"From {result.Page.Title} ({result.Page.Url}): {result.Page.ChunkContent}");
-            }
-
-            if (relevantContent.Count == 0)
+            if (searchResults.Count == 0)
             {
                 response.Response = "No relevant web page content found for your query.";
                 return response;
             }
+
+            // Build source pages information
+            var sourcePages = new List<SourcePageInfo>();
+            var relevantContent = new List<string>();
+            
+            foreach (var result in searchResults)
+            {
+                var sourceInfo = new SourcePageInfo
+                {
+                    Url = result.Page.Url,
+                    Title = result.Page.Title,
+                    Excerpt = result.Page.ChunkContent.Length > 200 
+                        ? result.Page.ChunkContent.Substring(0, 200) + "..." 
+                        : result.Page.ChunkContent,
+                    RelevanceScore = result.Similarity,
+                    IndexedAt = result.Page.IndexedAt,
+                    ChunkIndex = result.Page.ChunkIndex
+                };
+                sourcePages.Add(sourceInfo);
+                
+                relevantContent.Add($"From {result.Page.Title} ({result.Page.Url}): {result.Page.ChunkContent}");
+            }
+
+            response.SourcePages = sourcePages;
 
             // Generate response using chat client if available
             if (_chatClient != null)
@@ -257,7 +275,8 @@ Always mention the source URLs when referencing information.";
                                   string.Join("\n\n", relevantContent.Take(3));
             }
 
-            _logger.LogInformation("Search completed, found {Count} results", relevantContent.Count);
+            _logger.LogInformation("Search completed, found {Count} results from {SourceCount} sources", 
+                relevantContent.Count, sourcePages.Count);
         }
         catch (Exception ex)
         {

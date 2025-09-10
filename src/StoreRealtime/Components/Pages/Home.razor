@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using DataEntities
+@using SearchEntities
 @using OpenAI.Chat
 @using System.IO.Pipelines
 @using OpenAI.Realtime
@@ -61,6 +62,33 @@
                                         </div>
                                     </div>
                                 }
+                            }
+
+                            @if (chatMessage.DataSourcesResponse != null && chatMessage.DataSourcesResponse.HasResults)
+                            {
+                                <div class="datasources-response">
+                                    <div class="datasources-header">
+                                        <h5 class="datasources-title">📄 Information from Web Sources</h5>
+                                        <span class="source-count">@chatMessage.DataSourcesResponse.SourceCount source(s)</span>
+                                    </div>
+                                    
+                                    @foreach (var source in chatMessage.DataSourcesResponse.SourcePages)
+                                    {
+                                        <div class="source-card">
+                                            <div class="source-header">
+                                                <h6 class="source-title">@source.Title</h6>
+                                                <span class="relevance-score">@((source.RelevanceScore * 100).ToString("F1"))% relevant</span>
+                                            </div>
+                                            <div class="source-body">
+                                                <div class="source-excerpt">@source.Excerpt</div>
+                                                <div class="source-footer">
+                                                    <a href="@source.Url" target="_blank" class="source-link">🔗 @source.Url</a>
+                                                    <small class="source-indexed">Indexed: @source.IndexedAt.ToString("g")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
                             }
                             <div class="message-time">@chatMessage.Timestamp.ToString("G")</div>
                         </div>
@@ -154,6 +182,7 @@
         AddMessageAsync,
         AddChatMessageAsync,
         AddChatProductMessageAsync,
+        AddChatDataSourcesMessageAsync,
         disposalCts.Token));
     }
 
@@ -187,6 +216,20 @@
         chatMessages.Add(productMessage);
         await InvokeAsync(StateHasChanged);
     ScrollToBottom(chatSectionRef);
+    }
+
+    private async Task AddChatDataSourcesMessageAsync(DataSourcesSearchResponse dataSourcesResponse)
+    {
+        var dataSourcesMessage = new RealtimeChatMessage
+        {
+            IsUser = false,
+            Message = dataSourcesResponse.Response,
+            DataSourcesResponse = dataSourcesResponse,
+            Timestamp = DateTime.Now
+        };
+        chatMessages.Add(dataSourcesMessage);
+        await InvokeAsync(StateHasChanged);
+        ScrollToBottom(chatSectionRef);
     }
 
     private async Task AddMessageAsync(string message)

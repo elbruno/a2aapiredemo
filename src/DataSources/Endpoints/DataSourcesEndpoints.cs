@@ -29,7 +29,7 @@ public static class DataSourcesEndpoints
         group.MapGet("/search/{query}", SearchWebContent)
             .WithName("SearchWebContent")
             .WithSummary("Search indexed web content")
-            .Produces<ProductSearchResponse>(StatusCodes.Status200OK)
+            .Produces<DataSourcesSearchResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         // Get indexed URLs endpoint
@@ -122,10 +122,9 @@ public static class DataSourcesEndpoints
             
             if (string.IsNullOrEmpty(searchResponse.Response))
             {
-                return Results.NotFound(new ProductSearchResponse 
+                return Results.NotFound(new DataSourcesSearchResponse 
                 { 
-                    Response = "No relevant content found", 
-                    Products = new List<DataEntities.Product>() 
+                    Response = "No relevant content found"
                 });
             }
 
