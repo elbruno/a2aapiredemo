@@ -34,7 +34,7 @@ public partial class ConversationManager : IDisposable
     private RealtimeSession? _session; // Nullable until started (clarifies lifecycle)
     private bool _disposed;
 
-    public ConversationManager(RealtimeClient client, 
+    public ConversationManager(RealtimeClient client,
         ContosoProductContext contosoProductContext,
         DataSourcesUrlContext dataSourcesUrlContext,
         ILogger logger,
@@ -212,7 +212,7 @@ public partial class ConversationManager : IDisposable
                 try
                 {
                     dataSourcesResp = JsonSerializer.Deserialize<DataSourcesSearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    
+
                     // Apply relevance filtering based on user settings
                     if (dataSourcesResp?.SourcePages != null)
                     {
@@ -220,12 +220,12 @@ public partial class ConversationManager : IDisposable
                         var filteredSources = dataSourcesResp.SourcePages
                             .Where(source => source.RelevanceScore >= relevanceThreshold)
                             .ToList();
-                        
+
                         dataSourcesResp.SourcePages = filteredSources;
-                        
-                        _logger.LogInformation("Applied relevance filter: {Threshold}%, filtered from {Original} to {Filtered} sources", 
-                            _systemPromptService.GetRelevanceThreshold(), 
-                            dataSourcesResp.SourcePages.Count + (dataSourcesResp.SourcePages.Count - filteredSources.Count), 
+
+                        _logger.LogInformation("Applied relevance filter: {Threshold}%, filtered from {Original} to {Filtered} sources",
+                            _systemPromptService.GetRelevanceThreshold(),
+                            dataSourcesResp.SourcePages.Count + (dataSourcesResp.SourcePages.Count - filteredSources.Count),
                             filteredSources.Count);
                     }
                 }
@@ -306,7 +306,7 @@ public partial class ConversationManager : IDisposable
                     break;
                 case OutputDeltaUpdate delta:
                     OnAssistantDelta(state, delta);
-                    if(delta.AudioBytes is not null && delta.AudioBytes.Length > 0)
+                    if (delta.AudioBytes is not null && delta.AudioBytes.Length > 0)
                     {
                         // If we have audio bytes in the delta, play them immediately
                         await PlayAudio(delta.AudioBytes.ToArray(), audioOutput);
@@ -379,7 +379,7 @@ public partial class ConversationManager : IDisposable
             state.AssistantPartial.Append(delta.AudioTranscript);
     }
 
-    private async Task OnAssistantStreamingFinishedAsync(ConversationState state, 
+    private async Task OnAssistantStreamingFinishedAsync(ConversationState state,
         OutputStreamingFinishedUpdate finished,
         Components.Speaker audioOutput,
         Func<string, Task> addMessageAsync,
@@ -394,7 +394,7 @@ public partial class ConversationManager : IDisposable
             // Tool invocation path
             var (toolText, products, dataSourcesResponse) = await InvokeToolAsync(finished.FunctionName ?? string.Empty, finished.FunctionCallArguments);
             var toolOutput = toolText;
-            
+
             if (products?.Count > 0)
             {
                 var compact = JsonSerializer.Serialize(products.Select(p => new { p.Name, p.Description, p.Price }));
@@ -403,23 +403,23 @@ public partial class ConversationManager : IDisposable
             else if (dataSourcesResponse?.HasResults == true)
             {
                 // For DataSources, provide compact source information to the model
-                var compactSources = JsonSerializer.Serialize(dataSourcesResponse.SourcePages.Select(s => new 
-                { 
-                    s.Title, 
-                    s.Url, 
-                    s.Excerpt, 
-                    RelevanceScore = Math.Round(s.RelevanceScore, 2) 
+                var compactSources = JsonSerializer.Serialize(dataSourcesResponse.SourcePages.Select(s => new
+                {
+                    s.Title,
+                    s.Url,
+                    s.Excerpt,
+                    RelevanceScore = Math.Round(s.RelevanceScore, 2)
                 }));
                 toolOutput = $"Response: {dataSourcesResponse.Response}\nSources: {compactSources}";
             }
-            
+
             RealtimeItem functionOutputItem = RealtimeItem.CreateFunctionCallOutput(
                 callId: finished.FunctionCallId,
                 output: toolOutput);
             await _session.AddItemAsync(functionOutputItem);
 
             await addMessageAsync($"Tool executed: {finished.FunctionName}");
-            
+
             if (products?.Count > 0)
             {
                 await addMessageAsync($"Products returned: {products.Count}");
@@ -433,6 +433,38 @@ public partial class ConversationManager : IDisposable
             else
             {
                 await addChatMessageAsync(toolText, false);
+            }
+
+            // After supplying the tool (function) output to the model we must explicitly
+            // request the assistant to generate the follow‑up response (with audio).
+            // In earlier behavior we only rendered the UI card / text; no new assistant
+            // streaming cycle was triggered, so no audio was produced for tool answers.
+            // The OpenAI realtime .NET SDK (preview) exposes a CreateResponseAsync (name may
+            // evolve). To keep this resilient across SDK versions we attempt a small set of
+            // likely method names via reflection instead of taking a hard compile dependency.
+            try
+            {
+                if (_session is not null)
+                {
+                    string[] candidateNames = ["CreateResponseAsync", "RespondAsync", "GenerateResponseAsync", "CreateResponse"];
+                    MethodInfo? m = candidateNames
+                        .Select(n => _session.GetType().GetMethod(n, BindingFlags.Public | BindingFlags.Instance, Array.Empty<Type>()))
+                        .FirstOrDefault(mi => mi is not null);
+                    if (m is not null)
+                    {
+                        var invokeResult = m.Invoke(_session, null);
+                        if (invokeResult is Task t) await t; // await async method
+                        await addMessageAsync("Requested follow-up assistant response after tool output");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Could not locate method to trigger follow-up assistant response (SDK method name may have changed)");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to trigger follow-up assistant response after tool output");
             }
         }
         else
@@ -464,7 +496,7 @@ public partial class ConversationManager : IDisposable
 
     private async Task PlayAudio(byte[] audioBytes, Components.Speaker audioOutput)
     {
-            try { await audioOutput.EnqueueAsync(audioBytes); } catch { /* swallow playback errors */ }
+        try { await audioOutput.EnqueueAsync(audioBytes); } catch { /* swallow playback errors */ }
     }
 
 
