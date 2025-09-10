@@ -30,8 +30,8 @@
         <div class="chat-column-wrapper">
             <button class="btn-log-toggle" title="Show/Hide log" @onclick="ToggleLogPanel">@(_showLog ? "⯈" : "⯇")</button>
             @* CHAT SECTION *@
-            <div class="chat-section" @ref="chatSectionRef">
-            <div class="messages">
+            <div class="chat-section">
+            <div class="messages" @ref="chatSectionRef">
                 @foreach (var chatMessage in chatMessages)
                 {
                     var messageStyle = chatMessage.IsUser ? "message message-user visible" : "message message-assistant visible";
