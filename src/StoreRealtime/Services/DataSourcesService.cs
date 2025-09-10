@@ -7,7 +7,7 @@ namespace StoreRealtime.Services;
 /// <summary>
 /// Service for communicating with the DataSources API
 /// </summary>
-public class DataSourcesService : IDataSourcesService
+public class DataSourcesService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<DataSourcesService> _logger;

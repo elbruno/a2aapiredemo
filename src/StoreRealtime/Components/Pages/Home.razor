@@ -9,6 +9,7 @@
 
 @inject RealtimeClient RealtimeClient
 @inject StoreRealtime.ContextManagers.ContosoProductContext contosoProductContext
+@inject StoreRealtime.ContextManagers.DataSourcesUrlContext dataSourcesUrlContext
 @inject ILogger<Program> logger
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
@@ -147,7 +148,7 @@
 
     private void OnMicAvailable(PipeReader micReader)
     {
-        conversationManager = new(RealtimeClient, contosoProductContext, logger);
+        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger);
         _ = RunAsBackgroundTask(() => conversationManager.RunAsync(micReader.AsStream(), speaker!,
 
         AddMessageAsync,

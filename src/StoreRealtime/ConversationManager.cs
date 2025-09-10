@@ -27,14 +27,19 @@ public partial class ConversationManager : IDisposable
 {
     private readonly RealtimeClient _client;
     private readonly ContosoProductContext _contosoProductContext;
+    private readonly DataSourcesUrlContext _dataSourcesUrlContext;
     private readonly ILogger _logger;
     private RealtimeSession? _session; // Nullable until started (clarifies lifecycle)
     private bool _disposed;
 
-    public ConversationManager(RealtimeClient client, ContosoProductContext contosoProductContext, ILogger logger)
+    public ConversationManager(RealtimeClient client, 
+        ContosoProductContext contosoProductContext,
+        DataSourcesUrlContext dataSourcesUrlContext,
+        ILogger logger)
     {
         _client = client;
         _contosoProductContext = contosoProductContext;
+        _dataSourcesUrlContext = dataSourcesUrlContext;
         _logger = logger;
     }
 
@@ -57,11 +62,17 @@ public partial class ConversationManager : IDisposable
         ArgumentNullException.ThrowIfNull(audioOutput);
 
         // Prepare system instructions similar to original sample.
+        //var prompt = $"""
+        //    You are a useful assistant.
+        //    Respond as succinctly as possible, in just a few words.
+        //    Your main field of expertise is outdoor products.
+        //    You are able to answer questions about outdoor products, including their features, specifications, and availability.
+        //    Check the product database and external sources for information.
+        //    The current date is {DateTime.Now.ToLongDateString()}
+        //    """;
         var prompt = $"""
             You are a useful assistant.
             Respond as succinctly as possible, in just a few words.
-            Your main field of expertise is outdoor products.
-            You are able to answer questions about outdoor products, including their features, specifications, and availability.
             Check the product database and external sources for information.
             The current date is {DateTime.Now.ToLongDateString()}
             """;
@@ -195,6 +206,18 @@ public partial class ConversationManager : IDisposable
                 catch { }
                 return (text, prods ?? new List<Product>());
             }
+            if (functionName.Equals("SemanticSearchDataSources", StringComparison.OrdinalIgnoreCase))
+            {
+                var text = await _dataSourcesUrlContext.SemanticSearchDataSourcesAsync(extracted);
+                List<Product>? prods = null;
+                try
+                {
+                    var sr = JsonSerializer.Deserialize<SearchResponse>(text, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    prods = sr?.Products;
+                }
+                catch { }
+                return (text, prods ?? new List<Product>());
+            }
             return ($"Tool '{functionName}' not recognized", new List<Product>());
         }
         catch (Exception ex)
@@ -207,12 +230,14 @@ public partial class ConversationManager : IDisposable
 
     #region Helper Methods (extracted for clarity)
 
-    // Creates tool list (previously inline in RunAsync) – isolates knowledge of available functions
     private List<AIFunction> BuildTools()
     {
         var semanticSearchTool = AIFunctionFactory.Create(_contosoProductContext.SemanticSearchOutdoorProductsAsync).ToConversationFunctionTool();
         var searchByNameTool = AIFunctionFactory.Create(_contosoProductContext.SearchOutdoorProductsByNameAsync).ToConversationFunctionTool();
-        return [semanticSearchTool, searchByNameTool];
+        var searchCrawledUrlsTool = AIFunctionFactory.Create(_dataSourcesUrlContext.SemanticSearchDataSourcesAsync).ToConversationFunctionTool();
+
+        // return the array of tools
+        return [semanticSearchTool, searchByNameTool, searchCrawledUrlsTool];
     }
 
     // Starts session + configures options (separates lifecycle setup from streaming logic)

@@ -1,7 +1,8 @@
 @page "/settings"
 @using StoreRealtime.Services
 @using DataSources.Models
-@inject IDataSourcesService DataSourcesService
+@using System.Linq
+@inject DataSourcesService DataSourcesService
 @inject ILogger<Settings> Logger
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
@@ -20,35 +21,32 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted">
-                        Add up to 5 URLs to index their content for semantic search. The AI chat will be able to reference information from these pages.
+                        Add up to 5 URLs to index their content for semantic search. The AI chat will be able to
+                        reference information from these pages.
                     </p>
-                    
+
                     <EditForm Model="@indexRequest" OnValidSubmit="@IndexUrls">
                         <DataAnnotationsValidator />
                         <ValidationSummary class="alert alert-danger" />
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Web Page URLs (1-5 URLs)</label>
                             @for (int i = 0; i < 5; i++)
                             {
                                 var index = i; // Capture for closure
-                                <div class="input-group mb-2">
-                                    <span class="input-group-text">@(index + 1)</span>
-                                    <input type="url" 
-                                           class="form-control" 
-                                           @bind="@urls[index]" 
-                                           placeholder="https://example.com/article"
-                                           disabled="@isIndexing" />
-                                </div>
+                                               <div class="input-group mb-2">
+                                                   <span class="input-group-text">@(index + 1)</span>
+                                                   <!-- Bind directly to the EditForm model so validation works -->
+                                                   <input type="url" class="form-control" @bind="indexRequest.Urls[index]"
+                                                       placeholder="https://example.com/article" disabled="@isIndexing" />
+                                               </div>
                             }
                             <small class="form-text text-muted">
                                 Enter valid HTTP/HTTPS URLs. Empty fields will be ignored.
                             </small>
                         </div>
-                        
-                        <button type="submit" 
-                                class="btn btn-primary" 
-                                disabled="@(isIndexing || !HasValidUrls())">
+
+                        <button type="submit" class="btn btn-primary me-2" disabled="@(isIndexing || !HasValidUrls())">
                             @if (isIndexing)
                             {
                                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -60,15 +58,20 @@
                                 <span>Index Web Pages</span>
                             }
                         </button>
+                        <button type="button" class="btn btn-secondary" disabled="@isIndexing"
+                            @onclick="SetDefaultValues">
+                            <i class="bi bi-gear-fill me-2"></i>
+                            <span>Set Default Values</span>
+                        </button>
                     </EditForm>
-                    
+
                     @if (!string.IsNullOrEmpty(statusMessage))
                     {
                         <div class="alert @(isError ? "alert-danger" : "alert-success") mt-3">
                             @statusMessage
                         </div>
                     }
-                    
+
                     @if (indexingResults.Any())
                     {
                         <div class="mt-4">
@@ -89,7 +92,8 @@
                                         {
                                             <tr class="@(result.Success ? "" : "table-danger")">
                                                 <td>
-                                                    <a href="@result.Url" target="_blank" class="text-truncate" style="max-width: 200px; display: inline-block;">
+                                                    <a href="@result.Url" target="_blank" class="text-truncate"
+                                                        style="max-width: 200px; display: inline-block;">
                                                         @result.Url
                                                     </a>
                                                 </td>
@@ -116,7 +120,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -155,7 +159,7 @@
                     }
                 </div>
             </div>
-            
+
             <div class="card mt-3">
                 <div class="card-header">
                     <h6>How it works</h6>
@@ -175,8 +179,8 @@
 </div>
 
 @code {
-    private IndexUrlsRequest indexRequest = new() { Urls = new List<string>() };
-    private string[] urls = new string[5];
+    // Ensure the model has 5 slots immediately so the Razor for-loop can safely bind to indexes 0..4
+    private IndexUrlsRequest indexRequest = new() { Urls = Enumerable.Range(0, 5).Select(_ => string.Empty).ToList() };
     private bool isIndexing = false;
     private string statusMessage = "";
     private bool isError = false;
@@ -185,12 +189,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Initialize empty URLs
-        for (int i = 0; i < 5; i++)
+        // Initialize the model with 5 empty URL slots so the inputs bind
+        // directly to the model and EditForm validation reflects user input.
+        if (indexRequest.Urls == null || indexRequest.Urls.Count < 5)
         {
-            urls[i] = "";
+            indexRequest.Urls = Enumerable.Range(0, 5).Select(_ => string.Empty).ToList();
         }
-        
+
         // Load currently indexed URLs
         await LoadIndexedUrls();
     }
@@ -210,7 +215,8 @@
 
     private bool HasValidUrls()
     {
-        return urls.Any(url => !string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out _));
+        return indexRequest.Urls != null && indexRequest.Urls.Any(url => !string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url,
+        UriKind.Absolute, out _));
     }
 
     private async Task IndexUrls()
@@ -222,9 +228,9 @@
 
         try
         {
-            // Get non-empty URLs
-            var validUrls = urls.Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
-            
+            // Get non-empty URLs from the model
+            var validUrls = indexRequest.Urls?.Where(url => !string.IsNullOrWhiteSpace(url)).ToList() ?? new List<string>();
+
             if (!validUrls.Any())
             {
                 statusMessage = "Please enter at least one valid URL.";
@@ -232,42 +238,40 @@
                 return;
             }
 
-            indexRequest.Urls = validUrls;
-            
+            // Create a request copy with only the valid URLs so we don't shrink the UI-bound model
+            var requestForApi = new IndexUrlsRequest { Urls = validUrls };
+
             Logger.LogInformation("Indexing {Count} URLs", validUrls.Count);
-            
-            var response = await DataSourcesService.IndexUrlsAsync(indexRequest);
-            
+
+            var response = await DataSourcesService.IndexUrlsAsync(requestForApi);
+
             if (response != null)
             {
                 indexingResults = response.IndexedUrls;
-                
+
                 var successCount = response.IndexedUrls.Count(u => u.Success);
                 var errorCount = response.IndexedUrls.Count - successCount;
-                
+
                 if (errorCount == 0)
                 {
                     statusMessage = $"Successfully indexed {successCount} web page(s)!";
                     isError = false;
-                    
-                    // Clear the form
-                    for (int i = 0; i < 5; i++)
-                    {
-                        urls[i] = "";
-                    }
+
+                    // Clear the form by resetting 5 empty slots on the UI-bound model
+                    indexRequest.Urls = Enumerable.Range(0, 5).Select(_ => string.Empty).ToList();
                 }
                 else
                 {
                     statusMessage = $"Indexed {successCount} page(s) successfully, {errorCount} failed. Check details below.";
                     isError = errorCount > successCount;
                 }
-                
+
                 // Add errors if any
                 if (response.Errors.Any())
                 {
                     statusMessage += $" Errors: {string.Join(", ", response.Errors)}";
                 }
-                
+
                 // Refresh the indexed URLs list
                 await LoadIndexedUrls();
             }
@@ -299,6 +303,22 @@
         catch
         {
             return url;
+        }
+    }
+
+    private void SetDefaultValues()
+    {
+        // Populate the first three slots with recommended defaults and clear the remaining two
+        var defaults = new[]
+        {
+"https://learn.microsoft.com/en-us/azure/ai-foundry/openai/whats-new#realtime-api-audio-model-ga",
+"https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/sdk-overview?pivots=programming-language-csharp",
+"https://devblogs.microsoft.com/dotnet/dotnet-10-rc-1/"
+};
+
+        for (int i = 0; i < 5; i++)
+        {
+            indexRequest.Urls[i] = i < defaults.Length ? defaults[i] : string.Empty;
         }
     }
 }

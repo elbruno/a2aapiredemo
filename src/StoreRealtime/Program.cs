@@ -21,8 +21,8 @@ builder.Services.AddSingleton<ProductService>();
 builder.Services.AddHttpClient<ProductService>(
     static client => client.BaseAddress = new("https+http://products"));
 
-builder.Services.AddScoped<StoreRealtime.Services.IDataSourcesService, StoreRealtime.Services.DataSourcesService>();
-builder.Services.AddHttpClient<StoreRealtime.Services.IDataSourcesService, StoreRealtime.Services.DataSourcesService>(
+builder.Services.AddSingleton<DataSourcesService>();
+builder.Services.AddHttpClient<DataSourcesService>(
     static client => client.BaseAddress = new("https+http://datasources"));
 
 var azureOpenAiClientName = "openai";
@@ -48,22 +48,15 @@ builder.Services.AddSingleton<RealtimeClient>(serviceProvider =>
     var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("Configuring RealtimeClient for model {Model}", chatDeploymentName);
 
-    // endpoint = "https://bruno-brk445-resource.cognitiveservices.azure.com/"; // openai/realtime?api-version=2024-10-01-preview&deployment=gpt-realtime";
+    AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential());
+    if (!string.IsNullOrEmpty(apiKey))
+    {
+        azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey));
+    }
+    return azureClient.GetRealtimeClient();
 
-    //AzureOpenAIClientOptions? options = new(version: AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview)
-    //;
-    //options.DefaultQueryParameters.Add("deployment", chatDeploymentName);
-
-    //AzureOpenAIClient azureClient = new(new Uri(endpoint), new DefaultAzureCredential(), options);
-    //if (!string.IsNullOrEmpty(apiKey))
-    //{
-    //    azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey), options);
-    //}
-
-    AzureOpenAIClient aoaiClient = new(new Uri(endpoint), new ApiKeyCredential(apiKey));
-    var c = aoaiClient.GetRealtimeClient();
-    return c;
-
+    //AzureOpenAIClient aoaiClient = new(new Uri(endpoint), new ApiKeyCredential(apiKey));
+    //return aoaiClient.GetRealtimeClient();
 });
 
 builder.Services.AddSingleton<IConfiguration>(sp => builder.Configuration);
@@ -72,6 +65,12 @@ builder.Services.AddSingleton(serviceProvider =>
 {
     ProductService productService = serviceProvider.GetRequiredService<ProductService>();
     return new ContosoProductContext(productService);
+});
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    DataSourcesService dataSourcesService = serviceProvider.GetRequiredService<DataSourcesService>();
+    return new DataSourcesUrlContext(dataSourcesService);
 });
 
 // Add services to the container.
