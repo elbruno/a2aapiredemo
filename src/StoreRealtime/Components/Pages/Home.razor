@@ -14,6 +14,7 @@
 @inject ILogger<Program> logger
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
+@inject StoreRealtime.Services.ISystemPromptService SystemPromptService
 
 <PageTitle>eShopLite - Realtime chat support</PageTitle>
 
@@ -176,7 +177,8 @@
 
     private void OnMicAvailable(PipeReader micReader)
     {
-        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger);
+        var systemPrompt = SystemPromptService.GetCurrentPrompt();
+        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger, systemPrompt);
         _ = RunAsBackgroundTask(() => conversationManager.RunAsync(micReader.AsStream(), speaker!,
 
         AddMessageAsync,

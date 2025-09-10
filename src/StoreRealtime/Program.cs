@@ -25,6 +25,9 @@ builder.Services.AddSingleton<DataSourcesService>();
 builder.Services.AddHttpClient<DataSourcesService>(
     static client => client.BaseAddress = new("https+http://datasources"));
 
+// Register SystemPromptService
+builder.Services.AddSingleton<ISystemPromptService, SystemPromptService>();
+
 var azureOpenAiClientName = "openai";
 
 (string endpoint, string apiKey) = GetEndpointAndKey(builder, azureOpenAiClientName);

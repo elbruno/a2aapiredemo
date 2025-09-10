@@ -29,18 +29,21 @@ public partial class ConversationManager : IDisposable
     private readonly ContosoProductContext _contosoProductContext;
     private readonly DataSourcesUrlContext _dataSourcesUrlContext;
     private readonly ILogger _logger;
+    private readonly string? _customSystemPrompt;
     private RealtimeSession? _session; // Nullable until started (clarifies lifecycle)
     private bool _disposed;
 
     public ConversationManager(RealtimeClient client, 
         ContosoProductContext contosoProductContext,
         DataSourcesUrlContext dataSourcesUrlContext,
-        ILogger logger)
+        ILogger logger,
+        string? customSystemPrompt = null)
     {
         _client = client;
         _contosoProductContext = contosoProductContext;
         _dataSourcesUrlContext = dataSourcesUrlContext;
         _logger = logger;
+        _customSystemPrompt = customSystemPrompt;
     }
 
     /// <summary>
@@ -62,16 +65,8 @@ public partial class ConversationManager : IDisposable
         ArgumentNullException.ThrowIfNull(audioInput);
         ArgumentNullException.ThrowIfNull(audioOutput);
 
-        // Prepare system instructions similar to original sample.
-        //var prompt = $"""
-        //    You are a useful assistant.
-        //    Respond as succinctly as possible, in just a few words.
-        //    Your main field of expertise is outdoor products.
-        //    You are able to answer questions about outdoor products, including their features, specifications, and availability.
-        //    Check the product database and external sources for information.
-        //    The current date is {DateTime.Now.ToLongDateString()}
-        //    """;
-        var prompt = $"""
+        // Prepare system instructions - use custom prompt if provided, otherwise default
+        var prompt = _customSystemPrompt ?? $"""
             You are a useful assistant.
             Respond as succinctly as possible, in just a few words.
             Check the product database and external sources for information.

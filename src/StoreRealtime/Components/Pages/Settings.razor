@@ -3,117 +3,167 @@
 @using DataSources.Models
 @using System.Linq
 @inject DataSourcesService DataSourcesService
+@inject ISystemPromptService SystemPromptService
 @inject ILogger<Settings> Logger
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
 
-<PageTitle>Settings - Web Page Indexing</PageTitle>
+<PageTitle>Settings - Web Page Indexing & AI Configuration</PageTitle>
 
-<h1>Settings</h1>
-<p>Configure web pages for enhanced search and chat functionality.</p>
+<div class="modern-settings-container">
+    <div class="settings-header">
+        <h1>⚙️ Settings</h1>
+        <p>Configure web pages for enhanced search and AI assistant behavior.</p>
+    </div>
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
+    <div class="settings-content">
+        <div class="settings-grid">
+            <!-- System Prompt Configuration -->
+            <div class="settings-card">
                 <div class="card-header">
-                    <h4>Index Web Pages</h4>
+                    <h4>🤖 AI Assistant Configuration</h4>
+                    <p class="card-description">Customize your AI assistant's behavior and personality</p>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">
-                        Add up to 5 URLs to index their content for semantic search. The AI chat will be able to
-                        reference information from these pages.
-                    </p>
+                    <EditForm Model="@systemPromptModel" OnValidSubmit="@UpdateSystemPrompt">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="validation-summary" />
 
+                        <div class="form-group">
+                            <label class="form-label">
+                                System Prompt
+                                <span class="required">*</span>
+                            </label>
+                            <textarea class="form-control large-textarea" 
+                                     @bind="systemPromptModel.Prompt"
+                                     placeholder="Enter your custom system prompt here..."
+                                     rows="6"
+                                     disabled="@isUpdatingPrompt"></textarea>
+                            <small class="form-text">
+                                This prompt defines how your AI assistant behaves and responds. Use {0} to include the current date.
+                            </small>
+                            
+                            @if (!string.IsNullOrEmpty(systemPromptModel.Prompt))
+                            {
+                                <div class="preview-section">
+                                    <label class="form-label">Preview (with current date):</label>
+                                    <div class="prompt-preview">@systemPromptModel.DisplayPrompt</div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="modern-btn btn-primary" disabled="@isUpdatingPrompt">
+                                @if (isUpdatingPrompt)
+                                {
+                                    <span class="spinner-sm"></span>
+                                    <span>Updating...</span>
+                                }
+                                else
+                                {
+                                    <span class="btn-icon">💾</span>
+                                    <span>Update System Prompt</span>
+                                }
+                            </button>
+                            <button type="button" class="modern-btn btn-secondary" 
+                                    @onclick="ResetToDefault" disabled="@isUpdatingPrompt">
+                                <span class="btn-icon">🔄</span>
+                                <span>Reset to Default</span>
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    @if (!string.IsNullOrEmpty(promptStatusMessage))
+                    {
+                        <div class="alert @(promptIsError ? "alert-error" : "alert-success")">
+                            @promptStatusMessage
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Web Page Indexing -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <h4>📄 Web Page Indexing</h4>
+                    <p class="card-description">Add web pages to enhance AI responses with external content</p>
+                </div>
+                <div class="card-body">
                     <EditForm Model="@indexRequest" OnValidSubmit="@IndexUrls">
                         <DataAnnotationsValidator />
-                        <ValidationSummary class="alert alert-danger" />
+                        <ValidationSummary class="validation-summary" />
 
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">Web Page URLs (1-5 URLs)</label>
                             @for (int i = 0; i < 5; i++)
                             {
-                                var index = i; // Capture for closure
-                                               <div class="input-group mb-2">
-                                                   <span class="input-group-text">@(index + 1)</span>
-                                                   <!-- Bind directly to the EditForm model so validation works -->
-                                                   <input type="url" class="form-control" @bind="indexRequest.Urls[index]"
-                                                       placeholder="https://example.com/article" disabled="@isIndexing" />
-                                               </div>
+                                var index = i;
+                                <div class="input-group">
+                                    <span class="input-group-text">@(index + 1)</span>
+                                    <input type="url" class="form-control" @bind="indexRequest.Urls[index]"
+                                           placeholder="https://example.com/article" disabled="@isIndexing" />
+                                </div>
                             }
-                            <small class="form-text text-muted">
+                            <small class="form-text">
                                 Enter valid HTTP/HTTPS URLs. Empty fields will be ignored.
                             </small>
                         </div>
 
-                        <button type="submit" class="btn btn-primary me-2" disabled="@(isIndexing || !HasValidUrls())">
-                            @if (isIndexing)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                <span>Indexing...</span>
-                            }
-                            else
-                            {
-                                <i class="bi bi-cloud-upload me-2"></i>
-                                <span>Index Web Pages</span>
-                            }
-                        </button>
-                        <button type="button" class="btn btn-secondary" disabled="@isIndexing"
-                            @onclick="SetDefaultValues">
-                            <i class="bi bi-gear-fill me-2"></i>
-                            <span>Set Default Values</span>
-                        </button>
+                        <div class="form-actions">
+                            <button type="submit" class="modern-btn btn-primary" disabled="@(isIndexing || !HasValidUrls())">
+                                @if (isIndexing)
+                                {
+                                    <span class="spinner-sm"></span>
+                                    <span>Indexing...</span>
+                                }
+                                else
+                                {
+                                    <span class="btn-icon">🔗</span>
+                                    <span>Index Web Pages</span>
+                                }
+                            </button>
+                            <button type="button" class="modern-btn btn-secondary" disabled="@isIndexing"
+                                    @onclick="SetDefaultValues">
+                                <span class="btn-icon">⭐</span>
+                                <span>Use Examples</span>
+                            </button>
+                        </div>
                     </EditForm>
 
                     @if (!string.IsNullOrEmpty(statusMessage))
                     {
-                        <div class="alert @(isError ? "alert-danger" : "alert-success") mt-3">
+                        <div class="alert @(isError ? "alert-error" : "alert-success")">
                             @statusMessage
                         </div>
                     }
 
                     @if (indexingResults.Any())
                     {
-                        <div class="mt-4">
+                        <div class="results-section">
                             <h5>Indexing Results</h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>URL</th>
-                                            <th>Title</th>
-                                            <th>Chunks</th>
-                                            <th>Status</th>
-                                            <th>Indexed At</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var result in indexingResults)
-                                        {
-                                            <tr class="@(result.Success ? "" : "table-danger")">
-                                                <td>
-                                                    <a href="@result.Url" target="_blank" class="text-truncate"
-                                                        style="max-width: 200px; display: inline-block;">
-                                                        @result.Url
-                                                    </a>
-                                                </td>
-                                                <td>@result.Title</td>
-                                                <td>@result.ChunkCount</td>
-                                                <td>
-                                                    @if (result.Success)
-                                                    {
-                                                        <span class="badge bg-success">Success</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-danger" title="@result.ErrorMessage">Failed</span>
-                                                    }
-                                                </td>
-                                                <td>@result.IndexedAt.ToString("MM/dd HH:mm")</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                            <div class="results-grid">
+                                @foreach (var result in indexingResults)
+                                {
+                                    <div class="result-card @(result.Success ? "success" : "error")">
+                                        <div class="result-header">
+                                            <h6 class="result-title">@result.Title</h6>
+                                            <span class="result-status @(result.Success ? "success" : "error")">
+                                                @(result.Success ? "✅" : "❌")
+                                            </span>
+                                        </div>
+                                        <div class="result-content">
+                                            <a href="@result.Url" target="_blank" class="result-url">@GetDomainFromUrl(result.Url)</a>
+                                            <div class="result-meta">
+                                                <span class="chunk-count">@result.ChunkCount chunks</span>
+                                                <span class="index-date">@result.IndexedAt.ToString("MMM dd, HH:mm")</span>
+                                            </div>
+                                            @if (!result.Success && !string.IsNullOrEmpty(result.ErrorMessage))
+                                            {
+                                                <div class="error-message">@result.ErrorMessage</div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
@@ -121,65 +171,81 @@
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card">
+        <!-- Sidebar -->
+        <div class="settings-sidebar">
+            <div class="sidebar-card">
                 <div class="card-header">
-                    <h5>Currently Indexed Pages</h5>
+                    <h5>📚 Currently Indexed Pages</h5>
                 </div>
                 <div class="card-body">
                     @if (currentIndexedUrls == null)
                     {
-                        <div class="text-center">
-                            <div class="spinner-border spinner-border-sm" role="status"></div>
-                            <span class="ms-2">Loading...</span>
+                        <div class="loading-state">
+                            <div class="spinner-sm"></div>
+                            <span>Loading...</span>
                         </div>
                     }
                     else if (!currentIndexedUrls.Any())
                     {
-                        <p class="text-muted">No pages indexed yet.</p>
+                        <div class="empty-state">
+                            <span class="empty-icon">📄</span>
+                            <p>No pages indexed yet.</p>
+                        </div>
                     }
                     else
                     {
-                        @foreach (var indexedUrl in currentIndexedUrls)
-                        {
-                            <div class="card mb-2 border-0 bg-light">
-                                <div class="card-body p-2">
-                                    <h6 class="card-title mb-1 text-truncate">@indexedUrl.Title</h6>
-                                    <p class="card-text small text-muted mb-1">
-                                        <a href="@indexedUrl.Url" target="_blank" class="text-decoration-none">
-                                            @GetDomainFromUrl(indexedUrl.Url)
-                                        </a>
-                                    </p>
-                                    <small class="text-muted">
-                                        @indexedUrl.ChunkCount chunks • @indexedUrl.IndexedAt.ToString("MM/dd HH:mm")
-                                    </small>
+                        <div class="indexed-pages">
+                            @foreach (var indexedUrl in currentIndexedUrls)
+                            {
+                                <div class="indexed-page-card">
+                                    <h6 class="page-title">@indexedUrl.Title</h6>
+                                    <a href="@indexedUrl.Url" target="_blank" class="page-url">
+                                        @GetDomainFromUrl(indexedUrl.Url)
+                                    </a>
+                                    <div class="page-meta">
+                                        <span class="chunk-count">@indexedUrl.ChunkCount chunks</span>
+                                        <span class="index-date">@indexedUrl.IndexedAt.ToString("MMM dd")</span>
+                                    </div>
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     }
                 </div>
             </div>
 
-            <div class="card mt-3">
+            <div class="sidebar-card">
                 <div class="card-header">
-                    <h6>How it works</h6>
+                    <h6>💡 Quick Tips</h6>
                 </div>
                 <div class="card-body">
-                    <ol class="small">
-                        <li>Enter web page URLs you want to reference</li>
-                        <li>The system crawls and extracts main content</li>
-                        <li>Content is chunked and embedded for search</li>
-                        <li>AI chat can now reference this information</li>
-                        <li>Use the search page to find relevant content</li>
-                    </ol>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <span class="tip-icon">🤖</span>
+                            <span>Customize your AI's personality with system prompts</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">📄</span>
+                            <span>Index web pages for richer AI responses</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">🔍</span>
+                            <span>Use high-quality, content-rich pages for best results</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">💬</span>
+                            <span>Changes apply to new conversations</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<link rel="stylesheet" href="css/modern-settings.css" />
+
 @code {
-    // Ensure the model has 5 slots immediately so the Razor for-loop can safely bind to indexes 0..4
+    // Web Page Indexing properties
     private IndexUrlsRequest indexRequest = new() { Urls = Enumerable.Range(0, 5).Select(_ => string.Empty).ToList() };
     private bool isIndexing = false;
     private string statusMessage = "";
@@ -187,18 +253,62 @@
     private List<IndexedUrl> indexingResults = new();
     private List<IndexedUrl>? currentIndexedUrls = null;
 
+    // System Prompt properties
+    private SystemPromptModel systemPromptModel = new();
+    private bool isUpdatingPrompt = false;
+    private string promptStatusMessage = "";
+    private bool promptIsError = false;
+
     protected override async Task OnInitializedAsync()
     {
-        // Initialize the model with 5 empty URL slots so the inputs bind
-        // directly to the model and EditForm validation reflects user input.
+        // Initialize web page indexing model
         if (indexRequest.Urls == null || indexRequest.Urls.Count < 5)
         {
             indexRequest.Urls = Enumerable.Range(0, 5).Select(_ => string.Empty).ToList();
         }
 
+        // Initialize system prompt model
+        systemPromptModel.Prompt = SystemPromptService.GetCurrentPrompt();
+
         // Load currently indexed URLs
         await LoadIndexedUrls();
     }
+
+    #region System Prompt Methods
+
+    private async Task UpdateSystemPrompt()
+    {
+        isUpdatingPrompt = true;
+        promptStatusMessage = "";
+        promptIsError = false;
+
+        try
+        {
+            SystemPromptService.SetPrompt(systemPromptModel.Prompt);
+            promptStatusMessage = "System prompt updated successfully! Changes will apply to new conversations.";
+            promptIsError = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error updating system prompt");
+            promptStatusMessage = $"Failed to update system prompt: {ex.Message}";
+            promptIsError = true;
+        }
+        finally
+        {
+            isUpdatingPrompt = false;
+        }
+    }
+
+    private void ResetToDefault()
+    {
+        systemPromptModel.Prompt = SystemPromptService.GetDefaultPrompt();
+        promptStatusMessage = "";
+    }
+
+    #endregion
+
+    #region Web Page Indexing Methods
 
     private async Task LoadIndexedUrls()
     {
@@ -321,4 +431,6 @@
             indexRequest.Urls[i] = i < defaults.Length ? defaults[i] : string.Empty;
         }
     }
+
+    #endregion
 }
