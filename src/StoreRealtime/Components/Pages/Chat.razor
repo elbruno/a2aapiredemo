@@ -26,7 +26,7 @@
 
 <Speaker @ref="@speaker" />
 
-<div class="modern-chat-container">
+<div class="chat-section">
     <!-- Header -->
     <div class="chat-header">
         <div class="chat-header-content">
@@ -56,6 +56,7 @@
     </div>
 
     <!-- Chat Messages Area -->
+    <div class="chat-column-wrapper">
     <div class="chat-messages-container">
         <div class="chat-messages" @ref="chatMessagesContainer">
             @if (!chatMessages.Any())
@@ -112,8 +113,8 @@
                                     {
                                         <div class="modern-product-card">
                                             <div class="product-image-container">
-                                                <img src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" 
-                                                     alt="@product.Name" class="product-image" />
+                                                <img src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl"
+                                                    alt="@product.Name" class="product-image" />
                                                 <div class="product-price-badge">@product.Price.ToString("C")</div>
                                             </div>
                                             <div class="product-info">
@@ -133,7 +134,8 @@
                         @if (chatMessage.DataSourcesResponse != null && chatMessage.DataSourcesResponse.HasResults)
                         {
                             <div class="datasources-container">
-                                <h4 class="content-header">📄 Web Sources (@chatMessage.DataSourcesResponse.SourceCount found)</h4>
+                                <h4 class="content-header">📄 Web Sources (@chatMessage.DataSourcesResponse.SourceCount found)
+                                </h4>
                                 <div class="sources-grid">
                                     @foreach (var source in chatMessage.DataSourcesResponse.SourcePages)
                                     {
@@ -185,20 +187,17 @@
             }
         </div>
     </div>
+    </div>
+    @* HERE *@
 
     <!-- Text Input Area -->
     <div class="chat-input-container">
         <div class="input-wrapper">
-            <textarea @bind="currentMessage" 
-                      @onkeypress="OnKeyPress"
-                      @oninput="OnInputChange"
-                      placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)"
-                      class="message-input"
-                      rows="1"
-                      disabled="@(isMicActive || isSending)"></textarea>
-            <button class="send-button @(CanSendMessage() ? "active" : "")" 
-                    @onclick="SendTextMessage" 
-                    disabled="@(!CanSendMessage())">
+            <textarea @bind="currentMessage" @onkeypress="OnKeyPress" @oninput="OnInputChange"
+                placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)"
+                class="message-input" rows="1" disabled="@(isMicActive || isSending)"></textarea>
+            <button class="send-button @(CanSendMessage() ? "active" : "")" @onclick="SendTextMessage"
+                disabled="@(!CanSendMessage())">
                 @if (isSending)
                 {
                     <div class="spinner"></div>
@@ -234,6 +233,7 @@
     private readonly List<RealtimeChatMessage> chatMessages = new();
     private ElementReference chatMessagesContainer;
     private string currentMessage = "";
+    private bool scrollPending; // set when messages list changes so OnAfterRender can scroll
 
     private void ToggleMic()
     {
@@ -254,13 +254,14 @@
     private void OnMicAvailable(PipeReader micReader)
     {
         var systemPrompt = SystemPromptService.GetCurrentPrompt();
-        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger, SystemPromptService, systemPrompt);
+        conversationManager = new(RealtimeClient, contosoProductContext, dataSourcesUrlContext, logger, SystemPromptService,
+        systemPrompt);
         _ = RunAsBackgroundTask(() => conversationManager.RunAsync(micReader.AsStream(), speaker!,
-            AddMessageAsync,
-            AddChatMessageAsync,
-            AddChatProductMessageAsync,
-            AddChatDataSourcesMessageAsync,
-            disposalCts.Token));
+        AddMessageAsync,
+        AddChatMessageAsync,
+        AddChatProductMessageAsync,
+        AddChatDataSourcesMessageAsync,
+        disposalCts.Token));
     }
 
     private async Task SendTextMessage()
@@ -279,10 +280,11 @@
         {
             // Simulate processing delay
             await Task.Delay(500);
-            
+
             // Here you would typically call your AI service
             // For now, we'll add a simple response
-            await AddChatMessageAsync("Text chat functionality is being implemented. Please use voice chat for full functionality.", false);
+            await AddChatMessageAsync("Text chat functionality is being implemented. Please use voice chat for full functionality.",
+            false);
         }
         finally
         {
@@ -343,8 +345,8 @@
             Timestamp = DateTime.Now
         };
         chatMessages.Add(cm);
-        await InvokeAsync(StateHasChanged);
-        await ScrollToBottom();
+        scrollPending = true; // defer scroll until DOM rendered
+        await InvokeAsync(StateHasChanged);        
     }
 
     private async Task AddChatProductMessageAsync(List<Product> products)
@@ -356,8 +358,8 @@
             Timestamp = DateTime.Now
         };
         chatMessages.Add(productMessage);
+        scrollPending = true;
         await InvokeAsync(StateHasChanged);
-        await ScrollToBottom();
     }
 
     private async Task AddChatDataSourcesMessageAsync(DataSourcesSearchResponse dataSourcesResponse)
@@ -370,8 +372,8 @@
             Timestamp = DateTime.Now
         };
         chatMessages.Add(dataSourcesMessage);
+        scrollPending = true;
         await InvokeAsync(StateHasChanged);
-        await ScrollToBottom();
     }
 
     private async Task AddMessageAsync(string message)
@@ -397,8 +399,34 @@
 
     private async Task ScrollToBottom()
     {
-        await Task.Delay(50); // Small delay to ensure DOM is updated
-        await JSRuntime.InvokeVoidAsync("scrollToBottom", chatMessagesContainer);
+        // Called only after render; extra small rAF-aligned delays handled in JS helper.
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollToBottom", chatMessagesContainer);
+            // Schedule a second pass after images/content (like product cards) may inflate height.
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(150);
+                    await JSRuntime.InvokeVoidAsync("scrollToBottom", chatMessagesContainer);
+                }
+                catch { }
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Auto-scroll failed");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (scrollPending && chatMessagesContainer.Context != null)
+        {
+            scrollPending = false;
+            await ScrollToBottom();
+        }
     }
 }
 

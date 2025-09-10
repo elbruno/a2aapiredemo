@@ -164,7 +164,8 @@ body {
 .chat-messages-container {
     flex: 1;
     /* Use a column flex so header/content/input stack and the messages area can grow/shrink */
-    display: flex;
+    /* enable the vertical scroll all the time */
+    display: flow-root;
     flex-direction: column;
     padding: 1.5rem 2rem;
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.04) 0%, rgba(118, 75, 162, 0.04) 100%);
