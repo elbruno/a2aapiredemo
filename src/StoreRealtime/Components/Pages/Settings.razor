@@ -1,7 +1,7 @@
 @page "/settings"
-@using StoreRealtime.Services
-@using DataSources.Models
 @using System.Linq
+@using DataEntities
+@using StoreRealtime.Services
 @inject DataSourcesService DataSourcesService
 @inject SystemPromptService SystemPromptService
 @inject ILogger<Settings> Logger
@@ -441,9 +441,10 @@
         // Populate the first three slots with recommended defaults and clear the remaining two
         var defaults = new[]
         {
-"https://learn.microsoft.com/en-us/azure/ai-foundry/openai/whats-new#realtime-api-audio-model-ga",
-"https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/sdk-overview?pivots=programming-language-csharp",
-"https://devblogs.microsoft.com/dotnet/dotnet-10-rc-1/"
+            "https://learn.microsoft.com/en-us/azure/ai-foundry/openai/whats-new#realtime-api-audio-model-ga",
+            "https://devblogs.microsoft.com/dotnet/dotnet-10-rc-1/",
+            "https://globalai.community/chapters/buenos-aires/events/agentcon-cordoba/",
+            "https://www.ubp.edu.ar/universidad/historia/"
 };
 
         for (int i = 0; i < 5; i++)

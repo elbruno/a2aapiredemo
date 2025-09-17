@@ -49,7 +49,8 @@ if (builder.ExecutionContext.IsPublishMode)
     var gptRealtime = aoai.AddDeployment(name: realtimeDeploymentName,
         modelName: "gpt-realtime",
         modelVersion: "2025-08-28");
-    //gptRealtime.Resource.SkuName = "GlobalStandard";
+    gptRealtime.Resource.SkuName = "GlobalStandard";
+    gptRealtime.Resource.SkuCapacity = 0;
 
     var embeddingsDeployment = aoai.AddDeployment(name: embeddingsDeploymentName,
         modelName: "text-embedding-ada-002",

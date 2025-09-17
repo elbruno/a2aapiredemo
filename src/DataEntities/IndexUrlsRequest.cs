@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace DataSources.Models;
+namespace DataEntities;
 
 /// <summary>
 /// Request model for indexing URLs

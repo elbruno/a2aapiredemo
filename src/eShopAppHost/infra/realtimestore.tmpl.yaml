@@ -33,9 +33,9 @@ properties:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
           - name: AI_ChatDeploymentName
-            value: gpt-4o-mini
+            value: gpt-5-mini
           - name: AI_RealtimeDeploymentName
-            value: gpt-4o-mini-realtime-preview
+            value: gpt-realtime
           - name: AI_embeddingsDeploymentName
             value: text-embedding-ada-002
           - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
@@ -48,6 +48,10 @@ properties:
             value: "true"
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
+          - name: services__datasources__http__0
+            value: http://datasources.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+          - name: services__datasources__https__0
+            value: https://datasources.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: services__products__http__0
             value: http://products.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: services__products__https__0

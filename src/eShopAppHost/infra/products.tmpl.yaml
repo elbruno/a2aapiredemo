@@ -25,8 +25,8 @@ properties:
         value: '{{ .Env.APPINSIGHTS_APPINSIGHTSCONNECTIONSTRING }}'
       - name: connectionstrings--openai
         value: '{{ .Env.OPENAI_CONNECTIONSTRING }}'
-      - name: connectionstrings--sqldb
-        value: Server=sql,1433;User ID=sa;Password={{ securedParameter "sql_password" }};TrustServerCertificate=true;Database=sqldb
+      - name: connectionstrings--productsdb
+        value: Server=sql,1433;User ID=sa;Password={{ securedParameter "sql_password" }};TrustServerCertificate=true;Initial Catalog=productsDb
   template:
     containers:
       - image: {{ .Image }}
@@ -35,9 +35,9 @@ properties:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
           - name: AI_ChatDeploymentName
-            value: gpt-4o-mini
+            value: gpt-5-mini
           - name: AI_RealtimeDeploymentName
-            value: gpt-4o-mini-realtime-preview
+            value: gpt-realtime
           - name: AI_embeddingsDeploymentName
             value: text-embedding-ada-002
           - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
@@ -54,8 +54,8 @@ properties:
             secretRef: applicationinsights-connection-string
           - name: ConnectionStrings__openai
             secretRef: connectionstrings--openai
-          - name: ConnectionStrings__sqldb
-            secretRef: connectionstrings--sqldb
+          - name: ConnectionStrings__productsDb
+            secretRef: connectionstrings--productsdb
     scale:
       minReplicas: 1
 tags:

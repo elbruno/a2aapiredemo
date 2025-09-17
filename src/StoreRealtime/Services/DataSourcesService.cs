@@ -1,4 +1,4 @@
-using DataSources.Models;
+using DataEntities;
 using SearchEntities;
 using System.Text.Json;
 

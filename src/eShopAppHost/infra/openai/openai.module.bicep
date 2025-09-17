@@ -1,10 +1,6 @@
 @description('The location for the resource(s) to be deployed.')
 param location string = resourceGroup().location
 
-param principalId string
-
-param principalType string
-
 resource openai 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: take('openai-${uniqueString(resourceGroup().id)}', 64)
   location: location
@@ -22,48 +18,38 @@ resource openai 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   }
 }
 
-resource openai_CognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(openai.id, principalId, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'a001fd3d-188f-4b5d-821b-7da978bf7442'))
-  properties: {
-    principalId: principalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'a001fd3d-188f-4b5d-821b-7da978bf7442')
-    principalType: principalType
-  }
-  scope: openai
-}
-
-resource gpt_4o_mini 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
-  name: 'gpt-4o-mini'
+resource gpt_5_mini 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+  name: 'gpt-5-mini'
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-4o-mini'
-      version: '2024-07-18'
+      name: 'gpt-5-mini'
+      version: '2025-08-07'
     }
   }
   sku: {
     name: 'GlobalStandard'
-    capacity: 10
+    capacity: 8
   }
   parent: openai
 }
 
-resource gpt_4o_realtime_ga 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
-  name: 'gpt-4o-realtime-preview'
+resource gpt_realtime 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+  name: 'gpt-realtime'
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-4o-realtime-preview'
-      version: '2024-12-17'  // Updated to GA version when available
+      name: 'gpt-realtime'
+      version: '2025-08-28'
     }
   }
   sku: {
     name: 'GlobalStandard'
-    capacity: 1
+    capacity: 0
   }
   parent: openai
   dependsOn: [
-    gpt_4o_mini
+    gpt_5_mini
   ]
 }
 
@@ -82,8 +68,10 @@ resource text_embedding_ada_002 'Microsoft.CognitiveServices/accounts/deployment
   }
   parent: openai
   dependsOn: [
-    gpt_4o_mini
+    gpt_realtime
   ]
 }
 
 output connectionString string = 'Endpoint=${openai.properties.endpoint}'
+
+output name string = openai.name

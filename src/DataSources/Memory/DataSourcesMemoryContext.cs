@@ -1,8 +1,8 @@
 using Microsoft.Extensions.AI;
-using DataSources.Models;
 using SearchEntities;
 using DataSources.Services;
 using VectorEntities;
+using DataEntities;
 
 namespace DataSources.Memory;
 

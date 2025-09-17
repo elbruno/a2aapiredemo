@@ -1,4 +1,4 @@
-namespace DataSources.Models;
+namespace DataEntities;
 
 /// <summary>
 /// Information about an indexed URL

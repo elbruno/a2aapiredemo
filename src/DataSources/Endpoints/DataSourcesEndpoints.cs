@@ -1,5 +1,5 @@
+using DataEntities;
 using DataSources.Memory;
-using DataSources.Models;
 using SearchEntities;
 
 namespace DataSources.Endpoints;
