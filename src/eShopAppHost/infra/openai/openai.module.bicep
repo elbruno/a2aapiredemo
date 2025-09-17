@@ -45,7 +45,7 @@ resource gpt_realtime 'Microsoft.CognitiveServices/accounts/deployments@2024-10-
   }
   sku: {
     name: 'GlobalStandard'
-    capacity: 0
+    capacity: 4
   }
   parent: openai
   dependsOn: [
