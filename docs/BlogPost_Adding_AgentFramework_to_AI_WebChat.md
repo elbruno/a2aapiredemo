@@ -56,7 +56,7 @@ Now let's create the app. You can do this through Visual Studio or the CLI:
 
 **Using Visual Studio Code or the .NET CLI:**
 
-If you prefer VS Code or the command line, check out the [official documentation](https://learn.microsoft.com/en-us/dotnet/ai/quickstarts/ai-templates?tabs=visual-studio-code%2Cconfigure-visual-studio-code%2Cconfigure-visual-studio-code-aspire&pivots=azure-openai#create-the-net-ai-app) for step-by-step instructions. The process is similar—you'll use `dotnet new` commands to scaffold the project with the same configuration options.
+If you prefer VS Code or the command line, check out the [official documentation](https://learn.microsoft.com/dotnet/ai/quickstarts/ai-templates?tabs=visual-studio-code%2Cconfigure-visual-studio-code%2Cconfigure-visual-studio-code-aspire&pivots=azure-openai#create-the-net-ai-app) for step-by-step instructions. The process is similar—you'll use `dotnet new` commands to scaffold the project with the same configuration options.
 
 ### Understanding the Project Structure
 
