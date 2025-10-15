@@ -15,6 +15,9 @@
     <Project Path="SearchEntities/SearchEntities.csproj" />
     <Project Path="VectorEntities/VectorEntities.csproj" />
   </Folder>
+  <Folder Name="/4 Agent Framework/">
+    <Project Path="AgentFx.RealtimeAudioConsole/AgentFx.RealtimeAudioConsole.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".mcp.json" />
   </Folder>
