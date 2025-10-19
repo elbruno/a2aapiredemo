@@ -81,14 +81,14 @@ public class MemoryContext
         return true;
     }
 
-    public virtual async Task<SearchResponse> Search(string search, Context db)
+    public virtual async Task<ProductSearchResponse> Search(string search, Context db)
     {
         if (!_isMemoryCollectionInitialized)
         {
             await InitMemoryContextAsync(db);
         }
 
-        var response = new SearchResponse
+        var response = new ProductSearchResponse
         {
             Response = $"I don't know the answer for your question. Your question is: [{search}]"
         };

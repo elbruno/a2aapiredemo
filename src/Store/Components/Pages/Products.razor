@@ -18,7 +18,7 @@
 }
 else
 {
-    <table class="table zava-table">
+    <table class="table">
         <thead>
             <tr>
                 <th>Image</th>
@@ -32,18 +32,12 @@ else
             @foreach (var product in products)
             {
                 <tr>
-                    @{
-                        // Use local static files under Store/wwwroot/images. Configure ProductsBaseUrl as empty to ensure local hosting.
-                        var imgSrc = $"/images/{product.ImageUrl}";
-                    }
-                    <td class="zava-img">
-                        <img height="80" width="80" src="@imgSrc" alt="@product.Name"
-                             onerror="this.onerror=null; this.src='/images/placeholder.svg';" />
-                    </td>
-                    <td class="zava-name">@product.Name</td>
-                    <td class="zava-desc">@product.Description</td>
-                    <td class="zava-price">@product.Price.ToString("C")</td>
-                    <td class="zava-actions">
+                    <!-- Simulating images being hosted on a CDN -->
+                    <td><img height="80" width="80" src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" /></td>
+                    <td>@product.Name</td>
+                    <td>@product.Description</td>
+                    <td>@product.Price.ToString("C")</td>
+                    <td>
                         <AddToCartButton ProductId="@product.Id" ProductName="@product.Name" OnCartUpdated="OnCartUpdated" />
                     </td>
                 </tr>

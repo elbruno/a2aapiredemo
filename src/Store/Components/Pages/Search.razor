@@ -1,4 +1,5 @@
-﻿@page "/search"
+@page "/search"
+@using Store.Components.Cart
 @using Store.Services
 
 @inject IProductService ProductService
@@ -44,17 +45,18 @@ else
         </thead>
         <tbody>
             @foreach (var product in products)
-                {
+            {
                 <tr>
-                    <!-- Always use locally-hosted images under Store/wwwroot/images -->
-                    @{ var imgSrc = $"/images/{product.ImageUrl}"; }
-                    <td>
-                        <img height="80" width="80" src="@imgSrc" alt="@product.Name"
-                             onerror="this.onerror=null; this.src='/images/placeholder.svg';" />
+                    <!-- Simulating images being hosted on a CDN -->
+                    <td><img height="80" width="80"
+                            src="https://raw.githubusercontent.com/MicrosoftDocs/mslearn-dotnet-cloudnative/main/dotnet-docker/Products/wwwroot/images/@product.ImageUrl" />
                     </td>
                     <td>@product.Name</td>
                     <td>@product.Description</td>
                     <td>@product.Price</td>
+                    <td>
+                        <AddToCartButton ProductId="@product.Id" ProductName="@product.Name"  />
+                    </td>
                 </tr>
             }
         </tbody>
