@@ -57,17 +57,51 @@ Create a complete set of materials enabling demo hosts to effectively teach the 
 
 ## 📦 Deliverables Overview
 
-### Folder Structure
+### Repository Structure (Root-Level Organization)
+
+The materials will be organized as a standalone repository with all content at the root level, ready for cloning and immediate use.
 
 ```text
-SK-Migration-To-AgentFx/
-├── README.md                          # Main entry point and overview
-├── SETUP-GUIDE.md                     # Environment setup instructions
-├── PRESENTER-GUIDE.md                 # Detailed presenter notes and scripts
-├── QUICK-REFERENCE.md                 # One-page migration cheat sheet
-├── FAQ.md                             # Common questions and answers
-├── TROUBLESHOOTING.md                 # Common issues and solutions
-├── REPOSITORY-SETUP-GUIDE.md          # Guide to create new repository from materials
+semantic-kernel-to-agent-framework-migration/    # Repository root
+├── README.md                          # Main repository overview and getting started
+├── LICENSE                            # MIT License
+├── CONTRIBUTING.md                    # Contribution guidelines
+├── CODE_OF_CONDUCT.md                 # Community code of conduct
+├── CHANGELOG.md                       # Version history and updates
+├── .gitignore                         # Git ignore rules
+├── .editorconfig                      # Editor configuration
+├── global.json                        # .NET 9 SDK version lock
+│
+├── .github/
+│   ├── workflows/
+│   │   ├── build-and-test.yml
+│   │   ├── deploy-samples.yml
+│   │   └── benchmark-runner.yml
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   ├── feature_request.md
+│   │   └── migration_question.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── copilot-instructions.md        # GitHub Copilot specific instructions
+│
+├── docs/
+│   ├── README.md                      # Documentation index
+│   ├── SETUP-GUIDE.md                 # Environment setup instructions
+│   ├── PRESENTER-GUIDE.md             # Detailed presenter notes and scripts
+│   ├── QUICK-REFERENCE.md             # One-page migration cheat sheet
+│   ├── FAQ.md                         # Common questions and answers
+│   ├── TROUBLESHOOTING.md             # Common issues and solutions
+│   ├── migration-checklist.md         # Step-by-step migration checklist
+│   ├── benefits-summary.md            # Key benefits of migration
+│   ├── api-mapping.md                 # SK to AF API mapping reference
+│   ├── common-pitfalls.md             # Anti-patterns to avoid
+│   ├── incremental-migration-guide.md # Side-by-side migration strategies
+│   ├── advanced-scenarios.md          # Multi-agent, RAG, vector DB patterns
+│   ├── video-recording-scripts.md     # Content creation guidance
+│   ├── migration-decision-tree.md     # Decision-making framework
+│   ├── security-guide.md              # Security best practices
+│   ├── external-links.md              # Links to official documentation
+│   └── slides-outline.md              # Suggested PowerPoint structure
 │
 ├── blog-posts/
 │   ├── README.md                      # Blog post overview and publishing schedule
@@ -77,15 +111,17 @@ SK-Migration-To-AgentFx/
 │   ├── 04-performance-and-best-practices.md
 │   └── assets/                        # Images, diagrams, code snippets for posts
 │       ├── diagrams/
-│       └── screenshots/
+│       ├── screenshots/
+│       └── og-images/                 # Open Graph images for social media
 │
-├── 01-Introduction/
+├── modules/
+│   ├── 01-Introduction/
 │   ├── README.md                      # Module overview
 │   ├── demo-script.md                 # Step-by-step demo instructions
 │   ├── presentation-notes.md          # Speaker notes and timing
-│   └── comparison-overview.md         # SK vs AF comparison
-│
-├── 02-Basic-Migration/
+│   │   └── comparison-overview.md     # SK vs AF comparison
+│   │
+│   ├── 02-Basic-Migration/
 │   ├── README.md                      # Module overview
 │   ├── demo-script.md                 # Demo walkthrough
 │   ├── migration-steps.md             # Detailed migration steps
@@ -94,36 +130,36 @@ SK-Migration-To-AgentFx/
 │       │   ├── Program.cs
 │       │   ├── BasicAgent.csproj
 │       │   └── README.md
-│       └── after-af/                  # Agent Framework version
-│           ├── Program.cs
-│           ├── BasicAgent.csproj
-│           └── README.md
-│
-├── 03-Namespace-And-Packages/
+│   │   └── after-af/                  # Agent Framework version
+│   │       ├── Program.cs
+│   │       ├── BasicAgent.csproj
+│   │       └── README.md
+│   │
+│   ├── 03-Namespace-And-Packages/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── package-comparison.md          # Package version matrix
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 04-Agent-Creation/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 04-Agent-Creation/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── creation-patterns.md           # Different agent creation patterns
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 05-Thread-Management/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 05-Thread-Management/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── threading-concepts.md          # Thread lifecycle and management
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 06-Tool-Registration/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 06-Tool-Registration/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── tool-migration-guide.md        # Plugin to function migration
@@ -133,45 +169,45 @@ SK-Migration-To-AgentFx/
 │       │   └── Plugins/
 │       │       ├── WeatherPlugin.cs
 │       │       └── CalculatorPlugin.cs
-│       └── after-af/
-│           ├── Program.cs
-│           └── Tools/
-│               ├── WeatherTools.cs
-│               └── CalculatorTools.cs
-│
-├── 07-Invocation-Patterns/
+│   │   └── after-af/
+│   │       ├── Program.cs
+│   │       └── Tools/
+│   │           ├── WeatherTools.cs
+│   │           └── CalculatorTools.cs
+│   │
+│   ├── 07-Invocation-Patterns/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── invocation-comparison.md       # Non-streaming vs streaming
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 08-Streaming-Responses/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 08-Streaming-Responses/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── streaming-guide.md
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 09-Dependency-Injection/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 09-Dependency-Injection/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── di-patterns.md                 # DI setup and best practices
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 10-Options-Configuration/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 10-Options-Configuration/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── configuration-guide.md
-│   └── code-samples/
-│       ├── before-sk/
-│       └── after-af/
-│
-├── 11-Complete-Example/
+│   │   └── code-samples/
+│   │       ├── before-sk/
+│   │       └── after-af/
+│   │
+│   ├── 11-Complete-Example/
 │   ├── README.md
 │   ├── demo-script.md
 │   └── code-samples/
@@ -180,13 +216,13 @@ SK-Migration-To-AgentFx/
 │       │   ├── ChatService.cs
 │       │   ├── Plugins/
 │       │   └── ChatBot.csproj
-│       └── chatbot-af/                # Full AF chatbot application
-│           ├── Program.cs
-│           ├── ChatService.cs
-│           ├── Tools/
-│           └── ChatBot.csproj
-│
-├── 12-Real-World-Migrations/
+│   │   └── chatbot-af/                # Full AF chatbot application
+│   │       ├── Program.cs
+│   │       ├── ChatService.cs
+│   │       ├── Tools/
+│   │       └── ChatBot.csproj
+│   │
+│   ├── 12-Real-World-Migrations/
 │   ├── README.md                      # Overview of case studies
 │   ├── demo-script.md
 │   └── case-studies/
@@ -212,9 +248,9 @@ SK-Migration-To-AgentFx/
 │           ├── README.md
 │           ├── before/
 │           ├── after/
-│           └── plugin-to-function-patterns.md
-│
-├── 13-Performance-Benchmarking/
+│   │       └── plugin-to-function-patterns.md
+│   │
+│   ├── 13-Performance-Benchmarking/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── benchmarking-guide.md          # How to run benchmarks
@@ -229,9 +265,9 @@ SK-Migration-To-AgentFx/
 │       │   ├── memory-usage-comparison.md
 │       │   ├── response-time-metrics.md
 │       │   └── charts/                # Performance charts and graphs
-│       └── BenchmarkDotNet-setup.md
-│
-├── 14-Testing-Strategies/
+│   │   └── BenchmarkDotNet-setup.md
+│   │
+│   ├── 14-Testing-Strategies/
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── testing-guide.md               # Comprehensive testing approaches
@@ -247,9 +283,274 @@ SK-Migration-To-AgentFx/
 │       │   └── TestFixtures/
 │       └── migration-tests/
 │           ├── RegressionTests.cs
-│           └── ParallelRunTests.cs    # Run SK and AF side-by-side
+│   │       └── ParallelRunTests.cs    # Run SK and AF side-by-side
+│   │
+│   └── 15-ASPNetCore-Integration/
+│       ├── README.md
+│       ├── demo-script.md
+│       ├── integration-patterns.md
+│       └── code-samples/
+│           ├── web-api-sk/
+│           │   ├── Controllers/
+│           │   ├── Services/
+│           │   ├── Program.cs
+│           │   └── WebAPI_SK.csproj
+│           ├── web-api-af/
+│           │   ├── Controllers/
+│           │   ├── Services/
+│           │   ├── Program.cs
+│           │   └── WebAPI_AF.csproj
+│           ├── blazor-integration/
+│           │   ├── before-sk/
+│           │   └── after-af/
+│           ├── signalr-streaming/
+│           │   ├── before-sk/
+│           │   └── after-af/
+│           └── minimal-api/
+│               ├── before-sk/
+│               └── after-af/
 │
-├── 15-ASPNetCore-Integration/
+├── src/
+│   ├── samples/                       # Standalone runnable samples
+│   │   ├── BasicAgent_SK/
+│   │   ├── BasicAgent_AF/
+│   │   ├── ChatBot_SK/
+│   │   ├── ChatBot_AF/
+│   │   └── README.md
+│   ├── case-studies/                  # Real-world migration examples
+│   │   ├── sk-samples-migration/
+│   │   ├── chat-copilot-migration/
+│   │   ├── aspnet-api-migration/
+│   │   └── plugin-ecosystem-migration/
+│   ├── benchmarks/                    # Performance benchmark projects
+│   │   ├── AgentCreationBenchmark/
+│   │   ├── InvocationBenchmark/
+│   │   ├── StreamingBenchmark/
+│   │   └── MemoryAllocationBenchmark/
+│   └── tests/                         # Test example projects
+│       ├── UnitTests/
+│       ├── IntegrationTests/
+│       └── MigrationTests/
+│
+├── labs/
+│   ├── README.md
+│   ├── lab-01-basic-migration/
+│   │   ├── starter/
+│   │   ├── solution/
+│   │   └── instructions.md
+│   ├── lab-02-tool-migration/
+│   │   ├── starter/
+│   │   ├── solution/
+│   │   └── instructions.md
+│   ├── lab-03-aspnet-integration/
+│   │   ├── starter/
+│   │   ├── solution/
+│   │   └── instructions.md
+│   └── lab-04-performance-optimization/
+│       ├── starter/
+│       ├── solution/
+│       └── instructions.md
+│
+└── scripts/
+    ├── README.md
+    ├── setup/
+    │   ├── verify-environment.ps1
+    │   ├── install-packages.ps1
+    │   └── configure-secrets.ps1
+    ├── automation/
+    │   ├── migration-analyzer.ps1     # Detect SK patterns in code
+    │   ├── package-updater.ps1        # Automated package updates
+    │   └── namespace-converter.ps1    # Convert namespaces
+    └── validation/
+        ├── verify-migration.ps1
+        ├── test-runner.ps1
+        └── benchmark-runner.ps1
+```
+
+### Root-Level Files Description
+
+**README.md** - Main repository entry point with:
+
+- Project overview and purpose
+- Quick start guide
+- Module index with links
+- Blog post series links
+- Installation instructions
+- Contributing guidelines link
+- License information
+- Badges (build status, .NET version, license)
+
+**LICENSE** - MIT License for open-source distribution
+
+**CONTRIBUTING.md** - Guidelines for:
+
+- How to contribute
+- Code style and conventions
+- Pull request process
+- Issue reporting
+- Community expectations
+
+**CODE_OF_CONDUCT.md** - Community standards and behavior expectations
+
+**CHANGELOG.md** - Version history and release notes
+
+**global.json** - Locks .NET SDK to version 9.0.x
+
+**.gitignore** - Standard .NET gitignore with:
+
+- bin/ and obj/ folders
+- User-specific files
+- Secrets and configuration
+- IDE files
+
+**.editorconfig** - Code style configuration for consistent formatting across editors
+
+---
+
+## 🗂️ GitHub Copilot Instructions
+
+### .github/copilot-instructions.md
+
+This file provides context-aware guidance for GitHub Copilot when working in this repository.
+
+**Content:**
+
+```markdown
+# GitHub Copilot Instructions for Semantic Kernel to Agent Framework Migration
+
+## Repository Purpose
+
+This repository contains comprehensive materials for migrating from Semantic Kernel to Microsoft Agent Framework in C#. It includes demos, code samples, blog posts, and presenter materials.
+
+## Code Generation Guidelines
+
+### When Creating Semantic Kernel Examples (before-sk/)
+
+- Use `Microsoft.SemanticKernel` namespace
+- Use `Kernel` for agent management
+- Use `[KernelFunction]` attributes for tools
+- Use `ChatCompletionAgent` for agents
+- Use `InvokeAsync` and `InvokeStreamingAsync` methods
+- Target .NET 9
+
+### When Creating Agent Framework Examples (after-af/)
+
+- Use `Microsoft.Agents.AI` and `Microsoft.Extensions.AI` namespaces
+- Use `IChatClient` for agent management
+- Use direct function registration (no attributes)
+- Use `AIAgent` for agents
+- Use `RunAsync` and `RunStreamingAsync` methods
+- Target .NET 9
+- Leverage extension methods like `CreateAIAgent()`
+
+## Naming Conventions
+
+- Semantic Kernel projects: Suffix with `_SK` (e.g., `BasicAgent_SK.csproj`)
+- Agent Framework projects: Suffix with `_AF` (e.g., `BasicAgent_AF.csproj`)
+- Keep identical functionality between SK and AF versions for comparison
+
+## Documentation Standards
+
+- All code samples must include README.md with:
+  - Purpose and overview
+  - Prerequisites
+  - How to run
+  - Key concepts demonstrated
+  - Migration notes (for AF versions)
+- Use markdown for all documentation
+- Include code comments explaining migration-specific changes
+
+## Testing Requirements
+
+- All code samples must compile without errors
+- Include unit tests where appropriate
+- Ensure SK and AF versions produce equivalent outputs
+- Document any behavioral differences
+
+## Blog Post Guidelines
+
+- Target audience: .NET developers familiar with Semantic Kernel
+- Include working code examples
+- Link to corresponding GitHub code samples
+- Use consistent formatting and style
+- Include performance comparisons where relevant
+
+## Presenter Materials
+
+- Demo scripts should include exact commands
+- Include expected outputs
+- Provide troubleshooting tips
+- Note timing for each section
+- Include engagement prompts for live audiences
+
+## Common Patterns to Follow
+
+### Agent Creation Pattern
+
+**Semantic Kernel:**
+```csharp
+var kernel = Kernel.CreateBuilder()
+    .AddOpenAIChatCompletion("gpt-4", apiKey)
+    .Build();
+var agent = new ChatCompletionAgent { Kernel = kernel };
+```
+
+**Agent Framework:**
+
+```csharp
+var client = new OpenAIChatClient("gpt-4", apiKey);
+var agent = client.CreateAIAgent();
+```
+
+### Tool Registration Pattern
+
+**Semantic Kernel:**
+
+```csharp
+public class WeatherPlugin
+{
+    [KernelFunction]
+    public string GetWeather(string location) => $"Weather in {location}";
+}
+kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
+```
+
+**Agent Framework:**
+
+```csharp
+string GetWeather(string location) => $"Weather in {location}";
+var agent = client.CreateAIAgent(tools: GetWeather);
+```
+
+## Repository-Specific Rules
+
+1. Always create side-by-side SK and AF examples
+2. Maintain consistency in functionality across versions
+3. Document all migration steps clearly
+4. Include performance metrics where applicable
+5. Follow .NET 9 best practices
+6. Use async/await properly
+7. Implement proper error handling
+8. Include XML documentation comments
+
+## File Organization
+
+- `modules/` - Contains 15 teaching modules
+- `src/` - Runnable code samples and projects
+- `docs/` - Supporting documentation
+- `labs/` - Hands-on exercises
+- `scripts/` - Automation and setup scripts
+- `blog-posts/` - Blog post content for <www.elbruno.com>
+
+## When Adding New Content
+
+- Update relevant README files
+- Add entry to CHANGELOG.md
+- Ensure consistency with existing patterns
+- Test all code samples
+- Update navigation/links if needed
+
+```
 │   ├── README.md
 │   ├── demo-script.md
 │   ├── integration-patterns.md
@@ -1141,9 +1442,20 @@ Each demo script will follow this structure:
 
 ---
 
-## 📖 Supporting Documentation
+---
 
-### SETUP-GUIDE.md
+## 📖 Supporting Documentation (docs/ folder)
+
+### docs/README.md
+
+Documentation index with:
+
+- Overview of all available documentation
+- Quick links to common resources
+- How to navigate the docs
+- Documentation conventions used
+
+### docs/SETUP-GUIDE.md
 
 Detailed instructions for:
 
@@ -1153,7 +1465,7 @@ Detailed instructions for:
 - Verifying installation
 - Troubleshooting setup issues
 
-### PRESENTER-GUIDE.md
+### docs/PRESENTER-GUIDE.md
 
 Comprehensive presenter information:
 
@@ -1164,7 +1476,7 @@ Comprehensive presenter information:
 - Technical troubleshooting
 - Engagement strategies
 
-### QUICK-REFERENCE.md
+### docs/QUICK-REFERENCE.md
 
 One-page cheat sheet:
 
@@ -1174,7 +1486,7 @@ One-page cheat sheet:
 - Migration checklist summary
 - Package versions
 
-### FAQ.md
+### docs/FAQ.md
 
 Common questions and answers:
 
@@ -1185,7 +1497,7 @@ Common questions and answers:
 - Performance improvements?
 - Azure AI Foundry requirements?
 
-### TROUBLESHOOTING.md
+### docs/TROUBLESHOOTING.md
 
 Common issues and solutions:
 
@@ -1196,7 +1508,7 @@ Common issues and solutions:
 - Performance issues
 - Debugging strategies
 
-### migration-checklist.md
+### docs/migration-checklist.md
 
 Detailed step-by-step guide:
 
@@ -1206,7 +1518,7 @@ Detailed step-by-step guide:
 - Testing phase
 - Deployment phase
 
-### benefits-summary.md
+### docs/benefits-summary.md
 
 Executive summary of benefits:
 
@@ -1216,7 +1528,7 @@ Executive summary of benefits:
 - Developer experience enhancements
 - Modern .NET patterns
 
-### api-mapping.md
+### docs/api-mapping.md
 
 Complete API reference:
 
@@ -1226,7 +1538,7 @@ Complete API reference:
 - Return type changes
 - Usage examples
 
-### common-pitfalls.md
+### docs/common-pitfalls.md
 
 What NOT to do during migration:
 
@@ -1238,7 +1550,7 @@ What NOT to do during migration:
 - Threading issues
 - Incorrect DI patterns
 
-### incremental-migration-guide.md
+### docs/incremental-migration-guide.md
 
 Side-by-side migration strategies:
 
@@ -1249,7 +1561,7 @@ Side-by-side migration strategies:
 - Zero-downtime migration
 - Parallel execution patterns
 
-### advanced-scenarios.md
+### docs/advanced-scenarios.md
 
 Complex implementation patterns:
 
@@ -1261,7 +1573,7 @@ Complex implementation patterns:
 - Conversation history management
 - Complex tool chains
 
-### video-recording-scripts.md
+### docs/video-recording-scripts.md
 
 Content creation guidance:
 
@@ -1272,7 +1584,7 @@ Content creation guidance:
 - Thumbnail suggestions
 - YouTube/streaming platform optimization
 
-### migration-decision-tree.md
+### docs/migration-decision-tree.md
 
 Decision-making framework:
 
@@ -1283,7 +1595,7 @@ Decision-making framework:
 - Risk evaluation framework
 - Cost-benefit analysis template
 
-### security-guide.md
+### docs/security-guide.md
 
 Security best practices:
 
@@ -1296,9 +1608,26 @@ Security best practices:
 - Compliance considerations
 - Azure Key Vault integration
 
-### REPOSITORY-SETUP-GUIDE.md
+### docs/external-links.md
 
-Creating a new repository from materials:
+Curated external resources:
+
+- Official Microsoft documentation
+- Agent Framework GitHub repository
+- Semantic Kernel documentation
+- Community resources
+- Video tutorials
+- Related blog posts
+
+### docs/slides-outline.md
+
+PowerPoint presentation structure:
+
+- Slide deck organization
+- Key talking points
+- Visual suggestions
+- Transition notes
+- Presenter reminders
 
 - GitHub repository structure
 - README templates and badges
@@ -1724,16 +2053,24 @@ Creating a new repository from materials:
 
 ## 📋 Implementation Timeline
 
-### Week 1: Planning and Structure
+### Week 1: Repository Foundation and Structure
 
-- **Day 1-2:** Finalize folder structure and document templates
-- **Day 3-4:** Create setup guides and prerequisites
-- **Day 5:** Review and refine plan, create repository setup guide
+- **Day 1:** Create repository structure at root level
+- **Day 2:** Create README.md, LICENSE, CONTRIBUTING.md, CODE_OF_CONDUCT.md
+- **Day 3:** Set up .github/ folder with workflows and templates
+- **Day 4:** Create .github/copilot-instructions.md and global.json
+- **Day 5:** Create docs/ folder with README and initial documentation structure
 
-### Week 2-3: Core Content Creation
+### Week 2-3: Core Content and Documentation
 
-- **Week 2:** Create modules 1-6 (foundations and core migration)
-- **Week 3:** Create modules 7-11 (advanced topics)
+- **Week 2:** 
+  - Create all docs/ documentation files
+  - Create modules/ folder structure
+  - Build modules 1-6 (foundations and core migration)
+- **Week 3:** 
+  - Complete modules 7-11 (advanced topics)
+  - Create module README files
+  - Write demo scripts
 
 ### Week 4: Advanced Modules
 
@@ -1755,18 +2092,18 @@ Creating a new repository from materials:
 - **Day 4:** Create test suites for Module 14
 - **Day 5:** Complete ASP.NET Core integration samples
 
-### Week 7: Documentation and Resources
+### Week 7: Documentation Finalization
 
-- **Day 1-2:** Write all demo scripts and presenter guides
-- **Day 3:** Create supporting documentation (FAQ, troubleshooting, security guide)
-- **Day 4:** Write common-pitfalls.md, incremental-migration-guide.md
-- **Day 5:** Create migration-decision-tree.md, advanced-scenarios.md
+- **Day 1-2:** Complete all demo scripts and presenter guides
+- **Day 3:** Finalize all docs/ documentation files
+- **Day 4:** Review and polish all README files throughout repository
+- **Day 5:** Update root README.md with complete navigation
 
-### Week 8: Automation and Labs
+### Week 8: Scripts and Labs
 
-- **Day 1-2:** Develop automation tools (PowerShell scripts)
-- **Day 3-4:** Create hands-on lab materials with solutions
-- **Day 5:** Create video recording scripts
+- **Day 1-2:** Create scripts/ folder with all PowerShell automation tools
+- **Day 3-4:** Create labs/ folder with hands-on exercises and solutions
+- **Day 5:** Test all scripts and lab exercises
 
 ### Week 9: Blog Post Creation
 
@@ -1782,26 +2119,27 @@ Creating a new repository from materials:
 - **Day 3:** Complete dry run of entire demo (all modules)
 - **Day 4-5:** Refine based on dry run feedback
 
-### Week 11: Repository Setup
+### Week 11: Repository Integration and Testing
 
-- **Day 1-2:** Create new GitHub repository structure
-- **Day 3:** Set up CI/CD with GitHub Actions
-- **Day 4:** Create README, LICENSE, CONTRIBUTING guidelines
-- **Day 5:** Organize all materials in repository
+- **Day 1-2:** Verify all folder structure and organization
+- **Day 3:** Test all GitHub Actions workflows
+- **Day 4:** Verify all cross-references and links work
+- **Day 5:** Complete integration testing
 
-### Week 12: Final Preparation and Polish
+### Week 12: Final Polish and Validation
 
-- **Day 1-2:** Create quick reference materials and cheat sheets
+- **Day 1:** Review all root-level files for consistency
+- **Day 2:** Verify .github/copilot-instructions.md is comprehensive
 - **Day 3:** Final testing and validation of all materials
-- **Day 4:** Prepare backup materials and contingencies
+- **Day 4:** Update CHANGELOG.md with initial release notes
 - **Day 5:** Final review, create launch checklist
 
 ### Week 13: Launch Preparation
 
-- **Day 1:** Schedule blog posts for www.elbruno.com
-- **Day 2:** Prepare social media announcements
-- **Day 3:** Create promotional materials
-- **Day 4:** Set up community channels (discussions, issues)
+- **Day 1:** Make repository public and verify all settings
+- **Day 2:** Schedule blog posts for www.elbruno.com
+- **Day 3:** Prepare social media announcements
+- **Day 4:** Set up GitHub Discussions and issue templates
 - **Day 5:** Final review and launch readiness check
 
 ---
@@ -1828,22 +2166,55 @@ Consistently emphasize throughout demos:
 
 Once this plan is approved, the implementation will proceed with:
 
-1. **Create folder structure** for SK-Migration-To-AgentFx with all 15 modules
-2. **Develop setup documentation** (SETUP-GUIDE.md, REPOSITORY-SETUP-GUIDE.md)
-3. **Create presenter guide** (PRESENTER-GUIDE.md) for all session formats
-4. **Build Modules 1-11** progressively with all components
-5. **Build Modules 12-15** (Real-world, Performance, Testing, ASP.NET)
-6. **Develop all code samples** including case studies and benchmarks
-7. **Write demo scripts** with exact commands for all modules
-8. **Create supporting documents** (FAQ, troubleshooting, security, pitfalls, etc.)
-9. **Develop automation tools** (PowerShell scripts for migration analysis)
-10. **Create hands-on labs** with starter code and solutions
-11. **Write all 4 blog posts** for www.elbruno.com
-12. **Create blog post assets** (diagrams, screenshots, OG images)
-13. **Set up new GitHub repository** with complete structure
-14. **Test all materials** end-to-end (code, demos, labs, blog posts)
-15. **Refine and finalize** based on testing and dry runs
-16. **Prepare for launch** (schedule blog posts, social media, community)
+### Phase 1: Repository Foundation (Week 1)
+
+1. **Create repository** with proper name and description
+2. **Set up root-level files** (README, LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, CHANGELOG)
+3. **Configure .github/ folder** with workflows, templates, and copilot-instructions.md
+4. **Create folder structure** (docs/, modules/, src/, labs/, scripts/, blog-posts/)
+5. **Set up .gitignore, .editorconfig, global.json**
+
+### Phase 2: Documentation (Weeks 2-3)
+
+6. **Create docs/ folder content** with all supporting documentation
+7. **Build comprehensive README.md** with navigation and overview
+8. **Write PRESENTER-GUIDE.md** for all session formats
+9. **Create module READMEs** for all 15 modules
+
+### Phase 3: Modules and Code (Weeks 2-6)
+
+10. **Build Modules 1-11** progressively in modules/ folder
+11. **Build Modules 12-15** (Real-world, Performance, Testing, ASP.NET)
+12. **Create src/ projects** (samples, case-studies, benchmarks, tests)
+13. **Write demo scripts** with exact commands for all modules
+
+### Phase 4: Labs and Scripts (Weeks 7-8)
+
+14. **Create hands-on labs/** with starter code and solutions
+15. **Develop scripts/** folder with PowerShell automation tools
+16. **Test all scripts and labs**
+
+### Phase 5: Blog Content (Week 9)
+
+17. **Write all 4 blog posts** for www.elbruno.com in blog-posts/ folder
+18. **Create blog post assets/** (diagrams, screenshots, OG images)
+19. **Review and edit blog content**
+
+### Phase 6: Testing and Refinement (Weeks 10-12)
+
+20. **Test all materials** end-to-end
+21. **Verify all links and cross-references**
+22. **Test GitHub Actions workflows**
+23. **Complete dry runs** of presentations
+24. **Refine based on feedback**
+
+### Phase 7: Launch (Week 13)
+
+25. **Make repository public**
+26. **Schedule blog posts** on www.elbruno.com
+27. **Prepare launch announcements**
+28. **Set up community channels**
+29. **Launch readiness verification**
 
 ---
 
@@ -1986,13 +2357,19 @@ semantic-kernel-to-agent-framework-migration/
 
 ### Repository Readiness
 
-- [ ] New GitHub repository created and configured
-- [ ] All materials organized in repository structure
-- [ ] README comprehensive and clear
+- [ ] Repository structure created at root level
+- [ ] All root-level files complete (README, LICENSE, CONTRIBUTING, etc.)
+- [ ] .github/ folder configured with workflows and templates
+- [ ] .github/copilot-instructions.md comprehensive and accurate
+- [ ] docs/ folder complete with all documentation
+- [ ] modules/ folder organized with all 15 modules
+- [ ] src/ folder with samples, case-studies, benchmarks, tests
+- [ ] labs/ folder with exercises and solutions
+- [ ] scripts/ folder with automation tools
+- [ ] blog-posts/ folder with all content
 - [ ] CI/CD pipelines working
-- [ ] Issue templates and PR template created
+- [ ] All cross-references and links validated
 - [ ] Community guidelines in place
-- [ ] License and contributing guides added
 
 ### Presentation Readiness
 
