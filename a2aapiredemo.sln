@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{CA253913-39DE-BFD0-C9A3-4B7EC6FBDF17}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02-Basic-Migration", "02-Basic-Migration", "{48A47599-291E-71C7-A049-0071F421E1F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "code-samples", "code-samples", "{9CD3EAA1-986A-C2D9-5F05-35229F53CBB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicAgent_AF", "modules\02-Basic-Migration\code-samples\after-af\BasicAgent_AF.csproj", "{1DF71F96-101C-7C9A-704D-C3C881036975}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicAgent_SK", "modules\02-Basic-Migration\code-samples\before-sk\BasicAgent_SK.csproj", "{06FB981F-85DC-557D-1C5D-7DA3FDB1307E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1DF71F96-101C-7C9A-704D-C3C881036975}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DF71F96-101C-7C9A-704D-C3C881036975}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DF71F96-101C-7C9A-704D-C3C881036975}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DF71F96-101C-7C9A-704D-C3C881036975}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06FB981F-85DC-557D-1C5D-7DA3FDB1307E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06FB981F-85DC-557D-1C5D-7DA3FDB1307E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06FB981F-85DC-557D-1C5D-7DA3FDB1307E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06FB981F-85DC-557D-1C5D-7DA3FDB1307E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{48A47599-291E-71C7-A049-0071F421E1F3} = {CA253913-39DE-BFD0-C9A3-4B7EC6FBDF17}
+		{9CD3EAA1-986A-C2D9-5F05-35229F53CBB8} = {48A47599-291E-71C7-A049-0071F421E1F3}
+		{1DF71F96-101C-7C9A-704D-C3C881036975} = {9CD3EAA1-986A-C2D9-5F05-35229F53CBB8}
+		{06FB981F-85DC-557D-1C5D-7DA3FDB1307E} = {9CD3EAA1-986A-C2D9-5F05-35229F53CBB8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F77BA23-BFCE-43F2-A2A3-13B72CD8FC96}
+	EndGlobalSection
+EndGlobal
