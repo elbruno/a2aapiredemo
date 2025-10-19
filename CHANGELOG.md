@@ -16,20 +16,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project uses .NET 9 SDK exclusively
 - User Secrets configuration approach (no .env files)
 - **Lab 02: Tool Migration** - Complete code samples for migrating customer management system with async database operations
-  - Starter code (SK) with CustomerPlugin and 5 async CRUD functions
-  - Solution code (AF) with functions using closures for database access
+  - Starter code (SK) with CustomerPlugin and 5 async CRUD functions using Microsoft.SemanticKernel 1.61.0
+  - Solution code (AF) with functions using closures for database access (Microsoft.Extensions.AI 9.10.0-preview.1.25513.3, Microsoft.Agents.AI 1.0.0-preview.251001.1)
   - Comprehensive README with migration guide
 - **Lab 03: ASP.NET Core Integration** - Complete web API samples with environment-based configuration
   - Starter code (SK) with Kernel dependency injection
   - Solution code (AF) with IChatClient and ChatClientAgent
   - Both regular and streaming endpoints
   - Health checks and monitoring
+  - Demonstrates GitHub Models (dev) to Azure OpenAI (prod) switching
 - **Lab 04: Testing Strategies** - Complete xUnit test projects
   - Starter code (SK) with ChatCompletionAgent tests
   - Solution code (AF) with ChatClientAgent tests
   - Function unit tests (fast, no AI)
   - Integration tests with GitHub Models (free!)
   - Theory-based tests for multiple scenarios
+  - All 12 tests pass successfully
 - Updated all blog posts (01-04) with links to lab code samples
 - Enhanced labs/README.md with detailed descriptions of all labs
 
