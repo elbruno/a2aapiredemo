@@ -3,6 +3,9 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
+using Azure.AI.OpenAI;
+using Azure.AI.Inference;
+using Azure.Identity;
 using System.ClientModel;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -15,16 +18,68 @@ var configuration = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
     .Build();
 
-var githubToken = configuration["GITHUB_TOKEN"]
-    ?? throw new InvalidOperationException("Configure GITHUB_TOKEN using dotnet user-secrets.");
 var deploymentName = configuration["OpenAI:ChatDeploymentName"] ?? "gpt-4o-mini";
-var endpoint = configuration["OpenAI:Endpoint"] ?? "https://models.github.ai/inference";
 
-IChatClient chatClient = new ChatClient(
-        deploymentName,
-        new ApiKeyCredential(githubToken),
-        new OpenAIClientOptions { Endpoint = new Uri(endpoint) })
-    .AsIChatClient();
+// Create IChatClient based on configuration
+IChatClient chatClient = CreateChatClient(configuration, deploymentName);
+
+static IChatClient CreateChatClient(IConfiguration configuration, string deploymentName)
+{
+    var provider = configuration["AI:Provider"] ?? "GitHubModels"; // Default to GitHub Models
+
+    return provider.ToUpperInvariant() switch
+    {
+        "GITHUBMODELS" => CreateGitHubModelsClient(configuration, deploymentName),
+        "OPENAI" => CreateOpenAIClient(configuration, deploymentName),
+        "AZUREAIFOUNDRY" => CreateAzureAIFoundryClient(configuration, deploymentName),
+        _ => throw new InvalidOperationException($"Unknown AI provider: {provider}. Valid options: GitHubModels, OpenAI, AzureAIFoundry")
+    };
+}
+
+static IChatClient CreateGitHubModelsClient(IConfiguration configuration, string deploymentName)
+{
+    var githubToken = configuration["GITHUB_TOKEN"]
+        ?? throw new InvalidOperationException("GITHUB_TOKEN not configured for GitHub Models");
+    var endpoint = configuration["OpenAI:Endpoint"] ?? "https://models.github.ai/inference";
+
+    return new ChatClient(
+            deploymentName,
+            new ApiKeyCredential(githubToken),
+            new OpenAIClientOptions { Endpoint = new Uri(endpoint) })
+        .AsIChatClient();
+}
+
+static IChatClient CreateOpenAIClient(IConfiguration configuration, string deploymentName)
+{
+    var apiKey = configuration["OpenAI:ApiKey"]
+        ?? throw new InvalidOperationException("OpenAI:ApiKey not configured for OpenAI");
+
+    return new ChatClient(deploymentName, new ApiKeyCredential(apiKey))
+        .AsIChatClient();
+}
+
+static IChatClient CreateAzureAIFoundryClient(IConfiguration configuration, string deploymentName)
+{
+    var endpoint = configuration["AzureAIFoundry:Endpoint"]
+        ?? throw new InvalidOperationException("AzureAIFoundry:Endpoint not configured");
+    var apiKey = configuration["AzureAIFoundry:ApiKey"];
+
+    // Use managed identity (DefaultAzureCredential) by default, or API key if provided
+    if (!string.IsNullOrEmpty(apiKey))
+    {
+        return new ChatCompletionsClient(
+                new Uri(endpoint),
+                new Azure.AzureKeyCredential(apiKey))
+            .AsIChatClient(deploymentName);
+    }
+    else
+    {
+        return new ChatCompletionsClient(
+                new Uri(endpoint),
+                new DefaultAzureCredential())
+            .AsIChatClient(deploymentName);
+    }
+}
 
 // Create database service
 var database = new DatabaseService();
