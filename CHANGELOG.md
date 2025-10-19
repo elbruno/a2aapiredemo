@@ -15,6 +15,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CODE_OF_CONDUCT.md for community standards
 - Project uses .NET 9 SDK exclusively
 - User Secrets configuration approach (no .env files)
+- **Lab 02: Tool Migration** - Complete code samples for migrating customer management system with async database operations
+  - Starter code (SK) with CustomerPlugin and 5 async CRUD functions
+  - Solution code (AF) with functions using closures for database access
+  - Comprehensive README with migration guide
+- **Lab 03: ASP.NET Core Integration** - Complete web API samples with environment-based configuration
+  - Starter code (SK) with Kernel dependency injection
+  - Solution code (AF) with IChatClient and ChatClientAgent
+  - Both regular and streaming endpoints
+  - Health checks and monitoring
+- **Lab 04: Testing Strategies** - Complete xUnit test projects
+  - Starter code (SK) with ChatCompletionAgent tests
+  - Solution code (AF) with ChatClientAgent tests
+  - Function unit tests (fast, no AI)
+  - Integration tests with GitHub Models (free!)
+  - Theory-based tests for multiple scenarios
+- Updated all blog posts (01-04) with links to lab code samples
+- Enhanced labs/README.md with detailed descriptions of all labs
 
 ### In Progress
 - Documentation folder structure

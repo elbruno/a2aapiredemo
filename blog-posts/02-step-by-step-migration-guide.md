@@ -407,9 +407,32 @@ Let's compare the line counts:
 
 **Solution**: Add `Microsoft.Extensions.AI.OpenAI` package
 
+## Practice with Hands-On Labs
+
+Now that you understand the migration process, try these hands-on labs:
+
+1. **[Lab 01: Basic Migration](../labs/lab-01-basic-migration/)** - Practice this exact migration yourself
+   - [Starter Code (SK)](../labs/lab-01-basic-migration/starter/before-sk/)
+   - [Solution Code (AF)](../labs/lab-01-basic-migration/solution/after-af/)
+
+2. **[Lab 02: Tool Migration](../labs/lab-02-tool-migration/)** - Handle complex async functions and database operations
+   - Learn closure patterns for dependencies
+   - Work with multiple async tools
+   - [View Code Samples](../labs/lab-02-tool-migration/)
+
+3. **[Lab 03: ASP.NET Integration](../labs/lab-03-aspnet-integration/)** - Build production-ready web APIs
+   - Environment-based configuration
+   - Health checks and monitoring
+   - [View Code Samples](../labs/lab-03-aspnet-integration/)
+
+4. **[Lab 04: Testing Strategies](../labs/lab-04-testing-strategies/)** - Write comprehensive tests
+   - Unit tests for functions
+   - Integration tests with GitHub Models
+   - [View Code Samples](../labs/lab-04-testing-strategies/)
+
 ## Next Steps
 
-Now that you've completed the migration:
+Continue your learning journey:
 
 1. **Add more functionality** - See [Module 06: Tool Registration](../modules/06-Tool-Registration/)
 2. **Add streaming** - See [Module 08: Streaming Responses](../modules/08-Streaming-Responses/)
@@ -434,6 +457,7 @@ With these steps mastered, you can migrate any Semantic Kernel application to Ag
 
 - [Complete Migration Repository](../README.md)
 - [All 15 Learning Modules](../modules/)
+- [Hands-On Labs with Code](../labs/)
 - [Quick Reference Guide](../docs/QUICK-REFERENCE.md)
 - [FAQ](../docs/FAQ.md)
 

@@ -192,6 +192,21 @@ Migrating from Semantic Kernel to Agent Framework offers clear benefits: simpler
 
 The best time to migrate depends on your situation, but with comprehensive migration guides, working examples, and free GitHub Models for development, the barrier to entry has never been lower.
 
+## Hands-On Learning
+
+Want to try it yourself? Check out our hands-on labs with complete working code:
+
+- **[Lab 01: Basic Migration](../labs/lab-01-basic-migration/)** - Migrate your first chatbot ([starter](../labs/lab-01-basic-migration/starter/before-sk/) | [solution](../labs/lab-01-basic-migration/solution/after-af/))
+- **[Lab 02: Tool Migration](../labs/lab-02-tool-migration/)** - Handle complex async functions ([starter](../labs/lab-02-tool-migration/starter/before-sk/) | [solution](../labs/lab-02-tool-migration/solution/after-af/))
+- **[Lab 03: ASP.NET Integration](../labs/lab-03-aspnet-integration/)** - Build production web APIs ([starter](../labs/lab-03-aspnet-integration/starter/before-sk/) | [solution](../labs/lab-03-aspnet-integration/solution/after-af/))
+- **[Lab 04: Testing Strategies](../labs/lab-04-testing-strategies/)** - Write comprehensive tests ([starter](../labs/lab-04-testing-strategies/starter/before-sk/) | [solution](../labs/lab-04-testing-strategies/solution/after-af/))
+
+Each lab includes:
+- ✅ Complete working code samples (before/after)
+- ✅ Step-by-step instructions
+- ✅ GitHub Models integration (free testing!)
+- ✅ README with configuration guide
+
 ## Resources
 
 - [Complete Migration Guide](../README.md)
@@ -199,6 +214,7 @@ The best time to migrate depends on your situation, but with comprehensive migra
 - [Quick Reference Guide](../docs/QUICK-REFERENCE.md)
 - [GitHub Models Documentation](https://github.com/features/models)
 - [Agent Framework Documentation](https://learn.microsoft.com/dotnet/ai/)
+- [All Lab Code Samples](../labs/)
 
 ---
 
