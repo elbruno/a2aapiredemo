@@ -124,8 +124,11 @@ async IAsyncEnumerable<string> StreamResponse()
 ## Prerequisites
 
 - .NET 9 SDK
-- GitHub personal access token (for development)
-- Azure OpenAI credentials (for production, optional)
+- One of the following:
+  - GitHub personal access token (for GitHub Models - free!)
+  - OpenAI API key
+  - Azure OpenAI endpoint and credentials
+  - Azure AI Foundry endpoint and credentials
 
 ## Configuration
 
@@ -136,17 +139,49 @@ cd labs/lab-03-aspnet-integration/solution/after-af
 dotnet user-secrets init
 ```
 
-### 2. Set GitHub Token (Development)
+### 2. Configure Your AI Provider
+
+Choose one of the following options:
+
+#### Option A: GitHub Models (Free - Default)
 
 ```bash
+dotnet user-secrets set "AI:Provider" "GitHubModels"
 dotnet user-secrets set "GITHUB_TOKEN" "your-github-token-here"
 ```
 
-### 3. Set Azure OpenAI (Production, Optional)
+#### Option B: OpenAI
 
 ```bash
+dotnet user-secrets set "AI:Provider" "OpenAI"
+dotnet user-secrets set "OpenAI:ApiKey" "your-openai-api-key"
+dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o-mini"
+```
+
+#### Option C: Azure OpenAI
+
+```bash
+dotnet user-secrets set "AI:Provider" "AzureOpenAI"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://your-resource.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "your-azure-key-here"
+dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o-mini"
+```
+
+#### Option D: Azure AI Foundry (Managed Identity)
+
+```bash
+dotnet user-secrets set "AI:Provider" "AzureAIFoundry"
+dotnet user-secrets set "AzureAIFoundry:Endpoint" "https://your-endpoint.inference.ai.azure.com"
+dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o-mini"
+```
+
+#### Option E: Azure AI Foundry (API Key)
+
+```bash
+dotnet user-secrets set "AI:Provider" "AzureAIFoundry"
+dotnet user-secrets set "AzureAIFoundry:Endpoint" "https://your-endpoint.inference.ai.azure.com"
+dotnet user-secrets set "AzureAIFoundry:ApiKey" "your-api-key"
+dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o-mini"
 ```
 
 ## How to Run
