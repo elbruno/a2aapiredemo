@@ -336,14 +336,14 @@ var model = configuration["OpenAI:ChatDeploymentName"];
 
 ---
 
-## Performance Benefits
+## Migration Benefits
 
 After migration, expect:
 
-- ⚡ **30-40% faster** agent creation
-- 💾 **20-30% lower** memory usage
-- 🚀 **15-25% faster** response times
-- 📉 **20-40% fewer** lines of code
+- 💡 **Simpler code** - 20-40% fewer lines of code
+- 🎯 **Clearer API** - More intuitive method names and patterns
+- 🔄 **Unified interface** - Consistent patterns across AI providers
+- 🆓 **GitHub Models** - Easy integration with free AI models for development
 
 ---
 

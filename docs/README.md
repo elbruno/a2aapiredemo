@@ -34,7 +34,7 @@ Deep-dive guides for complex scenarios:
 
 - [**Advanced Scenarios**](advanced-scenarios.md) - Multi-agent, RAG, vector DB patterns
 - [**Security Guide**](security-guide.md) - Best practices for production deployments
-- [**Performance Guide**](performance-guide.md) - Optimization techniques and benchmarking
+- [**Testing Guide**](testing-guide.md) - Testing strategies for migration
 
 ## 💡 Best Practices
 

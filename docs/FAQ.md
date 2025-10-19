@@ -15,10 +15,10 @@ Microsoft Agent Framework is the next evolution of AI agent development in .NET,
 Key reasons to migrate:
 
 1. **Simplified API** - Less boilerplate code and clearer patterns
-2. **Better Performance** - 30-40% faster agent creation, lower memory usage
-3. **Unified Interface** - Consistent patterns across all AI providers
-4. **Modern .NET** - Built on .NET 9 with latest C# features
-5. **Future Direction** - Microsoft's strategic path for AI agents
+2. **Unified Interface** - Consistent patterns across all AI providers
+3. **Modern .NET** - Built on .NET 9 with latest C# features
+4. **Future Direction** - Microsoft's strategic path for AI agents
+5. **GitHub Models Ready** - Easy integration with free AI models for development
 
 ### Is this a breaking change?
 
@@ -176,28 +176,15 @@ var client = new OpenAIChatClient(
 
 ---
 
-## Performance Questions
+## API Cost Questions
 
-### Is Agent Framework really faster?
+### Will my API costs change when migrating?
 
-Yes. Benchmarks show:
-- 30-40% faster agent creation
-- 20-30% lower memory allocation
-- 15-25% faster response times
+No. API costs depend on token usage, which is the same regardless of framework. You're still calling the same AI models with the same prompts.
 
-See [Module 13: Performance Benchmarking](../modules/13-Performance-Benchmarking/) for details.
+### Can I use free AI models for development?
 
-### Why is it faster?
-
-Agent Framework:
-- Eliminates Kernel overhead
-- Uses more efficient object creation
-- Reduces unnecessary abstractions
-- Leverages .NET 9 performance improvements
-
-### Will my API costs change?
-
-No. API costs depend on token usage, which is the same regardless of framework. You're still calling the same AI models.
+Yes! GitHub Models provides free access to several AI models for development and testing. See the code samples in Module 02 for examples using GitHub Models (https://models.github.ai/inference).
 
 ---
 

@@ -342,13 +342,6 @@ You: exit
 - **Direct response access** - `.Text` property
 - **Explicit cleanup** - `thread.DeleteAsync()`
 
-### Improved Performance
-
-While this simple example doesn't showcase it, AF provides:
-- Faster agent initialization
-- Lower memory footprint
-- Better throughput for multiple requests
-
 ---
 
 ## Migration Steps Recap

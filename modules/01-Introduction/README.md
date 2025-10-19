@@ -26,7 +26,7 @@ Microsoft Agent Framework is the next evolution of AI agent development in .NET,
 - **Simplified API** - Less boilerplate code
 - **Provider-Agnostic** - Consistent patterns across all AI providers
 - **Modern .NET** - Built on .NET 9 with latest C# features
-- **Performance-Focused** - Optimized for speed and memory efficiency
+- **GitHub Models Ready** - Easy integration with free AI models
 - **Extensible** - Easy to integrate with existing .NET applications
 
 ---
@@ -62,26 +62,12 @@ var agent = client.CreateAIAgent(
 
 ---
 
-### 2. Better Performance
-
-Benchmarks show significant improvements:
-
-| Metric | Semantic Kernel | Agent Framework | Improvement |
-|--------|----------------|-----------------|-------------|
-| Agent Creation | 12ms | 7ms | **42% faster** |
-| Memory Allocation | 2.1 KB | 1.5 KB | **29% less** |
-| First Response | 850ms | 720ms | **15% faster** |
-
-See [Module 13: Performance Benchmarking](../13-Performance-Benchmarking/) for detailed results.
-
----
-
-### 3. Unified Interface
+### 2. Unified Interface
 
 Agent Framework provides consistent patterns across providers:
 
 ```csharp
-// Works the same for OpenAI, Azure OpenAI, Azure AI Foundry, etc.
+// Works the same for OpenAI, Azure OpenAI, Azure AI Foundry, GitHub Models, etc.
 var agent = client.CreateAIAgent();
 var thread = await agent.GetNewThread();
 var response = await agent.RunAsync(thread, "Hello");
@@ -91,7 +77,7 @@ No more provider-specific thread types or patterns.
 
 ---
 
-### 4. Modern .NET Patterns
+### 3. Modern .NET Patterns
 
 - Built on .NET 9
 - Uses `Microsoft.Extensions.AI` abstractions
@@ -101,7 +87,7 @@ No more provider-specific thread types or patterns.
 
 ---
 
-### 5. Future-Proof
+### 4. Future-Proof
 
 Agent Framework is Microsoft's strategic direction for AI agent development in .NET. New features and improvements will focus on this framework.
 
@@ -151,9 +137,9 @@ Application
 - Starting a new project (start with AF)
 - Upgrading to .NET 9
 - Major refactoring planned
-- Performance is critical
 - Want to reduce code complexity
 - Building production applications
+- Using free AI models for development (GitHub Models)
 
 ### ⏳ Consider Waiting
 
@@ -229,12 +215,6 @@ You'll need to update:
 - **Less Boilerplate** - 20-40% fewer lines
 - **Easier Debugging** - Simpler call stacks
 
-### Performance
-
-- **Faster Startup** - Quicker agent initialization
-- **Lower Memory** - Reduced allocations
-- **Better Throughput** - More requests per second
-
 ### Maintainability
 
 - **Simpler Patterns** - Easier to understand
@@ -270,7 +250,7 @@ When delivering this module, emphasize:
 1. **Show, Don't Just Tell** - Use side-by-side code examples
 2. **Relate to Audience** - Ask about their current SK usage
 3. **Address Concerns** - Migration effort, backward compatibility
-4. **Build Excitement** - Performance gains, cleaner code
+4. **Build Excitement** - Simplified API, cleaner code, GitHub Models
 5. **Provide Path** - Clear next steps
 
 ---
