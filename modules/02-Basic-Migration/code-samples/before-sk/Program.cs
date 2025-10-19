@@ -3,40 +3,44 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.Extensions.Configuration;
 
 /// <summary>
-/// Basic Semantic Kernel agent demonstrating simple chat interaction.
+/// Basic Semantic Kernel agent demonstrating simple chat interaction using GitHub Models.
 /// This is the "before" version showing SK patterns.
 /// </summary>
 class Program
 {
     static async Task Main(string[] args)
     {
-        Console.WriteLine("=== Semantic Kernel Basic Agent ===");
+        Console.WriteLine("=== Semantic Kernel Basic Agent (GitHub Models) ===");
         Console.WriteLine("Type 'exit' to quit\n");
 
         try
         {
-            // Load configuration from appsettings.json and User Secrets
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddUserSecrets<Program>()
-                .Build();
+            // Get GitHub token from environment variable or User Secrets
+            var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+            if (string.IsNullOrEmpty(githubToken))
+            {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false)
+                    .AddUserSecrets<Program>()
+                    .Build();
 
-            // Get API key from User Secrets (never hardcode!)
-            var apiKey = configuration["OpenAI:ApiKey"] 
-                ?? throw new InvalidOperationException(
-                    "OpenAI:ApiKey not found. Run: dotnet user-secrets set \"OpenAI:ApiKey\" \"your-key\"");
-            
-            var model = configuration["OpenAI:ChatDeploymentName"] ?? "gpt-4o";
+                githubToken = configuration["GITHUB_TOKEN"]
+                    ?? throw new InvalidOperationException(
+                        "GITHUB_TOKEN not found. Run: dotnet user-secrets set \"GITHUB_TOKEN\" \"your-token\"");
+            }
 
-            Console.WriteLine($"Using model: {model}");
+            var model = "gpt-4o-mini";
+
+            Console.WriteLine($"Using GitHub Models with model: {model}");
             Console.WriteLine($"Creating Semantic Kernel agent...\n");
 
-            // SK: Build Kernel with OpenAI chat completion
+            // SK: Build Kernel with GitHub Models endpoint
             var kernel = Kernel.CreateBuilder()
                 .AddOpenAIChatCompletion(
                     modelId: model,
-                    apiKey: apiKey)
+                    apiKey: githubToken,
+                    endpoint: new Uri("https://models.github.ai/inference"))
                 .Build();
 
             // SK: Get chat completion service
@@ -75,9 +79,9 @@ class Program
         catch (Exception ex)
         {
             Console.WriteLine($"\nError: {ex.Message}");
-            Console.WriteLine("\nMake sure you've configured User Secrets:");
-            Console.WriteLine("  dotnet user-secrets set \"OpenAI:ApiKey\" \"your-key\"");
-            Console.WriteLine("  dotnet user-secrets set \"OpenAI:ChatDeploymentName\" \"gpt-4o\"");
+            Console.WriteLine("\nMake sure you've configured your GitHub token:");
+            Console.WriteLine("  dotnet user-secrets set \"GITHUB_TOKEN\" \"your-github-token\"");
+            Console.WriteLine("\nGet a token at: https://github.com/settings/tokens");
         }
     }
 }
