@@ -28,6 +28,31 @@ Create a complete set of materials enabling demo hosts to effectively teach the 
 5. Include presenter notes, timing guides, and troubleshooting tips
 6. Ensure all materials are production-ready for immediate use
 
+### Project Constraints
+
+**Language and Framework:**
+
+- All code samples must be in C# only (no Python, JavaScript, or other languages)
+- Target .NET 9 exclusively
+- Use latest stable versions of packages
+
+**Configuration and Secrets Management:**
+
+- NO .env files or environment variables approach
+- All secrets stored in .NET User Secrets (for development)
+- Configuration in appsettings.json files
+- Use IConfiguration for accessing settings
+- Document secrets.json structure in each sample
+- Include appsettings.Development.json examples
+
+**Code Standards:**
+
+- Follow C# coding conventions
+- Use async/await properly
+- Implement proper error handling
+- Include XML documentation comments
+- Use nullable reference types where appropriate
+
 ### Success Criteria
 
 - Demo hosts can deliver sessions with minimal preparation
@@ -372,13 +397,15 @@ semantic-kernel-to-agent-framework-migration/    # Repository root
 **README.md** - Main repository entry point with:
 
 - Project overview and purpose
-- Quick start guide
+- Quick start guide with secrets setup
 - Module index with links
 - Blog post series links
 - Installation instructions
+- User Secrets initialization guide
 - Contributing guidelines link
 - License information
 - Badges (build status, .NET version, license)
+- IDE setup recommendations (VS 2022, VS Code, Rider)
 
 **LICENSE** - MIT License for open-source distribution
 
@@ -1459,11 +1486,40 @@ Documentation index with:
 
 Detailed instructions for:
 
-- Installing prerequisites
+- Installing prerequisites (.NET 9 SDK, IDE)
 - Setting up development environment
-- Configuring API keys and secrets
+- IDE-specific setup (Visual Studio 2022, VS Code, Rider)
+- Recommended VS extensions (C# Dev Kit, GitHub Copilot, etc.)
+- Configuring .NET User Secrets for API keys
+- Creating appsettings.json structure
+- secrets.json template and structure
 - Verifying installation
 - Troubleshooting setup issues
+
+### docs/IDE-SETUP-GUIDE.md
+
+IDE-specific setup instructions:
+
+**Visual Studio 2022:**
+- Required version (17.12+)
+- Recommended extensions
+- User Secrets management UI
+- NuGet package management
+- Debugging configuration
+
+**Visual Studio Code:**
+- Required extensions (C# Dev Kit, .NET Install Tool)
+- Recommended extensions (GitHub Copilot, REST Client)
+- User Secrets CLI commands
+- Launch configurations
+- Tasks.json setup
+
+**JetBrains Rider:**
+- Required version
+- Plugin recommendations
+- User Secrets management
+- Run configurations
+- Code style settings
 
 ### docs/PRESENTER-GUIDE.md
 
@@ -1619,6 +1675,40 @@ Curated external resources:
 - Video tutorials
 - Related blog posts
 
+### docs/VISUAL-ASSETS-GUIDE.md
+
+Visual content creation and standards:
+
+**Architecture Diagrams:**
+- Using mermaid.js for version-controlled diagrams
+- Diagram style guide and color palette
+- Common patterns library
+- Export formats (PNG, SVG)
+
+**Performance Charts:**
+- Chart templates and tools
+- Data visualization standards
+- Color schemes for accessibility
+- Chart types for different metrics
+
+**Screenshots and Demo Images:**
+- Resolution and quality standards
+- Annotation guidelines
+- Consistent styling
+- Alt text requirements
+
+**Video Content:**
+- Thumbnail templates
+- Intro/outro templates
+- Lower third graphics
+- Screen recording settings
+
+**Blog Post Images:**
+- Featured image specifications (1200x630px)
+- Image optimization guidelines
+- Consistent branding elements
+- AI-generated image prompts
+
 ### docs/slides-outline.md
 
 PowerPoint presentation structure:
@@ -1648,7 +1738,40 @@ PowerPoint presentation structure:
 **Target Blog:** www.elbruno.com  
 **Publishing Schedule:** Weekly over 4 weeks  
 **Format:** Long-form technical articles (1500-2500 words each)  
-**Cross-references:** Each post links to GitHub repository and other posts
+**Cross-references:** Each post links to GitHub repository and other posts  
+**SEO Strategy:** Keyword research, meta descriptions, internal linking
+
+### SEO Optimization for Blog Posts
+
+**Keyword Research:**
+- Primary keywords: "Semantic Kernel migration", "Microsoft Agent Framework", "SK to Agent Framework"
+- Secondary keywords: ".NET 9 AI agents", "Azure OpenAI C#", "agent migration guide"
+- Long-tail keywords: "how to migrate Semantic Kernel to Agent Framework", "SK vs Agent Framework performance"
+
+**On-Page SEO:**
+- Title optimization (60 characters max)
+- Meta descriptions (155 characters max)
+- URL slugs (short, keyword-rich)
+- Header hierarchy (H1, H2, H3)
+- Image alt text for all visuals
+- Internal linking between posts
+- External links to authoritative sources
+
+**Technical SEO:**
+- Open Graph tags for social sharing
+- Twitter Card metadata
+- Schema.org markup for articles
+- Mobile-responsive images
+- Fast page load optimization
+- Sitemap inclusion
+
+**Content SEO:**
+- Keyword density (1-2%)
+- LSI keywords naturally integrated
+- Clear introduction with hook
+- Scannable content (bullets, short paragraphs)
+- Strong call-to-action
+- FAQ sections for featured snippets
 
 ### Blog Post 1: "Why Migrate from Semantic Kernel to Microsoft Agent Framework"
 
@@ -1672,6 +1795,7 @@ PowerPoint presentation structure:
 - Side-by-side comparison of simple agent creation
 - Before/after complexity comparison
 - Performance benchmark results
+- User Secrets configuration examples
 
 **Call-to-Action:**
 
@@ -1687,6 +1811,31 @@ PowerPoint presentation structure:
 - .NET AI agents
 - Azure OpenAI C#
 
+**SEO Metadata:**
+- **Title:** "Why Migrate from Semantic Kernel to Agent Framework in 2025"
+- **Meta Description:** "Discover 5 compelling reasons to migrate from Semantic Kernel to Microsoft Agent Framework. Performance benchmarks, code examples, and migration guide included."
+- **URL Slug:** `/why-migrate-semantic-kernel-agent-framework`
+- **Primary Keyword:** "Semantic Kernel migration"
+- **Secondary Keywords:** "Microsoft Agent Framework benefits", ".NET 9 AI agents"
+
+**Featured Image Prompt for GPT-Image-1:**
+
+```
+
+Create a modern, professional tech blog featured image (1200x630px) showing:
+
+- Split screen design with "Semantic Kernel" on the left and "Agent Framework" on the right
+- Left side: Multiple complex interconnected code blocks and configuration files (representing complexity)
+- Right side: Clean, streamlined modern interface with fewer elements (representing simplification)
+- Arrow pointing from left to right suggesting migration/evolution
+- Color scheme: Use Microsoft blue (#0078D4) and modern gradients
+- Include subtle code snippets or syntax in the background
+- Professional, clean typography with title "SK → Agent Framework: The Evolution"
+- Tech-forward aesthetic with smooth gradients and modern design elements
+- Ensure text is readable and image works well as a social media thumbnail
+
+```
+
 ---
 
 ### Blog Post 2: "Step-by-Step Guide: Migrating from Semantic Kernel to Agent Framework"
@@ -1697,7 +1846,7 @@ PowerPoint presentation structure:
 
 **Content Structure:**
 
-- Prerequisites and environment setup
+- Prerequisites and environment setup (including User Secrets)
 - Phase 1: Assessment and planning
 - Phase 2: Package and namespace updates
 - Phase 3: Agent creation migration
@@ -1711,7 +1860,8 @@ PowerPoint presentation structure:
 
 - Complete working examples for each phase
 - Git diff-style comparisons
-- Configuration file updates
+- appsettings.json and secrets.json configuration
+- User Secrets initialization commands
 - Testing examples
 
 **Call-to-Action:**
@@ -1728,6 +1878,32 @@ PowerPoint presentation structure:
 - Semantic Kernel upgrade guide
 - Azure AI migration C#
 
+**SEO Metadata:**
+- **Title:** "Step-by-Step: Migrate Semantic Kernel to Agent Framework"
+- **Meta Description:** "Complete migration guide from Semantic Kernel to Agent Framework with code examples, configuration setup, and best practices for .NET 9 developers."
+- **URL Slug:** `/semantic-kernel-agent-framework-migration-guide`
+- **Primary Keyword:** "Semantic Kernel migration guide"
+- **Secondary Keywords:** "Agent Framework tutorial", "SK migration steps"
+
+**Featured Image Prompt for GPT-Image-1:**
+
+```
+
+Create a professional tech tutorial featured image (1200x630px) showing:
+
+- Step-by-step visual roadmap with 6 connected milestone icons
+- Each milestone representing a phase: Assessment, Packages, Agent Creation, Tools, Testing, Deploy
+- Progressive arrow or path connecting the milestones from left to right
+- Central focus on a modern VS Code or Visual Studio editor interface showing C# code
+- Color scheme: Microsoft blue (#0078D4) with accent colors (green for success, yellow for in-progress)
+- Include small code snippet previews in background showing before/after migration
+- Badge or indicator showing ".NET 9" and "C#"
+- Clean, modern design with clear hierarchy
+- Title overlay: "6-Phase Migration Guide"
+- Professional, educational aesthetic suitable for technical tutorials
+
+```
+
 ---
 
 ### Blog Post 3: "Real-World Examples: Migrating Production Semantic Kernel Applications"
@@ -1741,12 +1917,13 @@ PowerPoint presentation structure:
 - Introduction to real-world complexity
 - Case Study 1: Chat Copilot enterprise migration
   - Original architecture
-  - Migration challenges
+  - Migration challenges (including secrets management)
   - Solution and results
   - Performance improvements
 - Case Study 2: ASP.NET Core Web API migration
   - Multi-tier architecture
   - Incremental migration strategy
+  - Configuration and User Secrets in production
   - Zero-downtime deployment
 - Case Study 3: Plugin ecosystem transformation
   - Complex plugin dependencies
@@ -1759,7 +1936,8 @@ PowerPoint presentation structure:
 
 - Architecture diagrams (mermaid.js)
 - Key code transformations
-- Configuration examples
+- appsettings.json for different environments
+- Azure Key Vault integration
 - Testing strategies
 
 **Call-to-Action:**
@@ -1775,6 +1953,34 @@ PowerPoint presentation structure:
 - Production Semantic Kernel migration
 - Large-scale agent migration
 - ASP.NET Core AI integration
+
+**SEO Metadata:**
+- **Title:** "Real-World Semantic Kernel to Agent Framework Migrations"
+- **Meta Description:** "Learn from 3 production migration case studies: Chat Copilot, Web API, and plugin ecosystems. Architecture, challenges, and solutions included."
+- **URL Slug:** `/real-world-semantic-kernel-migrations`
+- **Primary Keyword:** "Production Semantic Kernel migration"
+- **Secondary Keywords:** "Enterprise agent migration", "ASP.NET Core AI"
+
+**Featured Image Prompt for GPT-Image-1:**
+
+```
+
+Create a professional enterprise tech featured image (1200x630px) showing:
+
+- Three distinct panels or sections representing three case studies
+- Panel 1: Chat interface with multiple users (Chat Copilot)
+- Panel 2: API/server architecture with multiple layers (Web API)
+- Panel 3: Interconnected plugin modules or components (Plugin ecosystem)
+- Background: Subtle enterprise-grade infrastructure elements (servers, clouds, networks)
+- Color scheme: Professional blues and grays with Microsoft accent colors
+- Include metrics or performance indicators (upward arrows, percentage improvements)
+- Modern, corporate aesthetic with clean lines and professional typography
+- Badge showing "Production-Ready" or "Enterprise-Grade"
+- Title overlay: "Real-World Migrations"
+- Convey scale, reliability, and success
+- Visual style: Bloomberg/CNBC tech segment aesthetic
+
+```
 
 ---
 
@@ -1795,10 +2001,11 @@ PowerPoint presentation structure:
   - Unit testing patterns
   - Integration testing approaches
   - Mocking IChatClient
+  - Testing with User Secrets
   - Regression testing
 - Best practices for production
   - Dependency injection patterns
-  - Configuration management
+  - Configuration management (User Secrets, Azure Key Vault)
   - Error handling
   - Monitoring and telemetry
   - Security considerations
@@ -1809,7 +2016,8 @@ PowerPoint presentation structure:
 
 - Complete benchmark implementations
 - Test examples with xUnit
-- Production-ready configuration
+- Production-ready configuration with IConfiguration
+- Azure Key Vault integration
 - Monitoring setup
 
 **Call-to-Action:**
@@ -1827,6 +2035,39 @@ PowerPoint presentation structure:
 - Agent testing strategies
 - Production AI best practices
 
+**SEO Metadata:**
+- **Title:** "Agent Framework Performance: Benchmarks & Best Practices"
+- **Meta Description:** "Comprehensive performance analysis of Microsoft Agent Framework vs Semantic Kernel. Includes benchmarks, testing strategies, and production best practices."
+- **URL Slug:** `/agent-framework-performance-best-practices`
+- **Primary Keyword:** "Agent Framework performance"
+- **Secondary Keywords:** ".NET AI benchmarks", "Agent testing"
+
+**Featured Image Prompt for GPT-Image-1:**
+
+```
+
+Create a data-driven tech featured image (1200x630px) showing:
+
+- Split design: Performance metrics on left, best practices checklist on right
+- Left side: Performance dashboard with charts showing improvements
+  - Line graphs trending upward (faster response times)
+  - Bar charts showing memory reduction
+  - Speedometer or gauge showing performance gains
+  - Use green for improvements, modern data visualization style
+- Right side: Best practices icons or checklist
+  - Shield icon (security)
+  - Checkmark (testing)
+  - Gauge (performance)
+  - Lock (configuration/secrets)
+- Color scheme: Microsoft blue with data visualization accent colors (green, orange, purple)
+- Background: Subtle code syntax or binary pattern
+- Include ".NET 9" badge and "BenchmarkDotNet" reference
+- Professional, technical aesthetic like GitHub Insights or Azure Monitor
+- Title overlay: "Performance + Best Practices"
+- Clean, modern typography with data-focused design
+
+```
+
 ---
 
 ### Blog Post Assets
@@ -1835,11 +2076,25 @@ PowerPoint presentation structure:
 
 **Contents:**
 
-- **diagrams/**: Architecture diagrams, flowcharts, comparison charts (mermaid.js source + exported PNG)
-- **screenshots/**: IDE screenshots, benchmark results, demo outputs
-- **code-snippets/**: Standalone code examples for embedding
-- **charts/**: Performance graphs, metrics visualizations
+- **diagrams/**: Architecture diagrams, flowcharts, comparison charts (mermaid.js source + exported PNG/SVG)
+- **screenshots/**: IDE screenshots, benchmark results, demo outputs, User Secrets UI
+- **code-snippets/**: Standalone code examples for embedding (C# only, with appsettings examples)
+- **charts/**: Performance graphs, metrics visualizations (created with Chart.js or similar)
 - **og-images/**: Open Graph images for social media sharing (1200x630px)
+  - `01-why-migrate-og.png` - Generated using GPT-Image-1
+  - `02-migration-guide-og.png` - Generated using GPT-Image-1
+  - `03-real-world-og.png` - Generated using GPT-Image-1
+  - `04-performance-og.png` - Generated using GPT-Image-1
+- **image-prompts/**: Text file containing all GPT-Image-1 prompts for reproducibility
+
+**Image Generation Guidelines:**
+- All featured images generated using GPT-Image-1 (DALL-E 3)
+- Consistent aspect ratio: 1200x630px (optimal for Open Graph)
+- Brand colors: Microsoft blue (#0078D4) and complementary palette
+- Professional, modern aesthetic
+- Text overlays must be readable at thumbnail size
+- Include .NET 9 and C# branding where appropriate
+- Save original prompts for future regeneration or variations
 
 ---
 
@@ -2107,11 +2362,17 @@ PowerPoint presentation structure:
 
 ### Week 9: Blog Post Creation
 
-- **Day 1:** Write Blog Post 1 - "Why Migrate to Agent Framework"
-- **Day 2:** Write Blog Post 2 - "Step-by-Step Migration Guide"
-- **Day 3:** Write Blog Post 3 - "Real-World Migration Examples"
-- **Day 4:** Write Blog Post 4 - "Performance and Best Practices"
-- **Day 5:** Create all blog post assets (diagrams, screenshots, OG images)
+- **Day 1:** Write Blog Post 1 - "Why Migrate to Agent Framework" + SEO optimization
+- **Day 2:** Write Blog Post 2 - "Step-by-Step Migration Guide" + SEO optimization
+- **Day 3:** Write Blog Post 3 - "Real-World Migration Examples" + SEO optimization
+- **Day 4:** Write Blog Post 4 - "Performance and Best Practices" + SEO optimization
+- **Day 5:** Create blog post assets:
+  - Generate all 4 featured images using GPT-Image-1 prompts
+  - Create architecture diagrams (mermaid.js)
+  - Capture screenshots and demo outputs
+  - Generate performance charts
+  - Optimize all images for web
+  - Verify SEO metadata for all posts
 
 ### Week 10: Testing and Refinement
 
@@ -2337,14 +2598,18 @@ semantic-kernel-to-agent-framework-migration/
 
 ### Content Completeness
 
-- [ ] All 15 modules fully documented with code samples
+- [ ] All 15 modules fully documented with C# code samples
+- [ ] All code samples use User Secrets (no .env files)
+- [ ] All code samples include appsettings.json examples
 - [ ] All 4 case studies implemented and tested
 - [ ] All benchmark projects running successfully
 - [ ] All test examples passing
 - [ ] All ASP.NET Core integration samples working
-- [ ] All 8 supporting documents created
-- [ ] All automation scripts tested
+- [ ] All supporting documents created (including IDE setup guides)
+- [ ] All automation scripts tested (including User Secrets initialization)
 - [ ] All hands-on labs with solutions completed
+- [ ] Visual assets guide completed with mermaid.js diagrams
+- [ ] All architecture diagrams created and exported
 
 ### Blog Posts
 
@@ -2538,10 +2803,43 @@ semantic-kernel-to-agent-framework-migration/
 
 1. ✅ Deliver professional presentations on SK to AF migration
 2. ✅ Create a comprehensive GitHub repository from scratch
-3. ✅ Publish a 4-part blog series on <www.elbruno.com>
-4. ✅ Run live streams with working demos and examples
-5. ✅ Support community with hands-on labs and resources
-6. ✅ Demonstrate measurable performance improvements
-7. ✅ Show real-world migration patterns and case studies
+3. ✅ Publish a 4-part SEO-optimized blog series on <www.elbruno.com>
+4. ✅ Generate professional featured images for all blog posts using GPT-Image-1
+5. ✅ Run live streams with working C# demos using User Secrets
+6. ✅ Support community with hands-on labs and resources
+7. ✅ Demonstrate measurable performance improvements
+8. ✅ Show real-world migration patterns and case studies
+9. ✅ Provide IDE-specific setup guides for optimal development experience (VS 2022, VS Code, Rider)
+10. ✅ Include comprehensive visual assets (diagrams, charts, screenshots)
+11. ✅ Ensure consistent branding with AI-generated featured images
+12. ✅ Optimize for search engine visibility with comprehensive SEO strategy
+
+**Key Technical Constraints Implemented:**
+
+- ✅ All samples in C# only (no Python, JavaScript, or other languages)
+- ✅ Configuration via .NET User Secrets for development (no .env files)
+- ✅ appsettings.json structure documented for all samples
+- ✅ secrets.json template provided for User Secrets
+- ✅ Target .NET 9 exclusively
+- ✅ Azure Key Vault integration for production scenarios
+- ✅ IConfiguration pattern throughout
+
+**Enhanced Blog Post Features:**
+
+- ✅ SEO optimization (keywords, meta descriptions, Open Graph tags, schema markup)
+- ✅ AI-generated featured images (1200x630px) using GPT-Image-1 with documented prompts
+- ✅ Social media ready with Twitter Card metadata
+- ✅ Internal and external linking strategy
+- ✅ FAQ sections for featured snippets
+- ✅ Weekly publishing schedule over 4 weeks
+
+**Visual Assets and Branding:**
+
+- ✅ IDE setup guides for VS 2022, VS Code, and Rider
+- ✅ Visual assets guide with mermaid.js diagrams
+- ✅ Architecture diagram templates and style guide
+- ✅ Performance chart templates
+- ✅ Consistent color scheme and branding
+- ✅ Screenshot and annotation guidelines
 
 **End of Enhanced Plan Document**
