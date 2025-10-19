@@ -3,15 +3,15 @@
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/9.0)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![C#](https://img.shields.io/badge/Language-C%23-239120)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![GitHub Models](https://img.shields.io/badge/AI-GitHub_Models-181717)](https://github.com/marketplace/models)
 
 > **Comprehensive migration materials for developers transitioning from Semantic Kernel to Microsoft Agent Framework in C# and .NET 9**
 
 This repository provides everything you need to successfully migrate your AI agent applications from Semantic Kernel to the new Microsoft Agent Framework, including:
 
 - 📚 **15 Comprehensive Modules** - Step-by-step learning path
-- 💻 **Working Code Samples** - Side-by-side SK and AF examples
+- 💻 **Working Code Samples** - Side-by-side SK and AF examples using GitHub Models
 - 🏭 **Real-World Case Studies** - Production migration examples
-- ⚡ **Performance Benchmarks** - Measurable improvements
 - 🧪 **Testing Strategies** - Comprehensive test examples
 - 🎓 **Hands-On Labs** - Interactive learning exercises
 - 📝 **Blog Post Series** - In-depth articles on [elbruno.com](https://www.elbruno.com)
@@ -24,10 +24,10 @@ This repository provides everything you need to successfully migrate your AI age
 Microsoft Agent Framework represents the evolution of AI agent development in .NET, offering:
 
 1. **Simplified API** - Less boilerplate, more intuitive
-2. **Better Performance** - Faster startup, lower memory usage
-3. **Unified Interface** - Consistent patterns across AI providers
-4. **Modern .NET** - Built on .NET 9 with latest C# features
-5. **Future-Proof** - Microsoft's strategic direction for AI agents
+2. **Unified Interface** - Consistent patterns across AI providers
+3. **Modern .NET** - Built on .NET 9 with latest C# features
+4. **Future-Proof** - Microsoft's strategic direction for AI agents
+5. **GitHub Models Ready** - Easy integration with free AI models
 
 ---
 
@@ -37,7 +37,7 @@ Microsoft Agent Framework represents the evolution of AI agent development in .N
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) (9.0.x or later)
 - IDE: [Visual Studio 2022](https://visualstudio.microsoft.com/) (17.12+), [VS Code](https://code.visualstudio.com/) with C# Dev Kit, or [JetBrains Rider](https://www.jetbrains.com/rider/)
-- Azure OpenAI or OpenAI API access
+- [GitHub Personal Access Token](https://github.com/settings/tokens) for GitHub Models access
 
 ### Installation
 
@@ -53,15 +53,16 @@ Microsoft Agent Framework represents the evolution of AI agent development in .N
    # Should output 9.0.x
    ```
 
-3. **Configure User Secrets** (No .env files!)
+3. **Configure GitHub Token** 
    
    For any sample project:
    ```bash
    cd src/samples/BasicAgent_AF
    dotnet user-secrets init
-   dotnet user-secrets set "OpenAI:ApiKey" "your-api-key-here"
-   dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o"
+   dotnet user-secrets set "GITHUB_TOKEN" "your-github-token"
    ```
+   
+   Get your token at: https://github.com/settings/tokens
 
 4. **Run a sample**
    ```bash
@@ -81,17 +82,17 @@ For detailed setup instructions, see [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md).
 | [01](modules/01-Introduction/) | Introduction | 10 min | Why migrate, benefits, comparison |
 | [02](modules/02-Basic-Migration/) | Basic Migration | 15 min | Hello World, core concepts |
 | [03](modules/03-Namespace-And-Packages/) | Packages & Namespaces | 10 min | Package updates, imports |
-| [04](modules/04-Agent-Creation/) | Agent Creation | 15 min | Simplified patterns, no Kernel |
+| [04](modules/04-Agent-Creation/) | Agent Creation | 15 min | Simplified patterns |
 | [05](modules/05-Thread-Management/) | Thread Management | 15 min | Conversation lifecycle |
 | [06](modules/06-Tool-Registration/) | Tool Registration | 20 min | Plugins → Functions |
 | [07](modules/07-Invocation-Patterns/) | Invocation Patterns | 15 min | RunAsync, response handling |
 | [08](modules/08-Streaming-Responses/) | Streaming | 15 min | Real-time responses |
 | [09](modules/09-Dependency-Injection/) | Dependency Injection | 15 min | ASP.NET Core integration |
-| [10](modules/10-Options-Configuration/) | Configuration | 10 min | Settings, User Secrets |
+| [10](modules/10-Options-Configuration/) | Configuration | 10 min | Settings, GitHub token |
 | [11](modules/11-Complete-Example/) | Complete Example | 20 min | Full chatbot application |
 | [12](modules/12-Real-World-Migrations/) | Real-World Cases | 25 min | Production migrations |
-| [13](modules/13-Performance-Benchmarking/) | Performance | 20 min | BenchmarkDotNet results |
-| [14](modules/14-Testing-Strategies/) | Testing | 20 min | Unit, integration tests |
+| [13](modules/13-Testing-Strategies/) | Testing | 20 min | Unit, integration tests |
+| [14](modules/14-Production-Deployment/) | Production | 20 min | Deployment best practices |
 | [15](modules/15-ASPNetCore-Integration/) | ASP.NET Core | 25 min | Web API, Blazor, SignalR |
 
 ### Suggested Learning Paths
@@ -109,7 +110,7 @@ Comprehensive articles published on [elbruno.com](https://www.elbruno.com):
 1. [**Why Migrate to Agent Framework**](blog-posts/01-why-migrate-to-agent-framework.md) - Benefits, decision factors, and ROI
 2. [**Step-by-Step Migration Guide**](blog-posts/02-step-by-step-migration-guide.md) - Complete walkthrough with examples
 3. [**Real-World Migration Examples**](blog-posts/03-real-world-migration-examples.md) - Enterprise case studies
-4. [**Performance and Best Practices**](blog-posts/04-performance-and-best-practices.md) - Benchmarks, testing, production readiness
+4. [**Testing and Best Practices**](blog-posts/04-testing-and-best-practices.md) - Testing strategies and production readiness
 
 ---
 
@@ -119,7 +120,8 @@ All code samples follow these principles:
 
 - ✅ **C# Only** - All examples in C#, no Python or JavaScript
 - ✅ **.NET 9** - Latest framework features
-- ✅ **User Secrets** - Secure configuration (no .env files)
+- ✅ **GitHub Models** - Free AI models for development and testing
+- ✅ **User Secrets** - Secure token configuration
 - ✅ **Side-by-Side** - SK version (_SK) and AF version (_AF) for comparison
 - ✅ **Production-Ready** - Error handling, logging, best practices
 
@@ -132,7 +134,6 @@ src/
 │   ├── BasicAgent_AF/    # Agent Framework version
 │   └── ...
 ├── case-studies/         # Real-world migration examples
-├── benchmarks/           # Performance comparison projects
 └── tests/               # Test example projects
 ```
 
@@ -145,7 +146,7 @@ Interactive exercises with starter code and solutions:
 - [Lab 01: Basic Migration](labs/lab-01-basic-migration/) - Convert a simple SK agent
 - [Lab 02: Tool Migration](labs/lab-02-tool-migration/) - Transform plugins to functions
 - [Lab 03: ASP.NET Integration](labs/lab-03-aspnet-integration/) - Web API with agents
-- [Lab 04: Performance Optimization](labs/lab-04-performance-optimization/) - Benchmarking
+- [Lab 04: Testing Strategies](labs/lab-04-testing-strategies/) - Comprehensive testing
 
 ---
 
@@ -179,7 +180,7 @@ PowerShell scripts to assist with migration:
 # Verify environment setup
 ./scripts/setup/verify-environment.ps1
 
-# Configure User Secrets for all projects
+# Configure GitHub token for all projects
 ./scripts/setup/configure-secrets.ps1
 
 # Analyze SK patterns in your code
@@ -193,19 +194,6 @@ PowerShell scripts to assist with migration:
 ```
 
 See [scripts/README.md](scripts/README.md) for details.
-
----
-
-## 📊 Performance Comparison
-
-Migration to Agent Framework typically yields:
-
-- ⚡ **30-40% faster** agent creation
-- 💾 **20-30% lower** memory allocation
-- 🚀 **15-25% faster** response times
-- 📉 **Simplified code** (20-40% fewer lines)
-
-See [Module 13: Performance Benchmarking](modules/13-Performance-Benchmarking/) for detailed results.
 
 ---
 
