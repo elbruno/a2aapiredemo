@@ -701,10 +701,45 @@ Testing Agent Framework applications is straightforward:
 
 The combination of Agent Framework's interface-based design and GitHub Models' free tier creates an ideal testing environment.
 
+## Hands-On Practice
+
+Put these testing strategies into practice with Lab 04:
+
+### Lab 04: Testing Strategies
+Complete working test project showing all patterns discussed in this post:
+
+- **[Lab Instructions](../labs/lab-04-testing-strategies/)**
+- **[Starter Code (SK)](../labs/lab-04-testing-strategies/starter/before-sk/)** - Semantic Kernel test patterns
+- **[Solution Code (AF)](../labs/lab-04-testing-strategies/solution/after-af/)** - Agent Framework test patterns
+
+**What's included:**
+- ✅ Unit tests for functions (fast, no AI)
+- ✅ Integration tests with GitHub Models (free!)
+- ✅ Theory-based tests for multiple scenarios
+- ✅ xUnit and Moq examples
+- ✅ CI/CD integration examples
+- ✅ Complete README with instructions
+
+**Test it yourself:**
+```bash
+# Clone and test
+cd labs/lab-04-testing-strategies/solution/after-af
+dotnet user-secrets set "GITHUB_TOKEN" "your-token"
+dotnet test
+```
+
+### Other Related Labs
+
+- **[Lab 01: Basic Migration](../labs/lab-01-basic-migration/)** - Start with simple agent testing
+- **[Lab 02: Tool Migration](../labs/lab-02-tool-migration/)** - Test async functions and database operations
+- **[Lab 03: ASP.NET Integration](../labs/lab-03-aspnet-integration/)** - Test web APIs with health checks
+
 ## Resources
 
 - [Module 13: Testing Strategies](../modules/13-Testing-Strategies/)
 - [Module 14: Production Deployment](../modules/14-Production-Deployment/)
+- [Hands-On Testing Lab](../labs/lab-04-testing-strategies/)
+- [All Lab Code Samples](../labs/)
 - [xUnit Documentation](https://xunit.net/)
 - [Moq Documentation](https://github.com/moq/moq4)
 - [GitHub Models](https://github.com/features/models)

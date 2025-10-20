@@ -31,13 +31,18 @@ Migrate a simple Semantic Kernel chatbot to Agent Framework with GitHub Models.
 **Duration**: 45 minutes  
 **Level**: Intermediate
 
-Migrate a multi-tool agent with database operations.
+Migrate a customer management system with async database operations.
 
 **What you'll learn**:
-- Convert complex plugins
-- Handle async functions
-- Integrate with external services
-- Test function calling
+- Convert complex plugin classes to async functions
+- Handle async database operations
+- Use closures for dependency access
+- Manage multiple CRUD tools
+- Test function calling with async operations
+
+**Code samples**:
+- [Starter (SK)](./lab-02-tool-migration/starter/before-sk/) - CustomerPlugin with 5 async functions
+- [Solution (AF)](./lab-02-tool-migration/solution/after-af/) - Functions with database closures
 
 ---
 
@@ -45,13 +50,18 @@ Migrate a multi-tool agent with database operations.
 **Duration**: 60 minutes  
 **Level**: Intermediate
 
-Build a web API with Agent Framework and GitHub Models.
+Build a production-ready web API with Agent Framework and environment-based configuration.
 
 **What you'll learn**:
-- Set up dependency injection
-- Create REST API endpoints
-- Implement streaming responses
-- Add health checks and logging
+- Set up IChatClient with dependency injection
+- Create REST API endpoints for chat
+- Implement streaming responses over HTTP
+- Environment-based config (GitHub Models for dev, Azure OpenAI for prod)
+- Add health checks and monitoring
+
+**Code samples**:
+- [Starter (SK)](./lab-03-aspnet-integration/starter/before-sk/) - ASP.NET Core with Kernel DI
+- [Solution (AF)](./lab-03-aspnet-integration/solution/after-af/) - Minimal API with ChatClientAgent
 
 ---
 
@@ -59,13 +69,19 @@ Build a web API with Agent Framework and GitHub Models.
 **Duration**: 45 minutes  
 **Level**: Advanced
 
-Comprehensive testing with unit tests, integration tests, and mocks.
+Write comprehensive tests for Agent Framework applications using xUnit and GitHub Models.
 
 **What you'll learn**:
-- Write unit tests with mocks
-- Integration tests with GitHub Models
-- Test function independently
-- Set up CI/CD testing
+- Write fast unit tests for functions (no AI required)
+- Integration tests with real AI using GitHub Models (free!)
+- Test function logic independently
+- Use Theory-based tests for multiple scenarios
+- Set up CI/CD testing with GitHub Actions
+- Mock IChatClient for isolated tests
+
+**Code samples**:
+- [Starter (SK)](./lab-04-testing-strategies/starter/before-sk/) - xUnit tests with ChatCompletionAgent
+- [Solution (AF)](./lab-04-testing-strategies/solution/after-af/) - Simplified tests with ChatClientAgent
 
 ---
 

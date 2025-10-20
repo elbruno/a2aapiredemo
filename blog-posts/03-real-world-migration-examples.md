@@ -507,14 +507,61 @@ The pattern is clear: update packages, simplify plugins to functions, use GitHub
 Ready to start your migration?
 
 1. **Review these case studies** - Find one similar to your app
-2. **Follow the pattern** - Package updates → Function conversion → Testing
-3. **Use GitHub Models** - Save costs during migration
-4. **Go incremental** - One component at a time
+2. **Practice with hands-on labs** - Get experience before migrating your app
+3. **Follow the pattern** - Package updates → Function conversion → Testing
+4. **Use GitHub Models** - Save costs during migration
+5. **Go incremental** - One component at a time
+
+## Hands-On Labs
+
+Practice these migration patterns yourself with our complete code samples:
+
+### Lab 02: Customer Management (Similar to Case Study 1)
+Migrate a customer management system with async database operations:
+- **[Lab Instructions](../labs/lab-02-tool-migration/)**
+- **[Starter Code (SK)](../labs/lab-02-tool-migration/starter/before-sk/)** - See the "before" state
+- **[Solution Code (AF)](../labs/lab-02-tool-migration/solution/after-af/)** - Compare with your solution
+
+**What you'll learn:**
+- Converting plugin classes to async functions
+- Using closures for dependencies
+- Handling multiple async tools
+
+### Lab 03: ASP.NET Core API (Similar to Case Study 2)
+Build a production web API with environment-based configuration:
+- **[Lab Instructions](../labs/lab-03-aspnet-integration/)**
+- **[Starter Code (SK)](../labs/lab-03-aspnet-integration/starter/before-sk/)**
+- **[Solution Code (AF)](../labs/lab-03-aspnet-integration/solution/after-af/)**
+
+**What you'll learn:**
+- Dependency injection patterns
+- Environment-based configuration
+- Health checks and monitoring
+- Streaming responses
+
+### Lab 04: Testing (Similar to Case Study 4)
+Write comprehensive tests with GitHub Models:
+- **[Lab Instructions](../labs/lab-04-testing-strategies/)**
+- **[Starter Code (SK)](../labs/lab-04-testing-strategies/starter/before-sk/)**
+- **[Solution Code (AF)](../labs/lab-04-testing-strategies/solution/after-af/)**
+
+**What you'll learn:**
+- Unit testing functions
+- Integration testing with real AI
+- Free testing with GitHub Models
+- CI/CD integration
+
+### Lab 01: Basic Migration
+Start here if you're new to migration:
+- **[Lab Instructions](../labs/lab-01-basic-migration/)**
+- Simple chatbot migration
+- Perfect starting point
 
 ## Resources
 
 - [Step-by-Step Migration Guide](./02-step-by-step-migration-guide.md)
 - [All 15 Learning Modules](../modules/)
+- [Hands-On Labs with Code](../labs/)
 - [Module 12: Real-World Migrations](../modules/12-Real-World-Migrations/)
 - [Quick Reference](../docs/QUICK-REFERENCE.md)
 
