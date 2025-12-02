@@ -1,33 +1,24 @@
-# Semantic Kernel to Microsoft Agent Framework Migration Guide
+# eShop Lite - .NET Aspire Demo with AI-Powered Search
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/9.0)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![C#](https://img.shields.io/badge/Language-C%23-239120)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![GitHub Models](https://img.shields.io/badge/AI-GitHub_Models-181717)](https://github.com/marketplace/models)
+[![.NET Aspire](https://img.shields.io/badge/.NET-Aspire-512BD4)](https://learn.microsoft.com/en-us/dotnet/aspire/)
 
-> **Comprehensive migration materials for developers transitioning from Semantic Kernel to Microsoft Agent Framework in C# and .NET 9**
+> **A sample eShop application built with .NET Aspire, featuring AI-powered product search using Azure OpenAI and vector embeddings**
 
-This repository provides everything you need to successfully migrate your AI agent applications from Semantic Kernel to the new Microsoft Agent Framework, including:
-
-- 📚 **15 Comprehensive Modules** - Step-by-step learning path
-- 💻 **Working Code Samples** - Side-by-side SK and AF examples using GitHub Models
-- 🏭 **Real-World Case Studies** - Production migration examples
-- 🧪 **Testing Strategies** - Comprehensive test examples
-- 🎓 **Hands-On Labs** - Interactive learning exercises
-- 📝 **Blog Post Series** - In-depth articles on [elbruno.com](https://www.elbruno.com)
-- 🛠️ **Automation Scripts** - PowerShell tools to assist migration
+This repository demonstrates a modern cloud-native e-commerce application using .NET Aspire for orchestration, Blazor for the front-end, and AI capabilities for intelligent product search.
 
 ---
 
-## 🎯 Why Migrate to Agent Framework?
+## 🎯 Features
 
-Microsoft Agent Framework represents the evolution of AI agent development in .NET, offering:
-
-1. **Simplified API** - Less boilerplate, more intuitive
-2. **Unified Interface** - Consistent patterns across AI providers
-3. **Modern .NET** - Built on .NET 9 with latest C# features
-4. **Future-Proof** - Microsoft's strategic direction for AI agents
-5. **GitHub Models Ready** - Easy integration with free AI models
+- 🛒 **eShop Lite Store** - Blazor Server front-end with product browsing, cart, and checkout
+- 🔍 **AI-Powered Search** - Semantic search using Azure OpenAI and vector embeddings
+- 🚀 **.NET Aspire** - Cloud-native orchestration with service discovery
+- 💾 **SQL Server** - Persistent data storage with Entity Framework Core
+- 🧠 **Vector Database** - In-memory vector store for product embeddings
+- 👥 **Customer Management** - Customer profiles with membership tiers
 
 ---
 
@@ -36,10 +27,11 @@ Microsoft Agent Framework represents the evolution of AI agent development in .N
 ### Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) (9.0.x or later)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for SQL Server container)
 - IDE: [Visual Studio 2022](https://visualstudio.microsoft.com/) (17.12+), [VS Code](https://code.visualstudio.com/) with C# Dev Kit, or [JetBrains Rider](https://www.jetbrains.com/rider/)
-- [GitHub Personal Access Token](https://github.com/settings/tokens) for GitHub Models access
+- Azure OpenAI or Microsoft Foundry connection string (for AI features)
 
-### Installation
+### Running the Application
 
 1. **Clone the repository**
    ```bash
@@ -53,188 +45,144 @@ Microsoft Agent Framework represents the evolution of AI agent development in .N
    # Should output 9.0.x
    ```
 
-3. **Configure GitHub Token** 
+3. **Configure AI Connection (for AI-powered search)**
    
-   For any sample project:
+   Set up User Secrets for the Products project:
    ```bash
-   cd src/samples/BasicAgent_AF
+   cd src/Products
    dotnet user-secrets init
-   dotnet user-secrets set "GITHUB_TOKEN" "your-github-token"
+   dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-azure-openai-connection-string"
    ```
-   
-   Get your token at: https://github.com/settings/tokens
 
-4. **Run a sample**
+4. **Run with .NET Aspire**
    ```bash
+   cd src/eShopAppHost
    dotnet run
    ```
 
-For detailed setup instructions, see [docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md).
+5. **Open the Aspire Dashboard**
+   
+   The Aspire dashboard will open automatically, showing all running services. Click on the **Store** endpoint to access the e-commerce application.
 
 ---
 
-## 📚 Learning Path
-
-### Module Overview
-
-| Module | Topic | Duration | Key Concepts |
-|--------|-------|----------|--------------|
-| [01](modules/01-Introduction/) | Introduction | 10 min | Why migrate, benefits, comparison |
-| [02](modules/02-Basic-Migration/) | Basic Migration | 15 min | Hello World, core concepts |
-| [03](modules/03-Namespace-And-Packages/) | Packages & Namespaces | 10 min | Package updates, imports |
-| [04](modules/04-Agent-Creation/) | Agent Creation | 15 min | Simplified patterns |
-| [05](modules/05-Thread-Management/) | Thread Management | 15 min | Conversation lifecycle |
-| [06](modules/06-Tool-Registration/) | Tool Registration | 20 min | Plugins → Functions |
-| [07](modules/07-Invocation-Patterns/) | Invocation Patterns | 15 min | RunAsync, response handling |
-| [08](modules/08-Streaming-Responses/) | Streaming | 15 min | Real-time responses |
-| [09](modules/09-Dependency-Injection/) | Dependency Injection | 15 min | ASP.NET Core integration |
-| [10](modules/10-Options-Configuration/) | Configuration | 10 min | Settings, GitHub token |
-| [11](modules/11-Complete-Example/) | Complete Example | 20 min | Full chatbot application |
-| [12](modules/12-Real-World-Migrations/) | Real-World Cases | 25 min | Production migrations |
-| [13](modules/13-Testing-Strategies/) | Testing | 20 min | Unit, integration tests |
-| [14](modules/14-Production-Deployment/) | Production | 20 min | Deployment best practices |
-| [15](modules/15-ASPNetCore-Integration/) | ASP.NET Core | 25 min | Web API, Blazor, SignalR |
-
-### Suggested Learning Paths
-
-**Quick Start (90 minutes)**: Modules 1-4, 6, 9, 11
-**Comprehensive Workshop (3 hours)**: All modules in order
-**Production Focus (2 hours)**: Modules 1-2, 9-15
-
----
-
-## 💡 Blog Post Series
-
-Comprehensive articles published on [elbruno.com](https://www.elbruno.com):
-
-1. [**Why Migrate to Agent Framework**](blog-posts/01-why-migrate-to-agent-framework.md) - Benefits, decision factors, and ROI
-2. [**Step-by-Step Migration Guide**](blog-posts/02-step-by-step-migration-guide.md) - Complete walkthrough with examples
-3. [**Real-World Migration Examples**](blog-posts/03-real-world-migration-examples.md) - Enterprise case studies
-4. [**Testing and Best Practices**](blog-posts/04-testing-and-best-practices.md) - Testing strategies and production readiness
-
----
-
-## 🔬 Code Samples
-
-All code samples follow these principles:
-
-- ✅ **C# Only** - All examples in C#, no Python or JavaScript
-- ✅ **.NET 9** - Latest framework features
-- ✅ **GitHub Models** - Free AI models for development and testing
-- ✅ **User Secrets** - Secure token configuration
-- ✅ **Side-by-Side** - SK version (_SK) and AF version (_AF) for comparison
-- ✅ **Production-Ready** - Error handling, logging, best practices
-
-### Sample Structure
+## 📁 Project Structure
 
 ```
 src/
-├── samples/              # Standalone runnable samples
-│   ├── BasicAgent_SK/    # Semantic Kernel version
-│   ├── BasicAgent_AF/    # Agent Framework version
-│   └── ...
-├── case-studies/         # Real-world migration examples
-└── tests/               # Test example projects
+├── eShopLite-Aspire.slnx     # Solution file
+│
+├── 1 Aspire/
+│   ├── eShopAppHost/         # .NET Aspire App Host (orchestration)
+│   └── eShopServiceDefaults/ # Shared service configuration
+│
+├── 2 eShopLite/
+│   ├── Products/             # Products API with AI search capabilities
+│   │   ├── Endpoints/        # REST API endpoints
+│   │   ├── Memory/           # Vector database for AI search
+│   │   └── Models/           # EF Core context and data
+│   └── Store/                # Blazor Server front-end
+│       ├── Components/       # Razor components
+│       │   ├── Pages/        # Application pages
+│       │   ├── Cart/         # Shopping cart components
+│       │   └── Layout/       # Layout components
+│       └── Services/         # Business logic services
+│
+├── 3 Models/
+│   ├── CartEntities/         # Cart and order models
+│   ├── DataEntities/         # Product and customer models
+│   ├── SearchEntities/       # AI search response models
+│   └── VectorEntities/       # Vector embedding models
+│
+└── 4 Tests/
+    ├── Products.Tests/       # Products API tests
+    └── Store.Tests/          # Store front-end tests
 ```
 
 ---
 
-## 🧪 Hands-On Labs
+## 🔧 Architecture
 
-Interactive exercises with starter code and solutions:
+### Services
 
-- [Lab 01: Basic Migration](labs/lab-01-basic-migration/) - Convert a simple SK agent
-- [Lab 02: Tool Migration](labs/lab-02-tool-migration/) - Transform plugins to functions
-- [Lab 03: ASP.NET Integration](labs/lab-03-aspnet-integration/) - Web API with agents
-- [Lab 04: Testing Strategies](labs/lab-04-testing-strategies/) - Comprehensive testing
+| Service | Description | Technology |
+|---------|-------------|------------|
+| **eShopAppHost** | .NET Aspire orchestrator | .NET Aspire |
+| **Products** | Product catalog API with AI search | ASP.NET Core Minimal API |
+| **Store** | E-commerce front-end | Blazor Server |
+| **SQL Server** | Product database | SQL Server (containerized) |
+
+### AI Features
+
+The application includes AI-powered product search using:
+
+- **Azure OpenAI GPT-5-mini** - For generating friendly search responses
+- **Text Embedding 3 Small** - For creating product vector embeddings
+- **In-Memory Vector Store** - For semantic similarity search
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/Product/` | GET | Get all products |
+| `/api/Product/{id}` | GET | Get product by ID |
+| `/api/Product/{id}` | PUT | Update product |
+| `/api/Product/` | POST | Create product |
+| `/api/Product/{id}` | DELETE | Delete product |
+| `/api/Product/search/{search}` | GET | Text search products |
+| `/api/aisearch/{search}` | GET | AI-powered semantic search |
 
 ---
 
-## 📖 Documentation
-
-### Essential Guides
-
-- [**Setup Guide**](docs/SETUP-GUIDE.md) - Environment setup and prerequisites
-- [**IDE Setup Guide**](docs/IDE-SETUP-GUIDE.md) - VS 2022, VS Code, Rider configuration
-- [**Presenter Guide**](docs/PRESENTER-GUIDE.md) - For demo hosts and speakers
-- [**Quick Reference**](docs/QUICK-REFERENCE.md) - One-page cheat sheet
-- [**Migration Checklist**](docs/migration-checklist.md) - Step-by-step migration tasks
-- [**API Mapping**](docs/api-mapping.md) - SK to AF API translation
-- [**Troubleshooting**](docs/TROUBLESHOOTING.md) - Common issues and solutions
-- [**FAQ**](docs/FAQ.md) - Frequently asked questions
-
-### Advanced Topics
-
-- [**Incremental Migration Guide**](docs/incremental-migration-guide.md) - Side-by-side approach
-- [**Advanced Scenarios**](docs/advanced-scenarios.md) - Multi-agent, RAG, vector DB
-- [**Security Guide**](docs/security-guide.md) - Best practices for production
-- [**Common Pitfalls**](docs/common-pitfalls.md) - What to avoid
-
----
-
-## 🛠️ Automation Scripts
-
-PowerShell scripts to assist with migration:
+## 🧪 Running Tests
 
 ```bash
-# Verify environment setup
-./scripts/setup/verify-environment.ps1
+# Run all tests
+cd src
+dotnet test
 
-# Configure GitHub token for all projects
-./scripts/setup/configure-secrets.ps1
-
-# Analyze SK patterns in your code
-./scripts/automation/migration-analyzer.ps1 -Path "C:\MyProject"
-
-# Update package references
-./scripts/automation/package-updater.ps1
-
-# Validate migration completeness
-./scripts/validation/verify-migration.ps1
+# Run specific test project
+dotnet test Products.Tests/Products.Tests.csproj
+dotnet test Store.Tests/Store.Tests.csproj
 ```
-
-See [scripts/README.md](scripts/README.md) for details.
 
 ---
 
-## 🎤 For Presenters and Demo Hosts
+## ☁️ Azure Deployment
 
-This repository includes complete materials for delivering live presentations:
+The application supports deployment to Azure using Azure Developer CLI (azd):
 
-- **Demo Scripts** - Exact commands and expected outputs
-- **Timing Guides** - Module duration estimates
-- **Presenter Notes** - Talking points and engagement tips
-- **Troubleshooting** - Handle issues during live demos
-- **Multiple Formats** - 90-min, 3-hour workshop, 4-session series
+```bash
+cd src/eShopAppHost
+azd up
+```
 
-See [docs/PRESENTER-GUIDE.md](docs/PRESENTER-GUIDE.md) to get started.
+This will provision:
+- Azure Container Apps for services
+- Azure SQL Database
+- Azure OpenAI with GPT-5-mini and text-embedding-3-small deployments
+- Azure Application Insights for monitoring
+
+For more details, see [src/eShopAppHost/next-steps.md](src/eShopAppHost/next-steps.md).
 
 ---
 
-## 🔄 Migration Decision Tree
+## 📖 Key Technologies
 
-Not sure if you should migrate? Use our decision framework:
-
-```
-Do you use Semantic Kernel in production?
-├─ Yes → Are you on .NET 6/8 and planning to upgrade to .NET 9?
-│  ├─ Yes → Migrate now (best time for modernization)
-│  └─ No → Evaluate benefits vs. effort (see Module 01)
-└─ No → Start fresh with Agent Framework
-```
-
-See [docs/migration-decision-tree.md](docs/migration-decision-tree.md) for the complete framework.
+- **.NET 9** - Latest .NET framework
+- **.NET Aspire** - Cloud-native app orchestration
+- **Blazor Server** - Interactive web UI
+- **Entity Framework Core** - Data access
+- **Microsoft.Extensions.AI** - AI abstractions
+- **Azure OpenAI** - AI models for search
+- **SQL Server** - Database storage
+- **Docker** - Containerization
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
-
-- How to contribute code, docs, or samples
-- Coding standards and conventions
-- Pull request process
-- Issue reporting guidelines
+Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ---
 
@@ -247,30 +195,9 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ---
 
-## 📚 External Resources
-
-- [Agent Framework Documentation](https://learn.microsoft.com/en-us/agent-framework/)
-- [Migration Guide (Official)](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel/)
-- [Agent Framework GitHub](https://github.com/microsoft/agent-framework)
-- [Semantic Kernel Documentation](https://learn.microsoft.com/en-us/semantic-kernel/)
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Microsoft Agent Framework Team
-- Semantic Kernel Community
-- All contributors and early adopters
-
----
-
-**Ready to migrate?** Start with [Module 01: Introduction](modules/01-Introduction/) or jump straight to [Module 02: Basic Migration](modules/02-Basic-Migration/) if you're already familiar with Agent Framework concepts.
 
 ---
 
