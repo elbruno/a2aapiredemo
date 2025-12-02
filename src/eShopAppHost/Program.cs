@@ -1,5 +1,3 @@
-using Azure.Provisioning.CognitiveServices;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sql = builder.AddSqlServer("sql")
@@ -53,6 +51,10 @@ else
 }
 
 products.WithReference(microsoftfoundry)
+    .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
+    .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
+
+store.WithReference(microsoftfoundry)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
