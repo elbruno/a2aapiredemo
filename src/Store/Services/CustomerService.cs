@@ -7,7 +7,9 @@ public class CustomerService : ICustomerService
     private readonly ILogger<CustomerService> _logger;
     private int _currentCustomerId = 1; // Default to first customer
 
-    // Sample customers (matching database initialization)
+    // Sample customers for demo purposes. In a production app, these would be
+    // fetched from a Customer API. The data here mirrors the database initialization
+    // in Products.Models.DbInitializer to maintain consistency for the demo.
     private readonly List<Customer> _sampleCustomers = new()
     {
         new Customer { Id = 1, FirstName = "Alice", LastName = "Johnson", Email = "alice.johnson@example.com", Phone = "555-0101", MembershipTier = MembershipTier.Gold },

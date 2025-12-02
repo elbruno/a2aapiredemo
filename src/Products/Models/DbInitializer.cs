@@ -103,7 +103,7 @@ namespace Products.Models
                     {
                         ProductId = product.Id,
                         LocationId = location.Id,
-                        Quantity = new Random().Next(5, 50)
+                        Quantity = Random.Shared.Next(5, 50)
                     });
                 }
             }
