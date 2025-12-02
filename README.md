@@ -78,7 +78,8 @@ src/
 ├── Products/                 # Products API with AI search capabilities
 │   ├── Endpoints/            # REST API endpoints
 │   ├── Memory/               # Vector database for AI search
-│   └── Models/               # EF Core context and data
+│   ├── Models/               # EF Core context and initialization
+│   └── Data/                 # Additional data context
 │
 ├── Store/                    # Blazor Server front-end
 │   ├── Components/           # Razor components
