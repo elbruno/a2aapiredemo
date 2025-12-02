@@ -1,43 +1,48 @@
-# GitHub Copilot Instructions for Semantic Kernel to Agent Framework Migration
+# GitHub Copilot Instructions for eShop Lite Aspire Demo
 
 ## Repository Purpose
 
-This repository contains comprehensive materials for migrating from Semantic Kernel to Microsoft Agent Framework in C#. It includes demos, code samples, blog posts, and presenter materials.
+This repository contains an eShop Lite demo application built with .NET Aspire, featuring AI-powered product search using Azure OpenAI and vector embeddings. It demonstrates modern cloud-native e-commerce patterns with Blazor Server front-end and ASP.NET Core Minimal API backend.
 
 ## Code Generation Guidelines
 
-### When Creating Semantic Kernel Examples (before-sk/)
+### When Working with the Products API
 
-- Use `Microsoft.SemanticKernel` namespace
-- Use `Kernel` for agent management
-- Use `[KernelFunction]` attributes for tools
-- Use `ChatCompletionAgent` for agents
-- Use `InvokeAsync` and `InvokeStreamingAsync` methods
-- Target .NET 9
+- Use ASP.NET Core Minimal API patterns
+- Use `Microsoft.Extensions.AI` for AI abstractions
+- Use Entity Framework Core for database access
+- Follow the existing endpoint pattern in `ProductEndpoints.cs`
+- Use `Context` for database operations
+- Use `MemoryContext` for AI-powered search operations
 
-### When Creating Agent Framework Examples (after-af/)
+### When Working with the Store Front-End
 
-- Use `Microsoft.Agents.AI` and `Microsoft.Extensions.AI` namespaces
-- Use `IChatClient` for agent management
-- Use direct function registration (no attributes)
-- Use `AIAgent` for agents
-- Use `RunAsync` and `RunStreamingAsync` methods
-- Target .NET 9
-- Leverage extension methods like `CreateAIAgent()`
+- Use Blazor Server components
+- Follow the existing component structure in `Components/Pages/`
+- Use dependency injection for services (`IProductService`, `ICartService`, etc.)
+- Use `ProtectedSessionStorage` for cart persistence
+
+### When Working with Aspire Configuration
+
+- Configure services in `eShopAppHost/Program.cs`
+- Use `builder.AddProject<>()` for adding projects
+- Use `WithReference()` for service dependencies
+- Use `WaitFor()` for startup ordering
 
 ## Naming Conventions
 
-- Semantic Kernel projects: Suffix with `_SK` (e.g., `BasicAgent_SK.csproj`)
-- Agent Framework projects: Suffix with `_AF` (e.g., `BasicAgent_AF.csproj`)
-- Keep identical functionality between SK and AF versions for comparison
+- Entity projects: Suffix with `Entities` (e.g., `DataEntities`, `CartEntities`)
+- Test projects: Suffix with `.Tests` (e.g., `Products.Tests`, `Store.Tests`)
+- Use PascalCase for class names and public members
+- Use camelCase for private fields and local variables
 
 ## Configuration Standards
 
-**CRITICAL**: All projects must use .NET User Secrets for configuration. NO .env files allowed.
+**CRITICAL**: All projects must use .NET User Secrets for sensitive configuration. NO .env files allowed.
 
 ```csharp
 // Good - Using IConfiguration with User Secrets
-var apiKey = configuration["OpenAI:ApiKey"];
+var connectionString = configuration["ConnectionStrings:microsoftfoundry"];
 
 // Bad - Never use .env files or environment variables directly
 // DotNetEnv.Env.Load();
@@ -46,9 +51,9 @@ var apiKey = configuration["OpenAI:ApiKey"];
 ### User Secrets Setup
 
 ```bash
+cd src/Products
 dotnet user-secrets init
-dotnet user-secrets set "OpenAI:ApiKey" "your-key-here"
-dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o"
+dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-connection-string"
 ```
 
 ### appsettings.json Structure
@@ -60,135 +65,127 @@ dotnet user-secrets set "OpenAI:ChatDeploymentName" "gpt-4o"
       "Default": "Information"
     }
   },
-  "OpenAI": {
-    "ChatDeploymentName": "gpt-4o"
-  }
+  "AI_ChatDeploymentName": "gpt-5-mini",
+  "AI_embeddingsDeploymentName": "text-embedding-3-small"
 }
 ```
 
-## Documentation Standards
+## Project Structure
 
-- All code samples must include README.md with:
-  - Purpose and overview
-  - Prerequisites
-  - User Secrets configuration steps
-  - How to run
-  - Key concepts demonstrated
-  - Migration notes (for AF versions)
-- Use markdown for all documentation
-- Include code comments explaining migration-specific changes
-
-## Testing Requirements
-
-- All code samples must compile without errors
-- Include unit tests where appropriate
-- Ensure SK and AF versions produce equivalent outputs
-- Document any behavioral differences
-
-## Blog Post Guidelines
-
-- Target audience: .NET developers familiar with Semantic Kernel
-- Include working code examples
-- Link to corresponding GitHub code samples
-- Use consistent formatting and style
-- Include performance comparisons where relevant
-- Add SEO optimization (keywords, meta descriptions, Open Graph tags)
-
-## Presenter Materials
-
-- Demo scripts should include exact commands
-- Include expected outputs
-- Provide troubleshooting tips
-- Note timing for each section
-- Include engagement prompts for live audiences
+```
+src/
+├── eShopLite-Aspire.slnx     # Solution file
+│
+├── eShopAppHost/             # .NET Aspire App Host
+├── eShopServiceDefaults/     # Shared service configuration
+│
+├── Products/                 # Products API
+│   ├── Endpoints/            # REST API endpoints
+│   ├── Memory/               # Vector database context
+│   ├── Models/               # EF Core context
+│   └── Data/                 # Database initialization
+│
+├── Store/                    # Blazor Server front-end
+│   ├── Components/           # Razor components
+│   │   ├── Pages/            # Application pages
+│   │   ├── Cart/             # Cart components
+│   │   └── Layout/           # Layout components
+│   └── Services/             # Business logic
+│
+├── CartEntities/             # Cart and order models
+├── DataEntities/             # Product and customer models
+├── SearchEntities/           # Search response models
+├── VectorEntities/           # Vector embedding models
+│
+├── Products.Tests/           # Products API tests
+└── Store.Tests/              # Store front-end tests
+```
 
 ## Common Patterns to Follow
 
-### Agent Creation Pattern
+### Adding API Endpoints
 
-**Semantic Kernel:**
+Follow the pattern in `ProductEndpoints.cs`:
+
 ```csharp
-var kernel = Kernel.CreateBuilder()
-    .AddOpenAIChatCompletion("gpt-4", apiKey)
-    .Build();
-var agent = new ChatCompletionAgent { Kernel = kernel };
-```
-
-**Agent Framework:**
-```csharp
-var client = new OpenAIChatClient("gpt-4", apiKey);
-var agent = client.CreateAIAgent();
-```
-
-### Tool Registration Pattern
-
-**Semantic Kernel:**
-```csharp
-public class WeatherPlugin
+public static void MapMyEndpoints(this IEndpointRouteBuilder routes)
 {
-    [KernelFunction]
-    public string GetWeather(string location) => $"Weather in {location}";
+    var group = routes.MapGroup("/api/MyEntity");
+
+    group.MapGet("/", MyApiActions.GetAll)
+        .WithName("GetAllMyEntities")
+        .Produces<List<MyEntity>>(StatusCodes.Status200OK);
 }
-kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
 ```
 
-**Agent Framework:**
+### Adding Blazor Pages
+
+Follow the existing page structure:
+
+```razor
+@page "/mypage"
+@inject IMyService MyService
+
+<PageTitle>My Page</PageTitle>
+
+<h1>My Page Title</h1>
+
+@code {
+    private List<MyEntity> entities = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        entities = await MyService.GetAllAsync();
+    }
+}
+```
+
+### Adding Entity Models
+
+Follow the existing pattern in `DataEntities`:
+
 ```csharp
-string GetWeather(string location) => $"Weather in {location}";
-var agent = client.CreateAIAgent(tools: GetWeather);
+using System.Text.Json.Serialization;
+
+namespace DataEntities;
+
+public class MyEntity
+{
+    [JsonPropertyName("id")]
+    public virtual int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public virtual string Name { get; set; } = "not defined";
+}
 ```
 
 ## Repository-Specific Rules
 
-1. Always create side-by-side SK and AF examples
-2. Maintain consistency in functionality across versions
-3. Document all migration steps clearly
-4. Include performance metrics where applicable
-5. Follow .NET 9 best practices
-6. Use async/await properly
-7. Implement proper error handling
-8. Include XML documentation comments
+1. Use .NET Aspire for service orchestration
+2. Use SQL Server for persistent storage
+3. Use in-memory vector store for AI search
+4. Follow Minimal API patterns for endpoints
+5. Use Blazor Server for the front-end
+6. Follow .NET 9 best practices
+7. Use async/await properly
+8. Implement proper error handling
 9. All configuration via User Secrets and IConfiguration
 10. No .env files or direct environment variable access
 
-## File Organization
+## Testing Guidelines
 
-- `modules/` - Contains 15 teaching modules
-- `src/` - Runnable code samples and projects
-- `docs/` - Supporting documentation
-- `labs/` - Hands-on exercises
-- `scripts/` - Automation and setup scripts
-- `blog-posts/` - Blog post content for www.elbruno.com
-- `plans/` - Planning and architectural documents
+- Use MSTest for unit tests
+- Test API endpoints independently
+- Mock `Context` and `MemoryContext` for unit tests
+- Use integration tests for full service testing
 
 ## When Adding New Content
 
-- Update relevant README files
-- Add entry to CHANGELOG.md
-- Ensure consistency with existing patterns
-- Test all code samples
-- Update navigation/links if needed
-- Follow contribution guidelines in CONTRIBUTING.md
-
-## Project Structure Template
-
-```
-modules/XX-ModuleName/
-├── README.md
-├── demo-script.md
-├── presentation-notes.md
-└── code-samples/
-    ├── before-sk/
-    │   ├── Program.cs
-    │   ├── *.csproj
-    │   ├── appsettings.json
-    │   └── README.md
-    └── after-af/
-        ├── Program.cs
-        ├── *.csproj
-        ├── appsettings.json
-        └── README.md
-```
+- Add entity models to the appropriate `*Entities` project
+- Add API endpoints to the `Products/Endpoints/` directory
+- Add Blazor pages to `Store/Components/Pages/`
+- Update `eShopAppHost/Program.cs` for new services
+- Add tests to the appropriate test project
 
 ## Target Framework
 
@@ -201,19 +198,24 @@ All projects must target .NET 9:
 </PropertyGroup>
 ```
 
-## Package Versions
+## Key Package References
 
-### Semantic Kernel (Latest Stable)
+### Products API
 ```xml
-<PackageReference Include="Microsoft.SemanticKernel" Version="1.61.0" />
-<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.61.0-alpha" />
+<PackageReference Include="Microsoft.Extensions.AI" Version="9.x" />
+<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.x" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.x" />
 ```
 
-### Agent Framework (Latest)
+### Store Front-End
 ```xml
-<PackageReference Include="Microsoft.Agents.AI" Version="1.0.0" />
-<PackageReference Include="Microsoft.Extensions.AI" Version="9.0.0" />
-<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.0.0" />
+<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.x" />
+```
+
+### Aspire
+```xml
+<PackageReference Include="Aspire.Hosting.AppHost" Version="9.x" />
+<PackageReference Include="Aspire.Hosting.SqlServer" Version="9.x" />
 ```
 
 ## Quality Standards
@@ -224,4 +226,3 @@ All projects must target .NET 9:
 - Include error handling
 - Add XML documentation for public APIs
 - Write clear, self-documenting code
-- Add inline comments for migration-specific changes
