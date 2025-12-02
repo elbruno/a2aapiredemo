@@ -72,31 +72,28 @@ This repository demonstrates a modern cloud-native e-commerce application using 
 src/
 ├── eShopLite-Aspire.slnx     # Solution file
 │
-├── 1 Aspire/
-│   ├── eShopAppHost/         # .NET Aspire App Host (orchestration)
-│   └── eShopServiceDefaults/ # Shared service configuration
+├── eShopAppHost/             # .NET Aspire App Host (orchestration)
+├── eShopServiceDefaults/     # Shared service configuration
 │
-├── 2 eShopLite/
-│   ├── Products/             # Products API with AI search capabilities
-│   │   ├── Endpoints/        # REST API endpoints
-│   │   ├── Memory/           # Vector database for AI search
-│   │   └── Models/           # EF Core context and data
-│   └── Store/                # Blazor Server front-end
-│       ├── Components/       # Razor components
-│       │   ├── Pages/        # Application pages
-│       │   ├── Cart/         # Shopping cart components
-│       │   └── Layout/       # Layout components
-│       └── Services/         # Business logic services
+├── Products/                 # Products API with AI search capabilities
+│   ├── Endpoints/            # REST API endpoints
+│   ├── Memory/               # Vector database for AI search
+│   └── Models/               # EF Core context and data
 │
-├── 3 Models/
-│   ├── CartEntities/         # Cart and order models
-│   ├── DataEntities/         # Product and customer models
-│   ├── SearchEntities/       # AI search response models
-│   └── VectorEntities/       # Vector embedding models
+├── Store/                    # Blazor Server front-end
+│   ├── Components/           # Razor components
+│   │   ├── Pages/            # Application pages
+│   │   ├── Cart/             # Shopping cart components
+│   │   └── Layout/           # Layout components
+│   └── Services/             # Business logic services
 │
-└── 4 Tests/
-    ├── Products.Tests/       # Products API tests
-    └── Store.Tests/          # Store front-end tests
+├── CartEntities/             # Cart and order models
+├── DataEntities/             # Product and customer models
+├── SearchEntities/           # AI search response models
+├── VectorEntities/           # Vector embedding models
+│
+├── Products.Tests/           # Products API tests
+└── Store.Tests/              # Store front-end tests
 ```
 
 ---

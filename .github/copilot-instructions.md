@@ -76,32 +76,29 @@ dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-connection-st
 src/
 ├── eShopLite-Aspire.slnx     # Solution file
 │
-├── 1 Aspire/
-│   ├── eShopAppHost/         # .NET Aspire App Host
-│   └── eShopServiceDefaults/ # Shared service configuration
+├── eShopAppHost/             # .NET Aspire App Host
+├── eShopServiceDefaults/     # Shared service configuration
 │
-├── 2 eShopLite/
-│   ├── Products/             # Products API
-│   │   ├── Endpoints/        # REST API endpoints
-│   │   ├── Memory/           # Vector database context
-│   │   ├── Models/           # EF Core context
-│   │   └── Data/             # Database initialization
-│   └── Store/                # Blazor Server front-end
-│       ├── Components/       # Razor components
-│       │   ├── Pages/        # Application pages
-│       │   ├── Cart/         # Cart components
-│       │   └── Layout/       # Layout components
-│       └── Services/         # Business logic
+├── Products/                 # Products API
+│   ├── Endpoints/            # REST API endpoints
+│   ├── Memory/               # Vector database context
+│   ├── Models/               # EF Core context
+│   └── Data/                 # Database initialization
 │
-├── 3 Models/
-│   ├── CartEntities/         # Cart and order models
-│   ├── DataEntities/         # Product and customer models
-│   ├── SearchEntities/       # Search response models
-│   └── VectorEntities/       # Vector embedding models
+├── Store/                    # Blazor Server front-end
+│   ├── Components/           # Razor components
+│   │   ├── Pages/            # Application pages
+│   │   ├── Cart/             # Cart components
+│   │   └── Layout/           # Layout components
+│   └── Services/             # Business logic
 │
-└── 4 Tests/
-    ├── Products.Tests/       # Products API tests
-    └── Store.Tests/          # Store front-end tests
+├── CartEntities/             # Cart and order models
+├── DataEntities/             # Product and customer models
+├── SearchEntities/           # Search response models
+├── VectorEntities/           # Vector embedding models
+│
+├── Products.Tests/           # Products API tests
+└── Store.Tests/              # Store front-end tests
 ```
 
 ## Common Patterns to Follow
