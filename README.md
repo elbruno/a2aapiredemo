@@ -15,10 +15,11 @@ This repository demonstrates a modern cloud-native e-commerce application using 
 
 - 🛒 **eShop Lite Store** - Blazor Server front-end with product browsing, cart, and checkout
 - 🔍 **AI-Powered Search** - Semantic search using Azure OpenAI and vector embeddings
+- 🤖 **Agentic Checkout** - AI agents for stock validation and membership-based discounts
 - 🚀 **.NET Aspire** - Cloud-native orchestration with service discovery
 - 💾 **SQL Server** - Persistent data storage with Entity Framework Core
 - 🧠 **Vector Database** - In-memory vector store for product embeddings
-- 👥 **Customer Management** - Customer profiles with membership tiers
+- 👥 **Customer Management** - Customer profiles with membership tiers (Gold/Silver/Normal)
 
 ---
 
@@ -88,6 +89,12 @@ src/
 │   │   └── Layout/           # Layout components
 │   └── Services/             # Business logic services
 │
+├── AgentServices/            # AI Agent services for checkout
+│   ├── Checkout/             # Checkout orchestration
+│   ├── Discount/             # Discount agent
+│   ├── Stock/                # Stock agent
+│   └── Models/               # Agent DTOs
+│
 ├── CartEntities/             # Cart and order models
 ├── DataEntities/             # Product and customer models
 ├── SearchEntities/           # AI search response models
@@ -108,15 +115,22 @@ src/
 | **eShopAppHost** | .NET Aspire orchestrator | .NET Aspire |
 | **Products** | Product catalog API with AI search | ASP.NET Core Minimal API |
 | **Store** | E-commerce front-end | Blazor Server |
+| **AgentServices** | AI agents for checkout | Microsoft.Extensions.AI |
 | **SQL Server** | Product database | SQL Server (containerized) |
 
 ### AI Features
 
-The application includes AI-powered product search using:
+The application includes AI-powered capabilities:
 
-- **Azure OpenAI GPT-5-mini** - For generating friendly search responses
-- **Text Embedding 3 Small** - For creating product vector embeddings
-- **In-Memory Vector Store** - For semantic similarity search
+- **AI-Powered Search**:
+  - **Azure OpenAI GPT-5-mini** - For generating friendly search responses
+  - **Text Embedding 3 Small** - For creating product vector embeddings
+  - **In-Memory Vector Store** - For semantic similarity search
+
+- **Agentic Checkout**:
+  - **StockAgent** - Validates product availability with AI-generated messages
+  - **DiscountAgent** - Computes membership-based discounts using AI
+  - **Checkout Orchestrator** - Coordinates multi-agent workflow
 
 ### API Endpoints
 
@@ -181,6 +195,88 @@ For more details, see [src/eShopAppHost/next-steps.md](src/eShopAppHost/next-ste
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
+
+---
+
+## 🧠 Agentic Checkout Demo (Microsoft Agent Framework)
+
+This demo showcases an **AI-powered checkout experience** using intelligent agents for stock validation and membership-based discounts.
+
+### What the Agents Do
+
+| Agent | Responsibility |
+|-------|---------------|
+| **StockAgent** | Validates product availability and generates friendly stock status messages |
+| **DiscountAgent** | Computes membership-based discounts (Gold: 20%, Silver: 10%, Normal: 0%) using AI |
+| **AgentCheckoutOrchestrator** | Coordinates the multi-agent checkout workflow |
+
+### Demo Flow
+
+1. **Start the application** using .NET Aspire (`dotnet run` from `src/eShopAppHost`)
+2. **Open the Store** front-end from the Aspire dashboard
+3. **Select a customer** using the user picker in the top-right corner:
+   - **Alice Johnson** - Gold member (20% discount)
+   - **Bob Smith** - Silver member (10% discount)
+   - **Carol/David** - Normal members (no discount)
+4. **Add products** to your cart from the Products page
+5. **Go to Cart** and click "Apply AI Discount" to see:
+   - Agent steps execution (StockAgent → DiscountAgent)
+   - Discount calculation based on membership tier
+   - Updated totals with discount applied
+6. **Proceed to Checkout** to complete the order with discounts applied
+
+### Configuration
+
+The agentic checkout uses the same Azure OpenAI connection as the AI search feature:
+
+```bash
+# Set up User Secrets for the Store project
+cd src/Store
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-azure-openai-connection-string"
+```
+
+The connection string format should be:
+```
+Endpoint=https://your-resource.openai.azure.com;Key=your-api-key
+```
+
+### Fallback Mode
+
+If Azure OpenAI is not configured or unavailable:
+- The application still works in **standard mode**
+- Discounts are computed using deterministic fallback logic
+- UI displays a message indicating "standard mode"
+
+### Project Structure for Agents
+
+```
+src/AgentServices/              # Agent services library
+├── Configuration/              # Agent settings
+│   └── AgentSettings.cs
+├── Checkout/                   # Checkout orchestration
+│   ├── AgentCheckoutOrchestrator.cs
+│   └── IAgentCheckoutOrchestrator.cs
+├── Discount/                   # Discount agent
+│   ├── DiscountAgentService.cs
+│   └── IDiscountAgentService.cs
+├── Stock/                      # Stock agent
+│   ├── StockAgentService.cs
+│   └── IStockAgentService.cs
+└── Models/                     # Agent DTOs
+    ├── CheckoutModels.cs
+    ├── DiscountModels.cs
+    └── StockModels.cs
+```
+
+### Key Code Locations for Demo
+
+- **Agent orchestration**: `src/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
+- **Discount AI logic**: `src/AgentServices/Discount/DiscountAgentService.cs`
+- **Cart UI with agents**: `src/Store/Components/Pages/CartPage.razor`
+- **Checkout integration**: `src/Store/Services/CheckoutService.cs`
+
+Look for `// DEMO:` comments throughout the code to find key demo points.
 
 ---
 

@@ -4,8 +4,10 @@
 @using Store.Components.Cart
 @inject ICartService CartService
 @inject ICheckoutService CheckoutService
+@inject ICustomerService CustomerService
 @inject NavigationManager Navigation
 @attribute [StreamRendering(true)]
+@rendermode InteractiveServer
 
 <PageTitle>Checkout</PageTitle>
 
@@ -16,6 +18,20 @@
     </button>
 </div>
 
+@* DEMO: Current membership tier display *@
+@{
+    var currentCustomer = CustomerService.GetCurrentCustomer();
+}
+<div class="alert alert-info mb-4 d-flex align-items-center">
+    <i class="bi bi-person-badge me-2"></i>
+    <span>
+        Checking out as <strong>@currentCustomer.FullName</strong> 
+        <span class="badge @GetMembershipBadgeClass(currentCustomer.MembershipTier) ms-2">
+            @currentCustomer.MembershipTier Member
+        </span>
+    </span>
+</div>
+
 @if (isLoading)
 {
     <div class="text-center py-5">
@@ -23,6 +39,17 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-3">Loading checkout...</p>
+    </div>
+}
+else if (isApplyingAgents)
+{
+    @* DEMO: Show agent processing state *@
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Processing...</span>
+        </div>
+        <h4><i class="bi bi-robot me-2"></i>AI Agents Processing Your Order</h4>
+        <p class="text-muted">Our intelligent agents are checking stock and applying your membership discounts...</p>
     </div>
 }
 else if (shoppingCart.Items.Any())
@@ -100,13 +127,24 @@ else
 
 @code {
     private CartEntities.Cart shoppingCart = new();
-    private Customer customer = new();
+    private CartEntities.Customer customer = new();
     private bool isLoading = true;
     private bool isProcessing = false;
+    private bool isApplyingAgents = false;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCart();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && shoppingCart.Items.Any())
+        {
+            // DEMO: Automatically apply agentic checkout when entering checkout page
+            await ApplyAgentCheckout();
+        }
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task LoadCart()
@@ -126,7 +164,32 @@ else
         }
     }
 
-    private async Task ProcessOrder(Customer submittedCustomer)
+    // DEMO: Apply agentic checkout to compute discounts
+    private async Task ApplyAgentCheckout()
+    {
+        // Only apply if not already applied
+        if (shoppingCart.AgentSteps.Any())
+            return;
+            
+        try
+        {
+            isApplyingAgents = true;
+            StateHasChanged();
+            
+            shoppingCart = await CheckoutService.ApplyAgentCheckoutAsync(shoppingCart);
+        }
+        catch (Exception)
+        {
+            // Keep existing cart state on error
+        }
+        finally
+        {
+            isApplyingAgents = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ProcessOrder(CartEntities.Customer submittedCustomer)
     {
         try
         {
@@ -162,5 +225,15 @@ else
     private void ContinueShopping()
     {
         Navigation.NavigateTo("/products");
+    }
+
+    private string GetMembershipBadgeClass(DataEntities.MembershipTier tier)
+    {
+        return tier switch
+        {
+            DataEntities.MembershipTier.Gold => "bg-warning text-dark",
+            DataEntities.MembershipTier.Silver => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
     }
 }

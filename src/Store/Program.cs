@@ -2,6 +2,8 @@ using Store.Components;
 using Store.Services;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Diagnostics;
+using AgentServices;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,22 @@ builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddHttpClient<IProductService, ProductService>(
     static client => client.BaseAddress = new("http://products"));
 
+// DEMO: Configure Azure OpenAI for agentic checkout
+var microsoftFoundryConnectionName = "microsoftfoundry";
+var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "gpt-5-mini";
+
+builder.AddAzureOpenAIClient(connectionName: microsoftFoundryConnectionName,
+    configureSettings: settings =>
+    {
+        if (string.IsNullOrEmpty(settings.Key))
+        {
+            settings.Credential = new DefaultAzureCredential();
+        }
+    }).AddChatClient(chatDeploymentName);
+
+// DEMO: Register Agent Services for agentic checkout
+builder.Services.AddAgentServices(builder.Configuration);
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -29,6 +47,7 @@ builder.Services.AddRazorComponents()
 var app = builder.Build();
 
 app.Logger.LogInformation("Store app built. Environment: {Environment}", app.Environment.EnvironmentName);
+app.Logger.LogInformation("DEMO: Agentic checkout services registered with chat deployment: {ChatDeployment}", chatDeploymentName);
 
 // aspire map default endpoints
 app.MapDefaultEndpoints();

@@ -1,4 +1,6 @@
 using CartEntities;
+using AgentServices.Checkout;
+using AgentServices.Models;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Text.Json;
 
@@ -7,16 +9,71 @@ namespace Store.Services;
 public class CheckoutService : ICheckoutService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
+    private readonly IAgentCheckoutOrchestrator _agentOrchestrator;
+    private readonly ICustomerService _customerService;
     private readonly ILogger<CheckoutService> _logger;
     private const string OrderSessionKey = "orders";
 
-    public CheckoutService(ProtectedSessionStorage sessionStorage, ILogger<CheckoutService> logger)
+    public CheckoutService(
+        ProtectedSessionStorage sessionStorage,
+        IAgentCheckoutOrchestrator agentOrchestrator,
+        ICustomerService customerService,
+        ILogger<CheckoutService> logger)
     {
         _sessionStorage = sessionStorage;
+        _agentOrchestrator = agentOrchestrator;
+        _customerService = customerService;
         _logger = logger;
     }
 
-    public async Task<Order> ProcessOrderAsync(Customer customer, Cart cart)
+    // DEMO: Apply agentic checkout with discount computation
+    public async Task<Cart> ApplyAgentCheckoutAsync(Cart cart)
+    {
+        try
+        {
+            _logger.LogInformation("DEMO: Starting agentic checkout for cart with {ItemCount} items", cart.ItemCount);
+            
+            var currentCustomer = _customerService.GetCurrentCustomer();
+            _logger.LogInformation("DEMO: Current customer tier: {Tier}", currentCustomer.MembershipTier);
+
+            var request = new AgentCheckoutRequest
+            {
+                Cart = cart,
+                MembershipTier = currentCustomer.MembershipTier
+            };
+
+            var result = await _agentOrchestrator.ProcessCheckoutAsync(request);
+
+            // Update cart with agent results
+            cart.DiscountAmount = result.DiscountAmount;
+            cart.DiscountReason = result.DiscountReason;
+            cart.AgentSteps = result.AgentSteps;
+
+            _logger.LogInformation("DEMO: Agentic checkout completed - Discount: {Discount:C}, Reason: {Reason}",
+                result.DiscountAmount, result.DiscountReason);
+
+            return cart;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "DEMO: Agentic checkout failed, returning cart without discount");
+            cart.DiscountAmount = 0;
+            cart.DiscountReason = "Checkout running in standard mode";
+            cart.AgentSteps = new List<AgentStep>
+            {
+                new AgentStep
+                {
+                    Name = "Orchestrator",
+                    Status = "Warning",
+                    Message = "Agent checkout unavailable, using standard mode",
+                    Timestamp = DateTime.UtcNow
+                }
+            };
+            return cart;
+        }
+    }
+
+    public async Task<Order> ProcessOrderAsync(CartEntities.Customer customer, Cart cart)
     {
         try
         {
@@ -30,10 +87,17 @@ public class CheckoutService : ICheckoutService
                 Subtotal = cart.Subtotal,
                 Tax = cart.Tax,
                 Total = cart.Total,
-                Status = "Confirmed"
+                Status = "Confirmed",
+                // DEMO: Include discount information from agentic checkout
+                DiscountAmount = cart.DiscountAmount,
+                DiscountReason = cart.DiscountReason,
+                TotalAfterDiscount = cart.TotalAfterDiscount,
+                AgentSteps = cart.AgentSteps
             };
 
             await SaveOrderAsync(order);
+            _logger.LogInformation("DEMO: Order {OrderNumber} created with discount: {Discount:C}", 
+                order.OrderNumber, order.DiscountAmount);
             return order;
         }
         catch (Exception ex)

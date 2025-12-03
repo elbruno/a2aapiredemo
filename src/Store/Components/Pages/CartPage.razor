@@ -3,6 +3,8 @@
 @using Store.Services
 @using Store.Components.Cart
 @inject ICartService CartService
+@inject ICheckoutService CheckoutService
+@inject ICustomerService CustomerService
 @inject NavigationManager Navigation
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
@@ -14,6 +16,28 @@
     <button class="btn btn-outline-secondary" @onclick="ContinueShopping">
         <i class="bi bi-arrow-left me-1"></i>Continue Shopping
     </button>
+</div>
+
+@* DEMO: Current membership tier display *@
+@{
+    var currentCustomer = CustomerService.GetCurrentCustomer();
+}
+<div class="alert alert-info mb-4 d-flex align-items-center">
+    <i class="bi bi-person-badge me-2"></i>
+    <span>
+        Shopping as <strong>@currentCustomer.FullName</strong> 
+        <span class="badge @GetMembershipBadgeClass(currentCustomer.MembershipTier) ms-2">
+            @currentCustomer.MembershipTier Member
+        </span>
+        @if (currentCustomer.MembershipTier == DataEntities.MembershipTier.Gold)
+        {
+            <span class="text-success ms-2"><i class="bi bi-tag-fill"></i> 20% discount eligible</span>
+        }
+        else if (currentCustomer.MembershipTier == DataEntities.MembershipTier.Silver)
+        {
+            <span class="text-primary ms-2"><i class="bi bi-tag-fill"></i> 10% discount eligible</span>
+        }
+    </span>
 </div>
 
 @if (isLoading)
@@ -78,8 +102,20 @@ else if (shoppingCart.Items.Any())
         
         <div class="col-lg-4">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Order Summary</h5>
+                    @* DEMO: Apply agent checkout button *@
+                    <button class="btn btn-sm btn-outline-primary" @onclick="ApplyAgentCheckout" disabled="@isApplyingAgents">
+                        @if (isApplyingAgents)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-robot me-1"></i>
+                        }
+                        Apply AI Discount
+                    </button>
                 </div>
                 <div class="card-body">
                     <CartSummary cart="shoppingCart" />
@@ -110,6 +146,7 @@ else
 @code {
     private CartEntities.Cart shoppingCart = new();
     private bool isLoading = true;
+    private bool isApplyingAgents = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,6 +179,27 @@ else
         finally
         {
             isLoading = false;
+        }
+    }
+
+    // DEMO: Apply agentic checkout to compute discounts
+    private async Task ApplyAgentCheckout()
+    {
+        try
+        {
+            isApplyingAgents = true;
+            StateHasChanged();
+            
+            shoppingCart = await CheckoutService.ApplyAgentCheckoutAsync(shoppingCart);
+        }
+        catch (Exception)
+        {
+            // Keep existing cart state on error
+        }
+        finally
+        {
+            isApplyingAgents = false;
+            StateHasChanged();
         }
     }
 
@@ -185,5 +243,15 @@ else
     private void ProceedToCheckout()
     {
         Navigation.NavigateTo("/checkout");
+    }
+
+    private string GetMembershipBadgeClass(DataEntities.MembershipTier tier)
+    {
+        return tier switch
+        {
+            DataEntities.MembershipTier.Gold => "bg-warning text-dark",
+            DataEntities.MembershipTier.Silver => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
     }
 }
