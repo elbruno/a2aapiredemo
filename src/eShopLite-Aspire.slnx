@@ -8,6 +8,7 @@
     <Project Path="Store/Store.csproj" />
   </Folder>
   <Folder Name="/3 Models/">
+    <Project Path="AgentServices/AgentServices.csproj" />
     <Project Path="CartEntities/CartEntities.csproj" />
     <Project Path="DataEntities/DataEntities.csproj" />
     <Project Path="SearchEntities/SearchEntities.csproj" />
