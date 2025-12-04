@@ -1,4 +1,5 @@
 @using CartEntities
+@using Microsoft.JSInterop
 @inject IJSRuntime JS
 
 <div class="cart-summary">
@@ -119,9 +120,10 @@
         {
             await JS.InvokeVoidAsync("renderMermaid", mermaidElementId, cart.WorkFlowMermaid);
         }
-        catch
+        catch (JSException)
         {
-            // Silently fail if Mermaid rendering fails
+            // Mermaid rendering can fail during prerendering or if JS is unavailable
+            // This is expected in some scenarios and can be safely ignored
         }
     }
 }

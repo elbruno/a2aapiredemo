@@ -47,8 +47,8 @@ public class StockAgentService
     public async Task<StockCheckResult> CheckStockAsync(StockCheckRequest request)
     {
         var locationInfo = request.LocationId.HasValue 
-            ? $" at location {request.LocationId}" 
-            : " (all locations)";
+            ? $" at location ID {request.LocationId}" 
+            : " across all locations";
         
         _logger.LogInformation("DEMO: {AgentName} starting - Checking {ItemCount} items{LocationInfo}", 
             AgentName, request.Items.Count, locationInfo);
