@@ -8,22 +8,11 @@ using Microsoft.Extensions.Logging;
 namespace AgentServices.Checkout;
 
 /// <summary>
-/// TODO: DEMO START POINT - Agent Checkout Orchestrator
-/// 
-/// This is the starting point for the agentic demo. Implement the multi-agent
-/// checkout workflow that coordinates StockAgent and DiscountAgent.
-/// 
-/// INSTRUCTIONS:
-/// 1. Create a ProcessCheckoutAsync method that:
-///    - Step 1: Runs the StockAgent to validate stock availability
-///    - Step 2: Runs the DiscountAgent to compute membership discounts
-///    - Returns combined results with agent step logs
-/// 
-/// 2. Log each agent step with status (Success, Warning, Error)
-/// 
-/// 3. Handle errors gracefully - continue with fallback values if an agent fails
-/// 
-/// See src-complete for the full implementation.
+/// DEMO: Agent Checkout Orchestrator
+/// Coordinates the multi-agent checkout workflow:
+/// 1. StockAgent → validates availability
+/// 2. DiscountAgent → applies tier-based discount
+/// 3. Returns combined result with agent steps log
 /// </summary>
 public class AgentCheckoutOrchestrator : IAgentCheckoutOrchestrator
 {
@@ -45,41 +34,144 @@ public class AgentCheckoutOrchestrator : IAgentCheckoutOrchestrator
     }
 
     /// <summary>
-    /// TODO: Implement the multi-agent checkout workflow.
-    /// Currently returns a basic result without agent processing - implement the orchestration here.
+    /// DEMO: Execute the multi-agent checkout workflow.
     /// </summary>
-    public Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
+    public async Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
     {
-        _logger.LogInformation("TODO: Agent checkout orchestrator not implemented");
-        _logger.LogInformation("Membership tier: {Tier}, Cart subtotal: {Subtotal:C}", 
+        _logger.LogInformation("DEMO: Starting agentic checkout pipeline");
+        _logger.LogInformation("DEMO: Membership tier: {Tier}, Cart subtotal: {Subtotal:C}", 
             request.MembershipTier, request.Cart.Subtotal);
 
-        // TODO: Implement the following:
-        // 1. Step 1: Call _stockAgent.CheckStockAsync() to validate stock
-        // 2. Step 2: Call _discountAgent.ComputeDiscountAsync() to compute discount
-        // 3. Build AgentSteps list to track the pipeline execution
-        // 4. Return AgentCheckoutResult with all computed values
-
-        // Placeholder: Return basic result without discounts (implement agent logic above)
         var result = new AgentCheckoutResult
         {
             Subtotal = request.Cart.Subtotal,
-            DiscountAmount = 0,
-            DiscountReason = "Agent checkout not implemented",
-            TotalAfterDiscount = request.Cart.Subtotal,
-            AgentSteps = new List<AgentStep>
-            {
-                new AgentStep
-                {
-                    Name = "Orchestrator",
-                    Status = "Warning",
-                    Message = "Agent orchestration not implemented - checkout running in basic mode",
-                    Timestamp = DateTime.UtcNow
-                }
-            },
-            Success = true
+            AgentSteps = new List<AgentStep>()
         };
 
-        return Task.FromResult(result);
+        try
+        {
+            // DEMO: Step 1 - Stock Agent
+            _logger.LogInformation("DEMO: Step 1 - Running StockAgent");
+            var stockStep = await RunStockAgent(request);
+            result.AgentSteps.Add(stockStep);
+
+            if (stockStep.Status == "Error")
+            {
+                result.Success = false;
+                result.ErrorMessage = stockStep.Message;
+                return result;
+            }
+
+            // DEMO: Step 2 - Discount Agent
+            _logger.LogInformation("DEMO: Step 2 - Running DiscountAgent");
+            var discountStep = await RunDiscountAgent(request, result);
+            result.AgentSteps.Add(discountStep);
+
+            // Finalize result
+            result.Success = true;
+            _logger.LogInformation("DEMO: Agentic checkout completed successfully");
+            _logger.LogInformation("DEMO: Final - Subtotal: {Subtotal:C}, Discount: {Discount:C}, Total: {Total:C}",
+                result.Subtotal, result.DiscountAmount, result.TotalAfterDiscount);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "DEMO: Agentic checkout pipeline failed");
+            
+            result.AgentSteps.Add(new AgentStep
+            {
+                Name = "Orchestrator",
+                Status = "Error",
+                Message = $"Checkout failed: {ex.Message}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            // Fallback to no discount
+            result.DiscountAmount = 0;
+            result.DiscountReason = "Checkout running in standard mode (agent unavailable)";
+            result.TotalAfterDiscount = result.Subtotal;
+            result.Success = false;
+            result.ErrorMessage = ex.Message;
+
+            return result;
+        }
+    }
+
+    private async Task<AgentStep> RunStockAgent(AgentCheckoutRequest request)
+    {
+        var step = new AgentStep
+        {
+            Name = "StockAgent",
+            Timestamp = DateTime.UtcNow
+        };
+
+        try
+        {
+            var stockRequest = new StockCheckRequest
+            {
+                Items = request.Cart.Items
+            };
+
+            var stockResult = await _stockAgent.CheckStockAsync(stockRequest);
+
+            step.Status = stockResult.HasStockIssues ? "Warning" : "Success";
+            step.Message = stockResult.SummaryMessage;
+
+            _logger.LogInformation("DEMO: StockAgent completed - Status: {Status}", step.Status);
+        }
+        catch (Exception ex)
+        {
+            step.Status = "Error";
+            step.Message = $"Stock check failed: {ex.Message}";
+            _logger.LogError(ex, "DEMO: StockAgent failed");
+        }
+
+        return step;
+    }
+
+    private async Task<AgentStep> RunDiscountAgent(AgentCheckoutRequest request, AgentCheckoutResult result)
+    {
+        var step = new AgentStep
+        {
+            Name = "DiscountAgent",
+            Timestamp = DateTime.UtcNow
+        };
+
+        try
+        {
+            var discountRequest = new DiscountRequest
+            {
+                Tier = request.MembershipTier,
+                Items = request.Cart.Items,
+                Subtotal = result.Subtotal
+            };
+
+            var discountResult = await _discountAgent.ComputeDiscountAsync(discountRequest);
+
+            result.DiscountAmount = discountResult.DiscountAmount;
+            result.DiscountReason = discountResult.DiscountReason;
+            result.TotalAfterDiscount = discountResult.TotalAfterDiscount;
+
+            step.Status = discountResult.Success ? "Success" : "Warning";
+            step.Message = discountResult.DiscountReason;
+
+            _logger.LogInformation("DEMO: DiscountAgent completed - Discount: {Discount:C}", 
+                discountResult.DiscountAmount);
+        }
+        catch (Exception ex)
+        {
+            step.Status = "Error";
+            step.Message = $"Discount calculation failed: {ex.Message}";
+            
+            // Fallback
+            result.DiscountAmount = 0;
+            result.DiscountReason = "No discount applied (agent unavailable)";
+            result.TotalAfterDiscount = result.Subtotal;
+
+            _logger.LogError(ex, "DEMO: DiscountAgent failed");
+        }
+
+        return step;
     }
 }
