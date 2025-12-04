@@ -39,8 +39,9 @@ The application for the demo is the repo:
 |--------|---------|
 | `/src-01-start` | Baseline app with system prompt and helpers pre-defined (for Step 0 and Step 1) |
 | `/src-02-multiagent` | Complete implementation of StockAgent + Multi-Agent Workflow |
-| `/src-03-dependency-injection` | Full solution with DI registration and DevUI debugging support |
-| `/src-04-complete` | Reference implementation with all features |
+| `/src-03-dependency-injection` | Full solution with DI registration and observability patterns |
+| `/src-04-devui` | Agent Framework registration approach with DevUI debugging support |
+| `/src-05-complete` | Reference implementation with all features |
 | `/src-slides` | Python script for generating PowerPoint presentation |
 
 ### Baseline Features (Before Modernization)
@@ -231,7 +232,7 @@ Explain the cloud-deployed version:
 - Blazor + API interactions  
 - Understanding of agentic concepts: tools, reasoning, workflows  
 
-📖 **Additional Resources**: See [Complete Code Reference](04_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-04-complete`.
+📖 **Additional Resources**: See [Complete Code Reference](04_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-05-complete`.
 
 ---
 

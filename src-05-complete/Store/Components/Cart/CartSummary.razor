@@ -1,0 +1,77 @@
+@using CartEntities
+
+<div class="cart-summary">
+    <div class="d-flex justify-content-between mb-2">
+        <span>Subtotal:</span>
+        <span>@cart.Subtotal.ToString("C")</span>
+    </div>
+    
+    @* DEMO: Agentic checkout discount display *@
+    @if (cart.DiscountAmount > 0)
+    {
+        <div class="d-flex justify-content-between mb-2 text-success">
+            <span>Discount:</span>
+            <span>-@cart.DiscountAmount.ToString("C")</span>
+        </div>
+        @if (!string.IsNullOrEmpty(cart.DiscountReason))
+        {
+            <div class="mb-2">
+                <small class="text-muted fst-italic">@cart.DiscountReason</small>
+            </div>
+        }
+        <div class="d-flex justify-content-between mb-2">
+            <span>After Discount:</span>
+            <span>@cart.TotalAfterDiscount.ToString("C")</span>
+        </div>
+    }
+    
+    <div class="d-flex justify-content-between mb-2">
+        <span>Tax (8%):</span>
+        <span>@cart.Tax.ToString("C")</span>
+    </div>
+    <hr />
+    <div class="d-flex justify-content-between fw-bold">
+        <span>Total:</span>
+        <span>@cart.Total.ToString("C")</span>
+    </div>
+    
+    @* DEMO: Agent steps display for demo visibility *@
+    @if (cart.AgentSteps.Any())
+    {
+        <hr />
+        <div class="agent-steps mt-3">
+            <h6 class="mb-2">
+                <i class="bi bi-robot me-1"></i>Agent Steps
+            </h6>
+            @foreach (var step in cart.AgentSteps)
+            {
+                <div class="d-flex align-items-center mb-1">
+                    @if (step.Status == "Success")
+                    {
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    }
+                    else if (step.Status == "Warning")
+                    {
+                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                    }
+                    else if (step.Status == "Error")
+                    {
+                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-circle text-secondary me-2"></i>
+                    }
+                    <div>
+                        <strong class="small">@step.Name:</strong>
+                        <span class="small text-muted ms-1">@step.Message</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Cart cart { get; set; } = new();
+}

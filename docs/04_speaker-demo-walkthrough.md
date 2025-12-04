@@ -16,7 +16,8 @@ This document provides **detailed, step-by-step instructions** for the speaker t
 | 0 | `/src-01-start` | Show baseline app (no coding) |
 | 1 | `/src-01-start` | Live code: Replace `ComputeDiscountAsync` only (helpers pre-built) |
 | 2 | `/src-02-multiagent` | Open and explain pre-built multi-agent workflow |
-| 3 | `/src-03-dependency-injection` | Open and explain DI registration + DevUI |
+| 3 | `/src-03-dependency-injection` | Open and explain DI registration |
+| 4 | `/src-04-devui` | Open and explain Agent Framework registration + DevUI |
 
 ### Prerequisites
 
@@ -25,8 +26,8 @@ Before starting the live demo:
 1. ✅ Open `/src-01-start` in your IDE
 2. ✅ Verify the baseline app builds and runs: `dotnet run` from `eShopAppHost`
 3. ✅ Have Azure OpenAI / Microsoft Foundry connection configured
-4. ✅ Have `/src-02-multiagent` and `/src-03-dependency-injection` ready to open for quick transitions
-5. ✅ Open `/src-04-complete` in a separate window for reference (if needed)
+4. ✅ Have `/src-02-multiagent`, `/src-03-dependency-injection`, and `/src-04-devui` ready to open for quick transitions
+5. ✅ Open `/src-05-complete` in a separate window for reference (if needed)
 
 ---
 
@@ -265,14 +266,67 @@ app.Logger.LogInformation("DEMO Step 3: Agent services registered via DI with sc
 
 > "This pattern is essential for production-grade agent applications."
 
-### Note on DevUI (Optional)
+---
 
-For more advanced debugging, the Microsoft Agent Framework provides DevUI (`Microsoft.Agents.AI.DevUI`), which offers:
-- Visual interface for agent debugging
-- Inspect agent reasoning and message flows
-- Test agent responses interactively
+## 🎯 Demo 4: DevUI for Agent Debugging (3 minutes)
 
-See the [Agent Framework documentation](https://github.com/microsoft/agent-framework) for DevUI setup details.
+### What to Do
+
+Open the `/src-04-devui` folder and show the advanced Agent Framework registration approach with DevUI integration.
+
+### Key Features to Highlight
+
+**1. DevUI Package Reference** (`src-04-devui/Store/Store.csproj`):
+
+```xml
+<!-- DEMO Step 4: DevUI package for agent debugging and visualization -->
+<PackageReference Include="Microsoft.Agents.AI.DevUI" Version="1.0.0-preview.251125.1" />
+```
+
+**2. DevUI Registration** (`src-04-devui/Store/Program.cs`):
+
+```csharp
+// DEMO Step 4: Add DevUI services for agent debugging in development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDevUI();
+    builder.Logging.SetMinimumLevel(LogLevel.Debug);
+}
+
+// ...
+
+// DEMO Step 4: Map DevUI endpoint for agent debugging in development
+if (app.Environment.IsDevelopment())
+{
+    app.MapDevUI();
+    app.Logger.LogInformation("DEMO Step 4: DevUI endpoint mapped at /devui for agent debugging");
+}
+```
+
+**3. Agent Framework Registration Pattern** (`src-04-devui/AgentServices/AgentServicesExtensions.cs`):
+
+```csharp
+// DEMO Step 4: Register agent services with scoped lifetime
+// This follows the Agent Framework pattern for agent registration
+services.AddScoped<IStockAgentService, StockAgentService>();
+services.AddScoped<IDiscountAgentService, DiscountAgentService>();
+services.AddScoped<IAgentCheckoutOrchestrator, AgentCheckoutOrchestrator>();
+```
+
+### Benefits to Demonstrate
+
+- **Visual Debugging**: DevUI provides a visual interface to inspect agent behavior
+- **Message Flows**: See the actual messages exchanged between agents and LLMs
+- **Interactive Testing**: Test agent responses directly from the DevUI interface
+- **Development Only**: DevUI is only enabled in Development environment for security
+
+### 💬 Key Messages to Say
+
+> "DevUI gives you a visual interface to debug and inspect your agents."
+
+> "Access DevUI at `/devui` when running in Development mode."
+
+> "This pattern follows the official Agent Framework samples."
 
 ---
 
@@ -283,7 +337,8 @@ See the [Agent Framework documentation](https://github.com/microsoft/agent-frame
 | `/src-01-start` | Baseline with pre-built system prompts and helpers for easy live coding |
 | `/src-02-multiagent` | Complete StockAgent + AgentCheckoutOrchestrator implementation |
 | `/src-03-dependency-injection` | Full solution with DI registration and observability patterns |
-| `/src-04-complete` | Reference implementation with all features |
+| `/src-04-devui` | Agent Framework registration approach with DevUI packages |
+| `/src-05-complete` | Reference implementation with all features |
 
 ---
 
@@ -293,7 +348,8 @@ For the complete implementation of each file, refer to:
 
 - `/src-02-multiagent` for multi-agent workflow
 - `/src-03-dependency-injection` for DI + observability patterns
-- `/src-04-complete` for full reference implementation
+- `/src-04-devui` for Agent Framework approach with DevUI
+- `/src-05-complete` for full reference implementation
 
 ---
 
@@ -304,7 +360,8 @@ For the complete implementation of each file, refer to:
 | Demo 0: Baseline | 3 min | Show app running (no coding) |
 | Demo 1: DiscountAgent | 5 min | Live code ComputeDiscountAsync only |
 | Demo 2: Multi-Agent | 4 min | Open `/src-02-multiagent`, walk through code |
-| Demo 3: DI + DevUI | 4 min | Open `/src-03-dependency-injection`, show DevUI |
+| Demo 3: DI + Observability | 4 min | Open `/src-03-dependency-injection`, show patterns |
+| Demo 4: DevUI | 3 min | Open `/src-04-devui`, show DevUI debugging |
 | **Total Coding Time** | **5 min** | Only Demo 1 requires live coding |
 
 > **Tip**: Practice the demo several times to ensure smooth transitions between folders.

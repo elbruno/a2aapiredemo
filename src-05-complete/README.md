@@ -20,7 +20,8 @@ This is part of a **multi-stage demo repository** for agentic modernization sess
 | [`/src-01-start`](../src-01-start) | Starting point - baseline app with TODOs for live coding |
 | [`/src-02-multiagent`](../src-02-multiagent) | Multi-agent workflow with StockAgent and DiscountAgent |
 | [`/src-03-dependency-injection`](../src-03-dependency-injection) | DI patterns and observability |
-| **`/src-04-complete`** | **This folder** - Full reference implementation |
+| [`/src-04-devui`](../src-04-devui) | Agent Framework registration with DevUI packages |
+| **`/src-05-complete`** | **This folder** - Full reference implementation |
 
 ---
 
@@ -101,7 +102,7 @@ This is part of a **multi-stage demo repository** for agentic modernization sess
 ## 📁 Project Structure
 
 ```
-src-04-complete/
+src-05-complete/
 ├── eShopLite-Aspire-Modernization.slnx  # Solution file
 │
 ├── eShopAppHost/             # .NET Aspire App Host (orchestration)
