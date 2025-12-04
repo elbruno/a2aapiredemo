@@ -1,9 +1,8 @@
 using System.Text.Json;
-using AgentServices.Configuration;
 using AgentServices.Models;
 using DataEntities;
 using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace AgentServices.Discount;
@@ -15,16 +14,15 @@ namespace AgentServices.Discount;
 /// </summary>
 public class DiscountAgentService : IDiscountAgentService
 {
-    private readonly IChatClient? _chatClient;
     private readonly ILogger<DiscountAgentService> _logger;
-    private readonly AgentSettings _settings;
+    private readonly AIAgent _discountAgent;
 
-    // DEMO: Agent name for identification in logs and debugging
-    private const string AgentName = "DiscountAgent";
+    // Agent name for identification in logs and debugging
+    public const string AgentName = "DiscountAgent";
 
-    // DEMO: Agent instructions (system prompt) for the discount agent
+    // Agent instructions (system prompt) for the discount agent
     // This defines the discount rules that the AI agent will follow
-    private const string AgentInstructions = """
+    public const string AgentInstructions = """
         You are an e-commerce pricing assistant.
         
         Rules:
@@ -45,13 +43,11 @@ public class DiscountAgentService : IDiscountAgentService
         """;
 
     public DiscountAgentService(
-        IChatClient? chatClient,
-        AgentSettings settings,
+        IServiceProvider serviceProvider,
         ILogger<DiscountAgentService> logger)
     {
-        _chatClient = chatClient;
-        _settings = settings;
         _logger = logger;
+        _discountAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(AgentName);
     }
 
     /// <summary>
@@ -65,7 +61,7 @@ public class DiscountAgentService : IDiscountAgentService
             AgentName, request.Tier, request.Subtotal);
 
         // If chat client is not available, use fallback deterministic logic
-        if (_chatClient == null || !_settings.AgentsEnabled)
+        if (_discountAgent == null)
         {
             _logger.LogWarning("DEMO: AI not available, using fallback discount logic");
             return ComputeFallbackDiscount(request);
@@ -73,12 +69,6 @@ public class DiscountAgentService : IDiscountAgentService
 
         try
         {
-            // DEMO: Create an AIAgent using Microsoft Agent Framework
-            // The agent encapsulates the system prompt (instructions) and agent identity
-            var discountAgent = _chatClient.CreateAIAgent(
-                instructions: AgentInstructions,
-                name: AgentName);
-
             // DEMO: Build the user message with cart context
             var itemsSummary = string.Join(", ", request.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
             var userMessage = $"""
@@ -94,7 +84,7 @@ public class DiscountAgentService : IDiscountAgentService
             // DEMO: Use the Agent Framework's RunAsync method
             // This is the key change from direct ChatClient calls - the agent handles 
             // conversation context, system prompts, and message formatting internally
-            var response = await discountAgent.RunAsync(userMessage);
+            var response = await _discountAgent.RunAsync(userMessage);
             var content = response.Text ?? "";
 
             _logger.LogInformation("DEMO: {AgentName} response: {Response}", AgentName, content);

@@ -1,10 +1,14 @@
-using Store.Components;
-using Store.Services;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Diagnostics;
 using AgentServices;
+using AgentServices.Checkout;
+using AgentServices.Discount;
+using AgentServices.Stock;
 using Azure.Identity;
 using Microsoft.Agents.AI.DevUI;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Extensions.AI;
+using Store.Components;
+using Store.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,39 +29,36 @@ builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddHttpClient<IProductService, ProductService>(
     static client => client.BaseAddress = new("http://products"));
 
-// DEMO Step 4: Configure Azure OpenAI for agentic checkout
+// Configure Azure OpenAI for agentic checkout
 var microsoftFoundryConnectionName = "microsoftfoundry";
 var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"] ?? "gpt-5-mini";
 
-builder.AddAzureOpenAIClient(connectionName: microsoftFoundryConnectionName,
+var openai = builder.AddAzureOpenAIClient(connectionName: microsoftFoundryConnectionName,
     configureSettings: settings =>
     {
         if (string.IsNullOrEmpty(settings.Key))
         {
             settings.Credential = new DefaultAzureCredential();
         }
-    }).AddChatClient(chatDeploymentName);
+    });
+openai.AddChatClient(chatDeploymentName)
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+    c.EnableSensitiveData = builder.Environment.IsDevelopment());
 
-// DEMO Step 4: Register Agent Services using the Agent Framework approach
-// This pattern is similar to how agents are registered in the AgentWebChat sample:
-// https://github.com/microsoft/agent-framework/blob/main/dotnet/samples/AgentWebChat/AgentWebChat.AgentHost/Program.cs
-// Benefits of this approach:
-// 1. Proper lifecycle management (scoped services per request)
-// 2. Centralized configuration via AgentSettings
-// 3. Integration with DevUI for agent debugging
-// 4. Support for OpenTelemetry tracing
-builder.Services.AddAgentServices(builder.Configuration);
+// Add Agent settings and agents
+builder.AddAgentSettings();
+builder.AddeShopLiteAIAgents();
 
-// DEMO Step 4: Add DevUI services for agent debugging in development
-// DevUI provides a visual interface to:
-// - Inspect agent reasoning and message flows
-// - Debug multi-agent workflows
-// - Test agent responses interactively
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDevUI();
-    builder.Logging.SetMinimumLevel(LogLevel.Debug);
-}
+// Add internal services for agents and orchestrator
+builder.Services.AddScoped<IStockAgentService, StockAgentService>();
+builder.Services.AddScoped<IDiscountAgentService, DiscountAgentService>();
+builder.Services.AddScoped<IAgentCheckoutOrchestrator, AgentCheckoutOrchestrator>();
+
+
+// Register services for OpenAI responses and conversations (also required for DevUI)
+builder.Services.AddOpenAIResponses();
+builder.Services.AddOpenAIConversations();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -65,21 +66,8 @@ builder.Services.AddRazorComponents()
 
 var app = builder.Build();
 
-app.Logger.LogInformation("Store app built. Environment: {Environment}", app.Environment.EnvironmentName);
-app.Logger.LogInformation("DEMO Step 4: Agentic checkout services registered with chat deployment: {ChatDeployment}", chatDeploymentName);
-app.Logger.LogInformation("DEMO Step 4: Agent services registered via DI with scoped lifetime for request isolation");
-
 // aspire map default endpoints
 app.MapDefaultEndpoints();
-app.Logger.LogInformation("Default endpoints mapped (health/alive in Development)");
-
-// DEMO Step 4: Map DevUI endpoint for agent debugging in development
-// Access at: https://localhost:[port]/devui when configured
-if (app.Environment.IsDevelopment())
-{
-    app.MapDevUI();
-    app.Logger.LogInformation("DEMO Step 4: DevUI endpoint mapped at /devui for agent debugging");
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -89,30 +77,17 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseStaticFiles();
 app.UseAntiforgery();
-
-// request logging middleware to understand blank page scenarios
-app.Use(async (context, next) =>
-{
-    var sw = Stopwatch.StartNew();
-    app.Logger.LogInformation("Handling request {Method} {Path}", context.Request.Method, context.Request.Path);
-    try
-    {
-        await next();
-        app.Logger.LogInformation("Completed request {Path} with {StatusCode} in {Elapsed}ms", context.Request.Path, context.Response.StatusCode, sw.ElapsedMilliseconds);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Error processing request {Path}", context.Request.Path);
-        throw;
-    }
-});
+app.UseStaticFiles();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-app.Logger.LogInformation("Razor components mapped, Home page should be available at '/'");
+
+if (builder.Environment.IsDevelopment())
+{
+    // Map DevUI endpoint to /devui
+    app.MapDevUI();
+}
 
 app.Logger.LogInformation("Starting Store app...");
 app.Run();

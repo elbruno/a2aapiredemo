@@ -2,26 +2,26 @@ using AgentServices.Configuration;
 using AgentServices.Models;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace AgentServices.Stock;
 
 /// <summary>
-/// DEMO: Stock Agent Service
+/// Stock Agent Service
 /// Uses Microsoft Agent Framework to validate stock availability and generate human-friendly summaries.
 /// For demo purposes, stock is always available (deterministic), but uses AI for friendly messages.
 /// </summary>
 public class StockAgentService : IStockAgentService
 {
-    private readonly IChatClient? _chatClient;
     private readonly ILogger<StockAgentService> _logger;
-    private readonly AgentSettings _settings;
+    private readonly AIAgent _stockAgent;
 
-    // DEMO: Agent name for identification in logs and debugging
-    private const string AgentName = "StockAgent";
+    // Agent name for identification in logs and debugging
+    public const string AgentName = "StockAgent";
 
-    // DEMO: Agent instructions (system prompt) for stock agent message generation
-    private const string AgentInstructions = """
+    // Agent instructions (system prompt) for stock agent message generation
+    public const string AgentInstructions = """
         You are a friendly e-commerce stock checker assistant.
         Given a list of items and their stock status, generate a brief, friendly summary message.
         Be concise and positive. If all items are available, say something like "Great news! All items are in stock and ready to ship."
@@ -30,17 +30,15 @@ public class StockAgentService : IStockAgentService
         """;
 
     public StockAgentService(
-        IChatClient? chatClient,
-        AgentSettings settings,
+        IServiceProvider serviceProvider,
         ILogger<StockAgentService> logger)
     {
-        _chatClient = chatClient;
-        _settings = settings;
         _logger = logger;
+        _stockAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(AgentName);
     }
 
     /// <summary>
-    /// DEMO: Check stock availability for cart items using Microsoft Agent Framework.
+    /// Check stock availability for cart items using Microsoft Agent Framework.
     /// For demo purposes, all items are considered in stock.
     /// </summary>
     public async Task<StockCheckResult> CheckStockAsync(StockCheckRequest request)
@@ -68,9 +66,9 @@ public class StockAgentService : IStockAgentService
     private async Task<string> GenerateSummaryMessage(StockCheckRequest request, StockCheckResult result)
     {
         // If AI is not available, use fallback message
-        if (_chatClient == null || !_settings.AgentsEnabled)
+        if (_stockAgent == null)
         {
-            _logger.LogDebug("DEMO: AI not available, using fallback stock message");
+            _logger.LogDebug("AI not available, using fallback stock message");
             return result.HasStockIssues 
                 ? "Some items have limited availability. Please review your cart."
                 : "All items are in stock and ready to ship!";
@@ -78,12 +76,6 @@ public class StockAgentService : IStockAgentService
 
         try
         {
-            // DEMO: Create an AIAgent using Microsoft Agent Framework
-            // The agent encapsulates the instructions and provides a clean abstraction
-            var stockAgent = _chatClient.CreateAIAgent(
-                instructions: AgentInstructions,
-                name: AgentName);
-
             var itemsList = string.Join("\n", request.Items.Select(i => $"- {i.Name} (Qty: {i.Quantity}): In Stock"));
             var userMessage = $"""
                 Items to check:
@@ -96,7 +88,7 @@ public class StockAgentService : IStockAgentService
             
             // DEMO: Use the Agent Framework's RunAsync method
             // This encapsulates the message building and response handling
-            var response = await stockAgent.RunAsync(userMessage);
+            var response = await _stockAgent.RunAsync(userMessage);
             var content = response.Text?.Trim() ?? "";
 
             if (!string.IsNullOrEmpty(content))

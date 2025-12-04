@@ -2,9 +2,15 @@ using AgentServices.Checkout;
 using AgentServices.Configuration;
 using AgentServices.Discount;
 using AgentServices.Stock;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenAI.Chat;
 
 namespace AgentServices;
 
@@ -23,47 +29,54 @@ namespace AgentServices;
 /// </summary>
 public static class AgentServicesExtensions
 {
-    /// <summary>
-    /// Registers all agent services for the agentic checkout demo.
-    /// 
-    /// This method demonstrates the Agent Framework approach to agent registration:
-    /// - Uses scoped lifetime for request-isolated agent instances
-    /// - Centralizes configuration binding
-    /// - Enables proper dependency injection for testing
-    /// - Supports DevUI integration for agent debugging
-    /// </summary>
-    public static IServiceCollection AddAgentServices(this IServiceCollection services, IConfiguration configuration)
+    public static WebApplicationBuilder AddAgentSettings(this WebApplicationBuilder builder)
     {
-        // DEMO Step 4: Register configuration with proper binding
         var settings = new AgentSettings();
-        configuration.GetSection(AgentSettings.SectionName).Bind(settings);
-        
+        builder.Configuration.GetSection(AgentSettings.SectionName).Bind(settings);
+
         // Also check for connection string directly if not in AgentSettings section
         if (string.IsNullOrEmpty(settings.MicrosoftFoundryConnectionString))
         {
-            settings.MicrosoftFoundryConnectionString = configuration.GetConnectionString("microsoftfoundry");
+            settings.MicrosoftFoundryConnectionString = builder.Configuration.GetConnectionString("microsoftfoundry");
         }
 
         // Get deployment name from configuration
-        var chatDeploymentName = configuration["AI_ChatDeploymentName"];
+        var chatDeploymentName = builder.Configuration["AI_ChatDeploymentName"];
         if (!string.IsNullOrEmpty(chatDeploymentName))
         {
             settings.ChatDeploymentName = chatDeploymentName;
         }
 
         // Register settings as singleton (configuration doesn't change at runtime)
-        services.AddSingleton(settings);
+        builder.Services.AddSingleton(settings);
 
-        // DEMO Step 4: Register agent services with scoped lifetime
-        // This follows the Agent Framework pattern for agent registration:
-        // - Each HTTP request gets its own agent instance
-        // - Agent state is isolated between requests
-        // - Proper disposal of resources
-        // - Works with DevUI for debugging and visualization
-        services.AddScoped<IStockAgentService, StockAgentService>();
-        services.AddScoped<IDiscountAgentService, DiscountAgentService>();
-        services.AddScoped<IAgentCheckoutOrchestrator, AgentCheckoutOrchestrator>();
+        return builder;
+    }
 
-        return services;
+    public static WebApplicationBuilder AddeShopLiteAIAgents(this WebApplicationBuilder builder)
+    {
+        // add Discount Agent
+        builder.AddAIAgent(DiscountAgentService.AgentName, (sp, key) =>
+        {
+            // create agent
+            var chatClient = sp.GetRequiredService<IChatClient>();
+
+            return chatClient.CreateAIAgent(
+                name: DiscountAgentService.AgentName,
+                instructions: DiscountAgentService.AgentInstructions);
+        });
+
+        // add Stock Agent
+        builder.AddAIAgent(StockAgentService.AgentName, (sp, key) =>
+        {
+            // create agent
+            var chatClient = sp.GetRequiredService<IChatClient>();
+
+            return chatClient.CreateAIAgent(
+                name: StockAgentService.AgentName,
+                instructions: StockAgentService.AgentInstructions);
+        });
+
+        return builder;
     }
 }
