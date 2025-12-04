@@ -19,7 +19,7 @@ All of this is shown using a working sample app (eShop Lite), which evolves from
 
 The audience must leave understanding:
 
-✔ What “agentic modernization” means  
+✔ What "agentic modernization" means  
 ✔ How agents can replace rigid business rules  
 ✔ How to apply these techniques to existing .NET applications  
 ✔ How Aspire helps orchestrate an AI‑enabled architecture  
@@ -58,7 +58,7 @@ This is the narrative presented to the audience.
 
 ## 🌟 Pitch Summary
 
-> _“Today we’re taking a simple .NET Aspire app and evolving it into an intelligent, agent‑powered solution. Instead of hardcoded pricing rules, rigid validations, and if-else forests, we’ll use agents that can reason, validate, apply business logic, and collaborate through a workflow.”_
+> _"Today we're taking a simple .NET Aspire app and evolving it into an intelligent, agent‑powered solution. Instead of hardcoded pricing rules, rigid validations, and if-else forests, we'll use agents that can reason, validate, apply business logic, and collaborate through a workflow."_
 
 The transformation is incremental:
 
@@ -80,16 +80,16 @@ The transformation is incremental:
 
 # ⏱️ 4. Demo Timeline (25–30 minutes)
 
-| Segment | Duration | Description |
-|--------|----------|-------------|
-| Intro: Modernization landscape | 2 min | Why apps need intelligent behavior; what agentic modernization solves |
-| Demo 1: Baseline eShop Lite | 3 min | Show app working today: browse, search, cart, checkout |
-| Concepts: What are agents? | 2 min | Agent reasoning, tools, workflows, and why they simplify business logic |
-| Demo 2: Add DiscountAgent | 5 min | First live-coded feature: tier-based discounts |
-| Concepts: Multi-agent orchestration | 3 min | Stock agent, discount agent, cart agent |
-| Demo 3: Multi-agent checkout workflow | 4 min | Show agent steps, final totals, collaboration |
-| Cloud: Foundry + Agent Framework | 2–3 min | Explain optional production architecture |
-| Closing: Key lessons + call to action | 2 min | Summarize benefits + encourage adoption |
+| Segment | Duration | Description | Demo Code Reference |
+|--------|----------|-------------|---------------------|
+| Intro: Modernization landscape | 2 min | Why apps need intelligent behavior; what agentic modernization solves | - |
+| Demo 1: Baseline eShop Lite | 3 min | Show app working today: browse, search, cart, checkout | [Prerequisites](03_speaker-demo-walkthrough.md#prerequisites) |
+| Concepts: What are agents? | 2 min | Agent reasoning, tools, workflows, and why they simplify business logic | - |
+| Demo 2: Add DiscountAgent | 5 min | First live-coded feature: tier-based discounts | [Demo 1: Implement the DiscountAgent](03_speaker-demo-walkthrough.md#-demo-1-implement-the-discountagent-5-minutes) |
+| Concepts: Multi-agent orchestration | 3 min | Stock agent, discount agent, cart agent | - |
+| Demo 3: Multi-agent checkout workflow | 4 min | Show agent steps, final totals, collaboration | [Demo 2: Implement the StockAgent](03_speaker-demo-walkthrough.md#-demo-2-implement-the-stockagent-3-minutes) and [Demo 3: Implement the AgentCheckoutOrchestrator](03_speaker-demo-walkthrough.md#-demo-3-implement-the-agentcheckoutorchestrator-4-minutes) |
+| Cloud: Foundry + Agent Framework | 2–3 min | Explain optional production architecture | - |
+| Closing: Key lessons + call to action | 2 min | Summarize benefits + encourage adoption | - |
 
 Total: **25–30 minutes**
 
@@ -105,10 +105,12 @@ Total: **25–30 minutes**
 - Add product to cart  
 - Checkout → simple subtotal only  
 
+📖 **Code Implementation Guide**: See [Prerequisites](03_speaker-demo-walkthrough.md#prerequisites) for setup instructions.
+
 ### Key Messages
-- “This is where most .NET apps are today.”
-- “It works, but logic is rigid.”
-- “Let’s modernize without rewriting everything.”
+- "This is where most .NET apps are today."
+- "It works, but logic is rigid."
+- "Let's modernize without rewriting everything."
 
 ---
 
@@ -121,9 +123,17 @@ You or Copilot will add:
   - DiscountAmount  
   - DiscountReason  
 
+📖 **Code Implementation Guide**: Follow the step-by-step instructions in [Demo 1: Implement the DiscountAgent](03_speaker-demo-walkthrough.md#-demo-1-implement-the-discountagent-5-minutes).
+
+**Steps to follow during demo**:
+1. [Add the System Prompt](03_speaker-demo-walkthrough.md#step-11-add-the-system-prompt)
+2. [Replace the ComputeDiscountAsync Method](03_speaker-demo-walkthrough.md#step-12-replace-the-computediscountasync-method)
+3. [Add Helper Methods](03_speaker-demo-walkthrough.md#step-13-add-helper-methods)
+4. [Add Required Using Statements](03_speaker-demo-walkthrough.md#step-14-add-required-using-statements)
+
 ### Key Messages
-- “We didn’t write if-else logic.”
-- “We only described intent — the agent produced the business rule.”
+- "We didn't write if-else logic."
+- "We only described intent — the agent produced the business rule."
 
 ---
 
@@ -141,9 +151,25 @@ Update UI to display:
 - Validation messages  
 - Calculated totals  
 
+📖 **Code Implementation Guide**: 
+- Follow [Demo 2: Implement the StockAgent](03_speaker-demo-walkthrough.md#-demo-2-implement-the-stockagent-3-minutes) for the StockAgent implementation.
+- Follow [Demo 3: Implement the AgentCheckoutOrchestrator](03_speaker-demo-walkthrough.md#-demo-3-implement-the-agentcheckoutorchestrator-4-minutes) for the orchestrator implementation.
+
+**Steps to follow during demo**:
+
+**StockAgent**:
+1. [Add the System Prompt](03_speaker-demo-walkthrough.md#step-21-add-the-system-prompt)
+2. [Replace the CheckStockAsync Method](03_speaker-demo-walkthrough.md#step-22-replace-the-checkstockasync-method)
+3. [Add the GenerateSummaryMessage Method](03_speaker-demo-walkthrough.md#step-23-add-the-generatesummarymessage-method)
+
+**AgentCheckoutOrchestrator**:
+1. [Replace the ProcessCheckoutAsync Method](03_speaker-demo-walkthrough.md#step-31-replace-the-processcheckoutasync-method)
+2. [Add the RunStockAgent Method](03_speaker-demo-walkthrough.md#step-32-add-the-runstockagent-method)
+3. [Add the RunDiscountAgent Method](03_speaker-demo-walkthrough.md#step-33-add-the-rundiscountagent-method)
+
 ### Key Messages
-- “Each agent does one job.”
-- “This architecture is maintainable and easily replaced.”
+- "Each agent does one job."
+- "This architecture is maintainable and easily replaced."
 
 ---
 
@@ -165,6 +191,8 @@ Explain the cloud-deployed version:
 - Blazor + API interactions  
 - Understanding of agentic concepts: tools, reasoning, workflows  
 
+📖 **Additional Resources**: See [Complete Code Reference](03_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-complete`.
+
 ---
 
 # 🧭 7. Live Demo Tips
@@ -174,13 +202,15 @@ Explain the cloud-deployed version:
 - Reinforce incremental modernization  
 - Keep Foundry section optional  
 
+📖 **Troubleshooting**: If you encounter issues during the demo, refer to the [Troubleshooting](03_speaker-demo-walkthrough.md#-troubleshooting) section.
+
 ---
 
 # 🎤 8. Closing Script
 
-> _“This session showed how any .NET app — even a simple store — can evolve using agents.  
-> You don’t need a big rewrite, just smart components that reason and collaborate.  
-> .NET Aspire, Azure AI Foundry, and Microsoft Agent Framework give developers a clear path to intelligent modernization.”_
+> _"This session showed how any .NET app — even a simple store — can evolve using agents.  
+> You don't need a big rewrite, just smart components that reason and collaborate.  
+> .NET Aspire, Azure AI Foundry, and Microsoft Agent Framework give developers a clear path to intelligent modernization."_
 
 ---
 
