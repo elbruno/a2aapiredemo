@@ -15,7 +15,7 @@ This repository demonstrates a modern cloud-native e-commerce application using 
 
 This repository is structured for a **30-minute agentic modernization live session** with two parallel folders:
 
-### 🏁 `/src-start` - Starting Point
+### 🏁 `/src-01-start` - Starting Point
 
 A **minimal, fully building** version of the app **without agents implemented**:
 - eShop Lite baseline features (products, cart, checkout)
@@ -24,7 +24,7 @@ A **minimal, fully building** version of the app **without agents implemented**:
 - Membership tier selector (UI present, but non-functional)
 - **Agent logic replaced with clear TODO instructions** for live coding
 
-### ✅ `/src-complete` - Complete Solution
+### ✅ `/src-04-complete` - Complete Solution
 
 The **fully implemented agentic solution**:
 - DiscountAgent (AI-powered membership discounts)
@@ -52,7 +52,7 @@ This repository includes comprehensive documentation for presenters delivering t
 
 1. **Before the event**: Review [session-delivery-guide.md](docs/session-delivery-guide.md) for the complete session narrative
 2. **During the demo**: Follow [03_speaker-demo-walkthrough.md](docs/03_speaker-demo-walkthrough.md) for step-by-step code changes
-3. **Reference**: Keep `/src-complete` open as a fallback reference
+3. **Reference**: Keep `/src-04-complete` open as a fallback reference
 
 ---
 
@@ -92,8 +92,8 @@ This repository includes comprehensive documentation for presenters delivering t
    ```
 
 3. **Choose your starting point**
-   - For the **complete solution** with agents: `cd src-complete`
-   - For the **demo starting point** (no agents): `cd src-start`
+   - For the **complete solution** with agents: `cd src-04-complete`
+   - For the **demo starting point** (no agents): `cd src-01-start`
 
 4. **Configure AI Connection (for AI-powered search)**
    
@@ -118,10 +118,10 @@ This repository includes comprehensive documentation for presenters delivering t
 
 ## 📁 Project Structure
 
-Both `/src-start` and `/src-complete` contain the same project structure:
+Both `/src-01-start` and `/src-04-complete` contain the same project structure:
 
 ```
-src-start/ or src-complete/
+src-01-start/ or src-04-complete/
 ├── eShopLite-Aspire-Modernization.slnx  # Solution file
 │
 ├── eShopAppHost/             # .NET Aspire App Host (orchestration)
@@ -157,7 +157,7 @@ src-start/ or src-complete/
 
 ### Key Differences Between Folders
 
-| File | src-start | src-complete |
+| File | src-01-start | src-04-complete |
 |------|-----------|--------------|
 | `AgentServices/Discount/DiscountAgentService.cs` | TODO stub | Full AI implementation |
 | `AgentServices/Stock/StockAgentService.cs` | TODO stub | Full AI implementation |
@@ -208,12 +208,12 @@ The application includes AI-powered capabilities:
 ## 🧪 Running Tests
 
 ```bash
-# Run all tests for src-complete
-cd src-complete
+# Run all tests for src-04-complete
+cd src-04-complete
 dotnet test
 
-# Run all tests for src-start
-cd src-start
+# Run all tests for src-01-start
+cd src-01-start
 dotnet test
 
 # Run specific test project
@@ -228,7 +228,7 @@ dotnet test Store.Tests/Store.Tests.csproj
 The application supports deployment to Azure using Azure Developer CLI (azd):
 
 ```bash
-cd src-complete/eShopAppHost
+cd src-04-complete/eShopAppHost
 azd up
 ```
 
@@ -238,7 +238,7 @@ This will provision:
 - Azure OpenAI with GPT-5-mini and text-embedding-3-small deployments
 - Azure Application Insights for monitoring
 
-For more details, see [src-complete/eShopAppHost/next-steps.md](src-complete/eShopAppHost/next-steps.md).
+For more details, see [src-04-complete/eShopAppHost/next-steps.md](src-04-complete/eShopAppHost/next-steps.md).
 
 ---
 
@@ -294,7 +294,7 @@ The agentic checkout uses the same Azure OpenAI connection as the AI search feat
 
 ```bash
 # Set up User Secrets for the Store project
-cd src-complete/Store
+cd src-04-complete/Store
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-azure-openai-connection-string"
 ```
@@ -314,8 +314,8 @@ If Azure OpenAI is not configured or unavailable:
 ### Project Structure for Agents
 
 ```
-src-complete/AgentServices/     # Full implementation
-src-start/AgentServices/        # TODO stubs for live coding
+src-04-complete/AgentServices/     # Full implementation
+src-01-start/AgentServices/        # TODO stubs for live coding
 ├── Configuration/              # Agent settings
 │   └── AgentSettings.cs
 ├── Checkout/                   # Checkout orchestration
@@ -335,17 +335,17 @@ src-start/AgentServices/        # TODO stubs for live coding
 
 ### Key Code Locations for Demo
 
-**In `src-complete`** (reference implementation):
+**In `src-04-complete`** (reference implementation):
 - **Agent orchestration**: `AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
 - **Discount AI logic**: `AgentServices/Discount/DiscountAgentService.cs`
 - **Cart UI with agents**: `Store/Components/Pages/CartPage.razor`
 - **Checkout integration**: `Store/Services/CheckoutService.cs`
 
-**In `src-start`** (TODOs for live coding):
+**In `src-01-start`** (TODOs for live coding):
 - Each agent file contains detailed TODO instructions and comments
 - Look for `// TODO:` comments to find where to implement agent logic
 
-Look for `// DEMO:` comments in `src-complete` to find key demo points.
+Look for `// DEMO:` comments in `src-04-complete` to find key demo points.
 
 ### 📖 Live Coding Guide
 
