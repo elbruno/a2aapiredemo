@@ -1,6 +1,7 @@
 @using DataEntities
 @using Store.Services
 @inject ICustomerService CustomerService
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <div class="user-picker">
@@ -50,7 +51,9 @@
         CustomerService.SetCurrentCustomer(customerId);
         currentCustomer = CustomerService.GetCurrentCustomer();
         isDropdownOpen = false;
-        StateHasChanged();
+        
+        // Force page refresh to update all components with the new customer
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 
     private string GetMembershipClass()

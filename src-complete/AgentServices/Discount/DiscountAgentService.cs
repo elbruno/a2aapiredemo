@@ -112,13 +112,19 @@ public class DiscountAgentService : IDiscountAgentService
             {
                 var start = jsonContent.IndexOf("```json") + 7;
                 var end = jsonContent.IndexOf("```", start);
-                jsonContent = jsonContent.Substring(start, end - start).Trim();
+                if (end > start)
+                {
+                    jsonContent = jsonContent.Substring(start, end - start).Trim();
+                }
             }
             else if (jsonContent.Contains("```"))
             {
                 var start = jsonContent.IndexOf("```") + 3;
                 var end = jsonContent.IndexOf("```", start);
-                jsonContent = jsonContent.Substring(start, end - start).Trim();
+                if (end > start)
+                {
+                    jsonContent = jsonContent.Substring(start, end - start).Trim();
+                }
             }
 
             using var doc = JsonDocument.Parse(jsonContent);
