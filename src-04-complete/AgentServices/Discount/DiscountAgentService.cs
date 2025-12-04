@@ -2,6 +2,7 @@ using System.Text.Json;
 using AgentServices.Configuration;
 using AgentServices.Models;
 using DataEntities;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +11,7 @@ namespace AgentServices.Discount;
 /// <summary>
 /// DEMO: Discount Agent Service
 /// Uses Microsoft Agent Framework with Azure OpenAI to compute membership-based discounts.
+/// Demonstrates the AIAgent pattern for intent-driven business logic.
 /// </summary>
 public class DiscountAgentService : IDiscountAgentService
 {
@@ -17,8 +19,12 @@ public class DiscountAgentService : IDiscountAgentService
     private readonly ILogger<DiscountAgentService> _logger;
     private readonly AgentSettings _settings;
 
-    // DEMO: System prompt for the discount agent
-    private const string SystemPrompt = """
+    // DEMO: Agent name for identification in logs and debugging
+    private const string AgentName = "DiscountAgent";
+
+    // DEMO: System prompt (instructions) for the discount agent
+    // This defines the discount rules that the AI agent will follow
+    private const string AgentInstructions = """
         You are an e-commerce pricing assistant.
         
         Rules:
@@ -49,12 +55,14 @@ public class DiscountAgentService : IDiscountAgentService
     }
 
     /// <summary>
-    /// DEMO: Compute discount using the AI agent.
+    /// DEMO: Compute discount using the Microsoft Agent Framework AIAgent.
+    /// The AIAgent wraps the chat client and provides a higher-level abstraction
+    /// for building agentic applications with intent-driven logic.
     /// </summary>
     public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
     {
-        _logger.LogInformation("DEMO: DiscountAgent starting - Tier: {Tier}, Subtotal: {Subtotal:C}", 
-            request.Tier, request.Subtotal);
+        _logger.LogInformation("DEMO: {AgentName} starting - Tier: {Tier}, Subtotal: {Subtotal:C}", 
+            AgentName, request.Tier, request.Subtotal);
 
         // If chat client is not available, use fallback deterministic logic
         if (_chatClient == null || !_settings.AgentsEnabled)
@@ -65,6 +73,12 @@ public class DiscountAgentService : IDiscountAgentService
 
         try
         {
+            // DEMO: Create an AIAgent using Microsoft Agent Framework
+            // The agent encapsulates the system prompt (instructions) and agent identity
+            var discountAgent = _chatClient.CreateAIAgent(
+                instructions: AgentInstructions,
+                name: AgentName);
+
             // DEMO: Build the user message with cart context
             var itemsSummary = string.Join(", ", request.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
             var userMessage = $"""
@@ -75,29 +89,26 @@ public class DiscountAgentService : IDiscountAgentService
                 Calculate the discount based on the membership tier rules.
                 """;
 
-            // DEMO: Call the AI agent
-            var messages = new List<ChatMessage>
-            {
-                new(ChatRole.System, SystemPrompt),
-                new(ChatRole.User, userMessage)
-            };
-
-            _logger.LogInformation("DEMO: Sending request to DiscountAgent AI");
-            var response = await _chatClient.GetResponseAsync(messages);
+            _logger.LogInformation("DEMO: Sending request to {AgentName} via Agent Framework", AgentName);
+            
+            // DEMO: Use the Agent Framework's RunAsync method
+            // This is the key change from direct ChatClient calls - the agent handles 
+            // conversation context, system prompts, and message formatting internally
+            var response = await discountAgent.RunAsync(userMessage);
             var content = response.Text ?? "";
 
-            _logger.LogInformation("DEMO: DiscountAgent AI response: {Response}", content);
+            _logger.LogInformation("DEMO: {AgentName} response: {Response}", AgentName, content);
 
             // DEMO: Parse the JSON response
             var result = ParseAgentResponse(content, request.Subtotal);
-            _logger.LogInformation("DEMO: DiscountAgent computed - Amount: {Amount:C}, Reason: {Reason}", 
-                result.DiscountAmount, result.DiscountReason);
+            _logger.LogInformation("DEMO: {AgentName} computed - Amount: {Amount:C}, Reason: {Reason}", 
+                AgentName, result.DiscountAmount, result.DiscountReason);
 
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "DEMO: DiscountAgent error, using fallback");
+            _logger.LogError(ex, "DEMO: {AgentName} error, using fallback", AgentName);
             return ComputeFallbackDiscount(request);
         }
     }

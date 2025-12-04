@@ -8,7 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Use same AI packages as Products project -->
+    <!-- Microsoft Agent Framework packages -->
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251125.1" />
+    <!-- Additional AI packages -->
     <PackageReference Include="Azure.Identity" Version="1.14.1" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.0.1" />

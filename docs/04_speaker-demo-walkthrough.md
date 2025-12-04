@@ -76,12 +76,12 @@ Replace the entire `ComputeDiscountAsync` method with:
 
 ```csharp
 /// <summary>
-/// DEMO: Compute discount using the AI agent.
+/// DEMO: Compute discount using Microsoft Agent Framework's AIAgent.
 /// </summary>
 public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
 {
-    _logger.LogInformation("DEMO: DiscountAgent starting - Tier: {Tier}, Subtotal: {Subtotal:C}", 
-        request.Tier, request.Subtotal);
+    _logger.LogInformation("DEMO: {AgentName} starting - Tier: {Tier}, Subtotal: {Subtotal:C}", 
+        AgentName, request.Tier, request.Subtotal);
 
     // If chat client is not available, use fallback deterministic logic
     if (_chatClient == null || !_settings.AgentsEnabled)
@@ -92,6 +92,12 @@ public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
 
     try
     {
+        // DEMO: Create an AIAgent using Microsoft Agent Framework
+        // The agent encapsulates the system prompt (instructions) and agent identity
+        var discountAgent = _chatClient.CreateAIAgent(
+            instructions: AgentInstructions,
+            name: AgentName);
+
         // DEMO: Build the user message with cart context
         var itemsSummary = string.Join(", ", request.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
         var userMessage = $"""
@@ -102,29 +108,26 @@ public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
             Calculate the discount based on the membership tier rules.
             """;
 
-        // DEMO: Call the AI agent
-        var messages = new List<ChatMessage>
-        {
-            new(ChatRole.System, SystemPrompt),
-            new(ChatRole.User, userMessage)
-        };
-
-        _logger.LogInformation("DEMO: Sending request to DiscountAgent AI");
-        var response = await _chatClient.GetResponseAsync(messages);
+        _logger.LogInformation("DEMO: Sending request to {AgentName} via Agent Framework", AgentName);
+        
+        // DEMO: Use the Agent Framework's RunAsync method
+        // This is the key change from direct ChatClient calls - the agent handles 
+        // conversation context, system prompts, and message formatting internally
+        var response = await discountAgent.RunAsync(userMessage);
         var content = response.Text ?? "";
 
-        _logger.LogInformation("DEMO: DiscountAgent AI response: {Response}", content);
+        _logger.LogInformation("DEMO: {AgentName} response: {Response}", AgentName, content);
 
         // DEMO: Parse the JSON response
         var result = ParseAgentResponse(content, request.Subtotal);
-        _logger.LogInformation("DEMO: DiscountAgent computed - Amount: {Amount:C}, Reason: {Reason}", 
-            result.DiscountAmount, result.DiscountReason);
+        _logger.LogInformation("DEMO: {AgentName} computed - Amount: {Amount:C}, Reason: {Reason}", 
+            AgentName, result.DiscountAmount, result.DiscountReason);
 
         return result;
     }
     catch (Exception ex)
     {
-        _logger.LogError(ex, "DEMO: DiscountAgent error, using fallback");
+        _logger.LogError(ex, "DEMO: {AgentName} error, using fallback", AgentName);
         return ComputeFallbackDiscount(request);
     }
 }
@@ -140,9 +143,9 @@ public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
 
 ### 💬 Key Messages to Say
 
-> "Notice that the system prompt and helper methods were already defined. This lets us focus on the AI integration."
+> "Notice we're using Microsoft Agent Framework's `CreateAIAgent` and `RunAsync` pattern - this is the modern way to build agentic applications."
 
-> "We didn't write if-else logic. We only described intent — the agent produced the business rule."
+> "We didn't write if-else logic. We only described intent — the AIAgent produced the business rule."
 
 > "Notice the fallback logic — if AI is unavailable, the app still works with deterministic rules."
 
@@ -158,14 +161,23 @@ Instead of live coding, **open the `/src-02-multiagent` folder** and walk throug
 
 **StockAgentService** (`src-02-multiagent/AgentServices/Stock/StockAgentService.cs`):
 ```csharp
-// DEMO: System prompt for stock agent message generation
-private const string SystemPrompt = """
+// DEMO: Agent instructions for stock agent message generation
+private const string AgentInstructions = """
     You are a friendly e-commerce stock checker assistant.
     Given a list of items and their stock status, generate a brief, friendly summary message.
     Be concise and positive. If all items are available, say something like "Great news! All items are in stock and ready to ship."
     If there are issues, mention them briefly.
     Respond with just the summary message, no JSON or formatting.
     """;
+
+// Create agent with Microsoft Agent Framework
+var stockAgent = _chatClient.CreateAIAgent(
+    instructions: AgentInstructions,
+    name: AgentName);
+
+// Run the agent
+var response = await stockAgent.RunAsync(userMessage);
+var content = response.Text;
 ```
 
 **AgentCheckoutOrchestrator** (`src-02-multiagent/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`):

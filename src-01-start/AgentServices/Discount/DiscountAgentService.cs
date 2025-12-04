@@ -2,6 +2,7 @@ using System.Text.Json;
 using AgentServices.Configuration;
 using AgentServices.Models;
 using DataEntities;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +13,8 @@ namespace AgentServices.Discount;
 /// Uses Microsoft Agent Framework with Azure OpenAI to compute membership-based discounts.
 /// 
 /// This is the starting point for the live demo.
-/// The system prompt and helper methods are already defined to make the demo easier to follow.
-/// During the demo, you will implement the ComputeDiscountAsync method using AI.
+/// The agent instructions and helper methods are already defined to make the demo easier to follow.
+/// During the demo, you will implement the ComputeDiscountAsync method using Microsoft Agent Framework's AIAgent.
 /// See docs/04_speaker-demo-walkthrough.md for step-by-step instructions.
 /// </summary>
 public class DiscountAgentService : IDiscountAgentService
@@ -22,9 +23,13 @@ public class DiscountAgentService : IDiscountAgentService
     private readonly ILogger<DiscountAgentService> _logger;
     private readonly AgentSettings _settings;
 
-    // DEMO: System prompt for the discount agent
+    // DEMO: Agent name for identification in logs and debugging
+    private const string AgentName = "DiscountAgent";
+
+    // DEMO: Agent instructions for the discount agent
     // This defines the discount rules that the AI agent will follow
-    private const string SystemPrompt = """
+    // Used with Microsoft Agent Framework's CreateAIAgent method
+    private const string AgentInstructions = """
         You are an e-commerce pricing assistant.
         
         Rules:
@@ -55,16 +60,22 @@ public class DiscountAgentService : IDiscountAgentService
     }
 
     /// <summary>
-    /// TODO: Implement AI-powered discount calculation during the live demo.
-    /// Replace this placeholder method with AI-powered discount logic.
+    /// TODO: Implement AI-powered discount calculation during the live demo using Microsoft Agent Framework.
+    /// Replace this placeholder method with AIAgent-powered discount logic.
+    /// 
+    /// Example pattern using Agent Framework:
+    /// 1. Create agent: var agent = _chatClient.CreateAIAgent(instructions: AgentInstructions, name: AgentName);
+    /// 2. Run agent: var response = await agent.RunAsync(userMessage);
+    /// 3. Parse response: var result = ParseAgentResponse(response.Text, subtotal);
+    /// 
     /// See docs/04_speaker-demo-walkthrough.md#step-12-replace-the-computediscountasync-method
     /// </summary>
     public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
     {
-        _logger.LogInformation("TODO: DiscountAgent not implemented...");
+        _logger.LogInformation("TODO: {AgentName} not implemented...", AgentName);
         
         // Placeholder: No discount applied
-        // DEMO: Replace this with AI-powered discount calculation
+        // DEMO: Replace this with Microsoft Agent Framework AIAgent-powered discount calculation
         var result = new DiscountResult
         {
             DiscountAmount = 0,
