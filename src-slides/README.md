@@ -10,12 +10,23 @@ This folder contains a Python script that generates a PowerPoint presentation fr
 ## Installation
 
 1. Create a virtual environment (recommended):
+
+   **On macOS/Linux:**
+
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
+   ```
+
+   **On Windows:**
+
+   ```cmd
+   python -m venv venv
+   venv\Scripts\activate
    ```
 
 2. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -78,12 +89,14 @@ The generated presentation includes:
 ### Template Requirements
 
 When using a template, the script will:
+
 1. Load the template file
 2. Clear existing slides
 3. Generate new slides using the template's master layouts and styling
 4. Apply fonts and colors from the template
 
 For best results, your template should have:
+
 - A blank slide layout (layout index 6)
 - Consistent fonts and color scheme
 
@@ -93,6 +106,7 @@ To change the presentation content, edit the markdown file at:
 `docs/05_slide-content-and-speaker-notes.md`
 
 The script parses the following elements:
+
 - `## Slide N: Title` - Slide headers
 - `**Title**:` - Slide titles
 - `**Key Points**:` - Bullet points

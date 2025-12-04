@@ -27,6 +27,7 @@ import argparse
 import os
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -347,8 +348,8 @@ def main():
     parser.add_argument(
         '--output',
         type=str,
-        default='presentation.pptx',
-        help='Output path for the generated presentation (default: presentation.pptx)'
+        default=None,
+        help='Output path for the generated presentation (default: presentation-yymmdd-hhmmss.pptx)'
     )
     parser.add_argument(
         '--markdown',
@@ -358,6 +359,15 @@ def main():
     )
     
     args = parser.parse_args()
+    
+    # Determine output file path
+    if args.output:
+        output_path = args.output
+    else:
+        # Generate timestamped filename in format: presentation-yymmdd-hhmmss.pptx
+        now = datetime.now()
+        timestamp = now.strftime("%y%m%d-%H%M%S")
+        output_path = f"presentation-{timestamp}.pptx"
     
     # Determine markdown file path
     if args.markdown:
@@ -378,7 +388,7 @@ def main():
     for slide in slides:
         print(f"  Slide {slide['slide_number']}: {slide['title']}")
     
-    create_presentation(slides, args.template, args.output)
+    create_presentation(slides, args.template, output_path)
 
 
 if __name__ == '__main__':
