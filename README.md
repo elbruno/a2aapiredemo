@@ -37,6 +37,25 @@ The **fully implemented agentic solution**:
 
 ---
 
+## 📚 Documentation for Speakers
+
+This repository includes comprehensive documentation for presenters delivering this demo:
+
+| Document | Description |
+|----------|-------------|
+| [01_prep_for_event.md](docs/01_prep_for_event.md) | GitHub Copilot agent prompt for preparing the repository |
+| [02_copilot-session-setup-prompt.md](docs/02_copilot-session-setup-prompt.md) | Copilot session setup and configuration |
+| [03_speaker-demo-walkthrough.md](docs/03_speaker-demo-walkthrough.md) | **Step-by-step code implementation guide for live demos** |
+| [session-delivery-guide.md](docs/session-delivery-guide.md) | Full session context, timeline, and delivery tips |
+
+### 📖 Speaker Quick Start
+
+1. **Before the event**: Review [session-delivery-guide.md](docs/session-delivery-guide.md) for the complete session narrative
+2. **During the demo**: Follow [03_speaker-demo-walkthrough.md](docs/03_speaker-demo-walkthrough.md) for step-by-step code changes
+3. **Reference**: Keep `/src-complete` open as a fallback reference
+
+---
+
 ## 🎯 Features
 
 - 🛒 **eShop Lite Store** - Blazor Server front-end with product browsing, cart, and checkout
@@ -327,6 +346,19 @@ src-start/AgentServices/        # TODO stubs for live coding
 - Look for `// TODO:` comments to find where to implement agent logic
 
 Look for `// DEMO:` comments in `src-complete` to find key demo points.
+
+### 📖 Live Coding Guide
+
+For **step-by-step instructions** on implementing the agents during your live demo, see:
+
+👉 **[docs/03_speaker-demo-walkthrough.md](docs/03_speaker-demo-walkthrough.md)**
+
+This guide includes:
+- Exact code snippets to type/paste
+- Expected outcomes after each step
+- Timing estimates (~12 minutes total coding time)
+- Troubleshooting tips
+- Key messages to communicate to the audience
 
 ---
 
