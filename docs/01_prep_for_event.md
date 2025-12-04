@@ -30,7 +30,7 @@ You are working in the repo: `https://github.com/elbruno/a2aapiredemo`
 
 From the README and structure:
 
-- Solution: `src-01-start/eShopLite-Aspire-Modernization.slnx` (or `src-04-complete/`)
+- Solution: `src-01-start/eShopLite-Aspire-Modernization.slnx` (or `src-05-complete/`)
 - Key projects:
   - `src-01-start/eShopAppHost`        → .NET Aspire host
   - `src-01-start/eShopServiceDefaults`→ shared service configuration
@@ -433,7 +433,7 @@ Content should include:
 
 The repo is considered **ready for the 30-minute demo** when:
 
-1. The solution builds and runs with `dotnet run` from `src-01-start/eShopAppHost` (or `src-04-complete/eShopAppHost`) without errors.
+1. The solution builds and runs with `dotnet run` from `src-01-start/eShopAppHost` (or `src-05-complete/eShopAppHost`) without errors.
 2. From the Store UI, the presenter can:
    - Select membership tier (Regular/Silver/Gold).
    - Add items to cart.

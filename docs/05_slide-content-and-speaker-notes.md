@@ -322,7 +322,7 @@ Throughout the session, reinforce these core messages:
 If something goes wrong during the demo:
 
 1. **AI not responding**: Switch to demonstrating the fallback logic
-2. **Build errors**: Have `/src-04-complete` open as a backup
+2. **Build errors**: Have `/src-05-complete` open as a backup
 3. **Slow responses**: Explain that production would have caching/optimization
 4. **Connection issues**: Pre-record a backup video of the demo
 

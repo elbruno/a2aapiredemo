@@ -12,7 +12,7 @@ A **minimal**, fully building, fully running version of the app **without any ag
 - Membership tier selector (non-functional)  
 - All agent logic removed and replaced with **clear TODO instructions**
 
-### 2. `/src-04-complete`
+### 2. `/src-05-complete`
 A **fully implemented agentic solution** (the current codebase), including:
 - DiscountAgent  
 - StockAgent  

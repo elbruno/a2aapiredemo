@@ -71,7 +71,8 @@ namespace Microsoft.Extensions.Hosting
                         .AddHttpClientInstrumentation()
                         .AddRuntimeInstrumentation()
                         .AddMeter("OpenAI.*")
-                        .AddMeter("Microsoft.SemanticKernel.*");
+                        .AddMeter("Microsoft.SemanticKernel.*")
+                        .AddMeter("*Microsoft.Agents.AI");
                 })
                 .WithTracing(tracing =>
                 {
@@ -80,7 +81,9 @@ namespace Microsoft.Extensions.Hosting
                         //.AddGrpcClientInstrumentation()
                         .AddHttpClientInstrumentation()
                         .AddSource("OpenAI.*")
-                        .AddSource("Microsoft.SemanticKernel.*");
+                        .AddSource("Microsoft.SemanticKernel.*")
+                        .AddSource("*Microsoft.Extensions.AI")
+                        .AddSource("*Microsoft.Extensions.Agents*");
                 });
 
             builder.AddOpenTelemetryExporters();
