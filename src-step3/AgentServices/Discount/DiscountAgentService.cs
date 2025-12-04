@@ -10,11 +10,6 @@ namespace AgentServices.Discount;
 /// <summary>
 /// DEMO: Discount Agent Service
 /// Uses Microsoft Agent Framework with Azure OpenAI to compute membership-based discounts.
-/// 
-/// This is the starting point for the live demo.
-/// The system prompt and helper methods are already defined to make the demo easier to follow.
-/// During the demo, you will implement the ComputeDiscountAsync method using AI.
-/// See docs/04_speaker-demo-walkthrough.md for step-by-step instructions.
 /// </summary>
 public class DiscountAgentService : IDiscountAgentService
 {
@@ -23,7 +18,6 @@ public class DiscountAgentService : IDiscountAgentService
     private readonly AgentSettings _settings;
 
     // DEMO: System prompt for the discount agent
-    // This defines the discount rules that the AI agent will follow
     private const string SystemPrompt = """
         You are an e-commerce pricing assistant.
         
@@ -55,30 +49,59 @@ public class DiscountAgentService : IDiscountAgentService
     }
 
     /// <summary>
-    /// TODO: Implement AI-powered discount calculation during the live demo.
-    /// Replace this placeholder method with AI-powered discount logic.
-    /// See docs/04_speaker-demo-walkthrough.md#step-12-replace-the-computediscountasync-method
+    /// DEMO: Compute discount using the AI agent.
     /// </summary>
-    public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
+    public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
     {
-        _logger.LogInformation("TODO: DiscountAgent not implemented...");
-        
-        // Placeholder: No discount applied
-        // DEMO: Replace this with AI-powered discount calculation
-        var result = new DiscountResult
+        _logger.LogInformation("DEMO: DiscountAgent starting - Tier: {Tier}, Subtotal: {Subtotal:C}", 
+            request.Tier, request.Subtotal);
+
+        // If chat client is not available, use fallback deterministic logic
+        if (_chatClient == null || !_settings.AgentsEnabled)
         {
-            DiscountAmount = 0,
-            DiscountReason = "No discount applied - Agent not implemented",
-            TotalAfterDiscount = request.Subtotal,
-            Success = true
-        };
-        return Task.FromResult(result);
+            _logger.LogWarning("DEMO: AI not available, using fallback discount logic");
+            return ComputeFallbackDiscount(request);
+        }
+
+        try
+        {
+            // DEMO: Build the user message with cart context
+            var itemsSummary = string.Join(", ", request.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
+            var userMessage = $"""
+                Customer membership tier: {request.Tier}
+                Cart subtotal: ${request.Subtotal:F2}
+                Items: {itemsSummary}
+                
+                Calculate the discount based on the membership tier rules.
+                """;
+
+            // DEMO: Call the AI agent
+            var messages = new List<ChatMessage>
+            {
+                new(ChatRole.System, SystemPrompt),
+                new(ChatRole.User, userMessage)
+            };
+
+            _logger.LogInformation("DEMO: Sending request to DiscountAgent AI");
+            var response = await _chatClient.GetResponseAsync(messages);
+            var content = response.Text ?? "";
+
+            _logger.LogInformation("DEMO: DiscountAgent AI response: {Response}", content);
+
+            // DEMO: Parse the JSON response
+            var result = ParseAgentResponse(content, request.Subtotal);
+            _logger.LogInformation("DEMO: DiscountAgent computed - Amount: {Amount:C}, Reason: {Reason}", 
+                result.DiscountAmount, result.DiscountReason);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "DEMO: DiscountAgent error, using fallback");
+            return ComputeFallbackDiscount(request);
+        }
     }
 
-    /// <summary>
-    /// DEMO: Parse the AI agent's JSON response.
-    /// This helper is already implemented to make the demo easier to follow.
-    /// </summary>
     private DiscountResult ParseAgentResponse(string content, decimal subtotal)
     {
         try
@@ -139,7 +162,6 @@ public class DiscountAgentService : IDiscountAgentService
 
     /// <summary>
     /// DEMO: Deterministic fallback when AI is unavailable.
-    /// This helper is already implemented to ensure the app works without AI.
     /// </summary>
     private DiscountResult ComputeFallbackDiscount(DiscountRequest request)
     {
