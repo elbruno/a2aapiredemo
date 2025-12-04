@@ -1,8 +1,5 @@
-using System.Diagnostics;
 using AgentServices;
 using AgentServices.Checkout;
-using AgentServices.Discount;
-using AgentServices.Stock;
 using Azure.Identity;
 using Microsoft.Agents.AI.DevUI;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -50,10 +47,8 @@ openai.AddChatClient(chatDeploymentName)
 builder.AddAgentSettings();
 builder.AddeShopLiteAIAgents();
 
-// Add internal services for agents and orchestrator
-builder.Services.AddScoped<IStockAgentService, StockAgentService>();
-builder.Services.AddScoped<IDiscountAgentService, DiscountAgentService>();
-builder.Services.AddScoped<IAgentCheckoutOrchestrator, AgentCheckoutOrchestrator>();
+// Add the orchestrator that uses the registered AIAgents directly
+builder.Services.AddScoped<AgentCheckoutOrchestrator>();
 
 
 // Register services for OpenAI responses and conversations (also required for DevUI)

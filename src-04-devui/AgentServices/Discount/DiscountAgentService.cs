@@ -12,7 +12,7 @@ namespace AgentServices.Discount;
 /// Uses Microsoft Agent Framework with Azure OpenAI to compute membership-based discounts.
 /// Demonstrates the AIAgent pattern for intent-driven business logic.
 /// </summary>
-public class DiscountAgentService : IDiscountAgentService
+public class DiscountAgentService
 {
     private readonly ILogger<DiscountAgentService> _logger;
     private readonly AIAgent _discountAgent;

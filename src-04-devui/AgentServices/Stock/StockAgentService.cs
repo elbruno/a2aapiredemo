@@ -12,7 +12,7 @@ namespace AgentServices.Stock;
 /// Uses Microsoft Agent Framework to validate stock availability and generate human-friendly summaries.
 /// For demo purposes, stock is always available (deterministic), but uses AI for friendly messages.
 /// </summary>
-public class StockAgentService : IStockAgentService
+public class StockAgentService
 {
     private readonly ILogger<StockAgentService> _logger;
     private readonly AIAgent _stockAgent;
