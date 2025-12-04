@@ -11,6 +11,32 @@ This repository demonstrates a modern cloud-native e-commerce application using 
 
 ---
 
+## 📂 Repository Structure - Two-Stage Conference Demo
+
+This repository is structured for a **30-minute agentic modernization live session** with two parallel folders:
+
+### 🏁 `/src-start` - Starting Point
+
+A **minimal, fully building** version of the app **without agents implemented**:
+- eShop Lite baseline features (products, cart, checkout)
+- AI-powered vector search
+- Working checkout flow (no discounts, no agent integration)
+- Membership tier selector (UI present, but non-functional)
+- **Agent logic replaced with clear TODO instructions** for live coding
+
+### ✅ `/src-complete` - Complete Solution
+
+The **fully implemented agentic solution**:
+- DiscountAgent (AI-powered membership discounts)
+- StockAgent (AI-generated stock availability messages)
+- Multi-agent checkout orchestrator
+- UI updates showing agent steps and discounts
+- Full Azure AI Foundry workflow support
+
+**Both folders build and run cleanly using .NET Aspire.**
+
+---
+
 ## 🎯 Features
 
 - 🛒 **eShop Lite Store** - Blazor Server front-end with product browsing, cart, and checkout
@@ -46,22 +72,26 @@ This repository demonstrates a modern cloud-native e-commerce application using 
    # Should output 9.0.x
    ```
 
-3. **Configure AI Connection (for AI-powered search)**
+3. **Choose your starting point**
+   - For the **complete solution** with agents: `cd src-complete`
+   - For the **demo starting point** (no agents): `cd src-start`
+
+4. **Configure AI Connection (for AI-powered search)**
    
    Set up User Secrets for the Products project:
    ```bash
-   cd src/Products
+   cd Products
    dotnet user-secrets init
    dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-azure-openai-connection-string"
    ```
 
-4. **Run with .NET Aspire**
+5. **Run with .NET Aspire**
    ```bash
-   cd src/eShopAppHost
+   cd eShopAppHost
    dotnet run
    ```
 
-5. **Open the Aspire Dashboard**
+6. **Open the Aspire Dashboard**
    
    The Aspire dashboard will open automatically, showing all running services. Click on the **Store** endpoint to access the e-commerce application.
 
@@ -69,9 +99,11 @@ This repository demonstrates a modern cloud-native e-commerce application using 
 
 ## 📁 Project Structure
 
+Both `/src-start` and `/src-complete` contain the same project structure:
+
 ```
-src/
-├── eShopLite-Aspire.slnx     # Solution file
+src-start/ or src-complete/
+├── eShopLite-Aspire-Modernization.slnx  # Solution file
 │
 ├── eShopAppHost/             # .NET Aspire App Host (orchestration)
 ├── eShopServiceDefaults/     # Shared service configuration
@@ -103,6 +135,14 @@ src/
 ├── Products.Tests/           # Products API tests
 └── Store.Tests/              # Store front-end tests
 ```
+
+### Key Differences Between Folders
+
+| File | src-start | src-complete |
+|------|-----------|--------------|
+| `AgentServices/Discount/DiscountAgentService.cs` | TODO stub | Full AI implementation |
+| `AgentServices/Stock/StockAgentService.cs` | TODO stub | Full AI implementation |
+| `AgentServices/Checkout/AgentCheckoutOrchestrator.cs` | TODO stub | Full orchestration |
 
 ---
 
@@ -149,8 +189,12 @@ The application includes AI-powered capabilities:
 ## 🧪 Running Tests
 
 ```bash
-# Run all tests
-cd src
+# Run all tests for src-complete
+cd src-complete
+dotnet test
+
+# Run all tests for src-start
+cd src-start
 dotnet test
 
 # Run specific test project
@@ -165,7 +209,7 @@ dotnet test Store.Tests/Store.Tests.csproj
 The application supports deployment to Azure using Azure Developer CLI (azd):
 
 ```bash
-cd src/eShopAppHost
+cd src-complete/eShopAppHost
 azd up
 ```
 
@@ -175,7 +219,7 @@ This will provision:
 - Azure OpenAI with GPT-5-mini and text-embedding-3-small deployments
 - Azure Application Insights for monitoring
 
-For more details, see [src/eShopAppHost/next-steps.md](src/eShopAppHost/next-steps.md).
+For more details, see [src-complete/eShopAppHost/next-steps.md](src-complete/eShopAppHost/next-steps.md).
 
 ---
 
@@ -212,7 +256,7 @@ This demo showcases an **AI-powered checkout experience** using intelligent agen
 
 ### Demo Flow
 
-1. **Start the application** using .NET Aspire (`dotnet run` from `src/eShopAppHost`)
+1. **Start the application** using .NET Aspire (`dotnet run` from `eShopAppHost`)
 2. **Open the Store** front-end from the Aspire dashboard
 3. **Select a customer** using the user picker in the top-right corner:
    - **Alice Johnson** - Gold member (20% discount)
@@ -231,7 +275,7 @@ The agentic checkout uses the same Azure OpenAI connection as the AI search feat
 
 ```bash
 # Set up User Secrets for the Store project
-cd src/Store
+cd src-complete/Store
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:microsoftfoundry" "your-azure-openai-connection-string"
 ```
@@ -251,7 +295,8 @@ If Azure OpenAI is not configured or unavailable:
 ### Project Structure for Agents
 
 ```
-src/AgentServices/              # Agent services library
+src-complete/AgentServices/     # Full implementation
+src-start/AgentServices/        # TODO stubs for live coding
 ├── Configuration/              # Agent settings
 │   └── AgentSettings.cs
 ├── Checkout/                   # Checkout orchestration
@@ -271,12 +316,17 @@ src/AgentServices/              # Agent services library
 
 ### Key Code Locations for Demo
 
-- **Agent orchestration**: `src/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
-- **Discount AI logic**: `src/AgentServices/Discount/DiscountAgentService.cs`
-- **Cart UI with agents**: `src/Store/Components/Pages/CartPage.razor`
-- **Checkout integration**: `src/Store/Services/CheckoutService.cs`
+**In `src-complete`** (reference implementation):
+- **Agent orchestration**: `AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
+- **Discount AI logic**: `AgentServices/Discount/DiscountAgentService.cs`
+- **Cart UI with agents**: `Store/Components/Pages/CartPage.razor`
+- **Checkout integration**: `Store/Services/CheckoutService.cs`
 
-Look for `// DEMO:` comments throughout the code to find key demo points.
+**In `src-start`** (TODOs for live coding):
+- Each agent file contains detailed TODO instructions and comments
+- Look for `// TODO:` comments to find where to implement agent logic
+
+Look for `// DEMO:` comments in `src-complete` to find key demo points.
 
 ---
 
