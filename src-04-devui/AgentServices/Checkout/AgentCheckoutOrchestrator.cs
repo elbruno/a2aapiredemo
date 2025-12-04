@@ -88,25 +88,32 @@ public class AgentCheckoutOrchestrator
 
             _logger.LogInformation("DEMO: Executing Sequential Workflow");
 
-            // DEMO: Record StockAgent step
+            // DEMO: Execute the workflow using InProcessExecution
+            var messages = new List<ChatMessage> { new(ChatRole.User, inputMessage) };
+            var run = await InProcessExecution.RunAsync(workflow, messages);
+
+            // DEMO: Process all workflow events from both agents
+            var workflowEvents = run.OutgoingEvents
+                .OfType<AgentRunResponseEvent>()
+                .ToList();
+
+            // DEMO: Record StockAgent step from workflow events
+            var stockEvent = workflowEvents.FirstOrDefault(e => 
+                e.Response.Text?.Contains("stock", StringComparison.OrdinalIgnoreCase) == true ||
+                e.Response.Text?.Contains("ship", StringComparison.OrdinalIgnoreCase) == true);
+            
             var stockStep = new AgentStep
             {
                 Name = StockAgentService.AgentName,
                 Timestamp = DateTime.UtcNow,
                 Status = "Success",
-                Message = "All items are in stock and ready to ship!"
+                Message = stockEvent?.Response.Text?.Trim() ?? "All items are in stock and ready to ship!"
             };
             result.AgentSteps.Add(stockStep);
             _logger.LogInformation("DEMO: StockAgent completed - Status: {Status}", stockStep.Status);
 
-            // DEMO: Execute the workflow using InProcessExecution
-            var messages = new List<ChatMessage> { new(ChatRole.User, inputMessage) };
-            var run = await InProcessExecution.RunAsync(workflow, messages);
-
-            // DEMO: Process the workflow result
-            var workflowResult = run.OutgoingEvents
-                .OfType<AgentRunResponseEvent>()
-                .LastOrDefault();
+            // DEMO: Record DiscountAgent step from workflow events (last event is typically from the last agent)
+            var discountEvent = workflowEvents.LastOrDefault();
 
             var discountStep = new AgentStep
             {
@@ -114,10 +121,10 @@ public class AgentCheckoutOrchestrator
                 Timestamp = DateTime.UtcNow
             };
 
-            if (workflowResult?.Response.Text != null)
+            if (discountEvent?.Response.Text != null)
             {
                 _logger.LogInformation("DEMO: Sequential Workflow completed. Parsing response...");
-                var discountResult = ParseDiscountResponse(workflowResult.Response.Text, request.Cart.Subtotal, request.MembershipTier);
+                var discountResult = ParseDiscountResponse(discountEvent.Response.Text, request.Cart.Subtotal, request.MembershipTier);
                 
                 result.DiscountAmount = discountResult.DiscountAmount;
                 result.DiscountReason = discountResult.DiscountReason;
