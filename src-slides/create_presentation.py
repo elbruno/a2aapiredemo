@@ -10,7 +10,7 @@ Usage:
 
 Options:
     --template  Path to an existing PowerPoint file to use as a style template
-    --output    Output path for the generated presentation (default: presentation.pptx)
+    --output    Output path for the generated presentation (default: presentation-yymmdd-hhmmss.pptx)
 
 Examples:
     # Generate presentation with default styling
@@ -24,6 +24,7 @@ Examples:
 """
 
 import argparse
+import copy
 import os
 import re
 import sys
@@ -174,60 +175,145 @@ def parse_slide_content(markdown_path: str) -> List[dict]:
     return slides
 
 
+def find_text_shape(shapes, search_name):
+    """Find a shape by name containing the search term."""
+    for shape in shapes:
+        if hasattr(shape, 'text_frame') and search_name.lower() in shape.name.lower():
+            return shape
+    return None
+
+
+def set_text_in_shape(shape, text):
+    """Replace text in a shape."""
+    if not hasattr(shape, 'text_frame'):
+        return False
+    
+    text_frame = shape.text_frame
+    if text_frame.paragraphs:
+        text_frame.paragraphs[0].text = text
+    return True
+
+
+def set_bullets_in_shape(shape, bullets, definition=""):
+    """Replace bullet points in a shape."""
+    if not hasattr(shape, 'text_frame'):
+        return False
+    
+    text_frame = shape.text_frame
+    text_frame.clear()
+    
+    # Add definition if present
+    if definition:
+        p = text_frame.paragraphs[0]
+        p.text = definition
+        p.level = 0
+    
+    # Add bullets
+    for bullet in bullets:
+        clean_bullet = bullet.replace('**', '')
+        if definition:
+            p = text_frame.add_paragraph()
+        else:
+            if not definition and not any(text_frame.paragraphs[0].text for t in text_frame.paragraphs[:1]):
+                p = text_frame.paragraphs[0]
+            else:
+                p = text_frame.add_paragraph()
+        p.text = clean_bullet
+        p.level = 0
+    
+    return True
+
+
 def create_presentation(slides: List[dict], template_path: Optional[str] = None, output_path: str = "presentation.pptx"):
     """
-    Create a PowerPoint presentation from parsed slide data.
-    
-    Args:
-        slides: List of slide dictionaries from parse_slide_content
-        template_path: Optional path to a template PPTX file for styling
-        output_path: Output path for the generated presentation
+    Create a PowerPoint presentation from parsed slide data using a template.
     """
-    # Create presentation from template or new
+    use_template = False
+    prs = None
+    
     if template_path and os.path.exists(template_path):
+        # Load the template as the main presentation
         prs = Presentation(template_path)
-        # Clear existing slides if using template
-        while len(prs.slides) > 0:
-            rId = prs.slides._sldIdLst[0].rId
+        use_template = True
+        print(f"Using template: {template_path}\n")
+        
+        # Remove all existing slides except the first few that we'll use
+        while len(prs.slides) > 4:
+            rId = prs.slides._sldIdLst[-1].rId
             prs.part.drop_rel(rId)
-            del prs.slides._sldIdLst[0]
-        print(f"Using template: {template_path}")
+            del prs.slides._sldIdLst[-1]
     else:
         prs = Presentation()
         if template_path:
-            print(f"Template not found: {template_path}. Using default styling.")
+            print(f"Template not found: {template_path}. Using default styling.\n")
     
-    # Set slide dimensions (16:9)
+    # Ensure correct dimensions
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     
+    # For template reuse: save references to template slides
+    template_slide_1 = prs.slides[0] if len(prs.slides) > 0 else None
+    template_slide_3 = prs.slides[2] if len(prs.slides) > 2 else None
+    template_slide_4 = prs.slides[3] if len(prs.slides) > 3 else None
+    
+    # Remove all slides except first 4 from template
+    while len(prs.slides) > 4:
+        rId = prs.slides._sldIdLst[-1].rId
+        prs.part.drop_rel(rId)
+        del prs.slides._sldIdLst[-1]
+    
     for slide_data in slides:
-        # Choose layout based on slide type
+        template_slide_used = None
+        
         if slide_data['slide_number'] == 1:
-            # Title slide
-            layout = prs.slide_layouts[6]  # Blank layout for custom title
-            slide = prs.slides.add_slide(layout)
-            
-            # Add title
-            title_box = slide.shapes.add_textbox(Inches(0.5), Inches(2), Inches(12.333), Inches(1.5))
-            title_frame = title_box.text_frame
-            title_frame.paragraphs[0].text = slide_data['title']
-            title_frame.paragraphs[0].font.size = Pt(44)
-            title_frame.paragraphs[0].font.bold = True
-            title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-            
-            # Add subtitle
-            if slide_data['subtitle']:
-                sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(3.5), Inches(12.333), Inches(1))
-                sub_frame = sub_box.text_frame
-                sub_frame.paragraphs[0].text = slide_data['subtitle']
-                sub_frame.paragraphs[0].font.size = Pt(24)
-                sub_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-            
+            # Title slide - modify template slide 0 (only once)
+            if use_template and template_slide_1:
+                slide = template_slide_1
+                template_slide_used = 1
+                
+                # Update title and subtitle
+                title_shape = find_text_shape(slide.shapes, 'title')
+                if title_shape:
+                    set_text_in_shape(title_shape, slide_data['title'])
+                
+                subtitle_shape = find_text_shape(slide.shapes, 'subtitle')
+                if not subtitle_shape:
+                    subtitle_shape = find_text_shape(slide.shapes, 'content')
+                
+                if subtitle_shape and slide_data['subtitle']:
+                    set_text_in_shape(subtitle_shape, slide_data['subtitle'])
+            else:
+                # Create custom title slide
+                blank_layout = prs.slide_layouts[6] if len(prs.slide_layouts) > 6 else prs.slide_layouts[0]
+                slide = prs.slides.add_slide(blank_layout)
+                template_slide_used = "custom"
+                
+                # Add title
+                title_box = slide.shapes.add_textbox(Inches(0.5), Inches(2), Inches(12.333), Inches(1.5))
+                title_frame = title_box.text_frame
+                title_frame.paragraphs[0].text = slide_data['title']
+                title_frame.paragraphs[0].font.size = Pt(44)
+                title_frame.paragraphs[0].font.bold = True
+                title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+                
+                # Add subtitle
+                if slide_data['subtitle']:
+                    sub_box = slide.shapes.add_textbox(Inches(0.5), Inches(3.5), Inches(12.333), Inches(1))
+                    sub_frame = sub_box.text_frame
+                    sub_frame.paragraphs[0].text = slide_data['subtitle']
+                    sub_frame.paragraphs[0].font.size = Pt(24)
+                    sub_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+        
         elif slide_data['slide_number'] == 14:
-            # Q&A / Closing slide
-            layout = prs.slide_layouts[6]  # Blank
-            slide = prs.slides.add_slide(layout)
+            # Q&A slide - create new slide
+            if use_template and len(prs.slide_layouts) > 6:
+                # Use blank layout from template
+                blank_layout = prs.slide_layouts[6]
+            else:
+                blank_layout = prs.slide_layouts[6] if len(prs.slide_layouts) > 6 else prs.slide_layouts[0]
+            
+            slide = prs.slides.add_slide(blank_layout)
+            template_slide_used = "custom"
             
             # Add title
             title_box = slide.shapes.add_textbox(Inches(0.5), Inches(2.5), Inches(12.333), Inches(1.5))
@@ -243,11 +329,16 @@ def create_presentation(slides: List[dict], template_path: Optional[str] = None,
             thanks_frame.paragraphs[0].text = "Thank You!"
             thanks_frame.paragraphs[0].font.size = Pt(32)
             thanks_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-            
+        
         elif slide_data['code_block']:
-            # Slide with code block
-            layout = prs.slide_layouts[6]  # Blank
-            slide = prs.slides.add_slide(layout)
+            # Demo slide with code - create NEW slide based on template slide 4
+            if use_template and len(prs.slide_layouts) > 6:
+                blank_layout = prs.slide_layouts[6]
+            else:
+                blank_layout = prs.slide_layouts[6] if len(prs.slide_layouts) > 6 else prs.slide_layouts[0]
+            
+            slide = prs.slides.add_slide(blank_layout)
+            template_slide_used = 4
             
             # Add title
             title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(12.333), Inches(0.8))
@@ -260,33 +351,20 @@ def create_presentation(slides: List[dict], template_path: Optional[str] = None,
             code_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.3), Inches(12.333), Inches(5))
             code_frame = code_box.text_frame
             code_frame.word_wrap = True
-            
-            # Style code as monospace
             p = code_frame.paragraphs[0]
             p.text = slide_data['code_block']
             p.font.name = 'Consolas'
             p.font.size = Pt(12)
-            
-            # Add a background rectangle for code
-            code_shape = slide.shapes.add_shape(
-                MSO_SHAPE.RECTANGLE,
-                Inches(0.4), Inches(1.2),
-                Inches(12.5), Inches(5.2)
-            )
-            code_shape.fill.solid()
-            code_shape.fill.fore_color.rgb = RGBColor(240, 240, 240)
-            code_shape.line.color.rgb = RGBColor(200, 200, 200)
-            
-            # Move code box to front
-            spTree = slide.shapes._spTree
-            code_box_element = code_box._element
-            spTree.remove(code_box_element)
-            spTree.append(code_box_element)
-            
+        
         else:
-            # Standard content slide
-            layout = prs.slide_layouts[6]  # Blank
-            slide = prs.slides.add_slide(layout)
+            # Content slide - create NEW slide based on template slide 3
+            if use_template and len(prs.slide_layouts) > 6:
+                blank_layout = prs.slide_layouts[6]
+            else:
+                blank_layout = prs.slide_layouts[6] if len(prs.slide_layouts) > 6 else prs.slide_layouts[0]
+            
+            slide = prs.slides.add_slide(blank_layout)
+            template_slide_used = 3
             
             # Add title
             title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(12.333), Inches(0.8))
@@ -316,22 +394,29 @@ def create_presentation(slides: List[dict], template_path: Optional[str] = None,
                         p = content_frame.paragraphs[0]
                     else:
                         p = content_frame.add_paragraph()
-                    
-                    # Handle bold markers
-                    clean_bullet = bullet.replace('**', '')
-                    p.text = f"• {clean_bullet}"
-                    p.font.size = Pt(18)
-                    p.space_after = Pt(12)
+                        
+                        clean_bullet = bullet.replace('**', '')
+                        p.text = f"• {clean_bullet}"
+                        p.font.size = Pt(18)
+                        p.space_after = Pt(12)
         
         # Add speaker notes
         if slide_data['speaker_notes']:
             notes_slide = slide.notes_slide
             notes_frame = notes_slide.notes_text_frame
             notes_frame.text = slide_data['speaker_notes']
+        
+        # Print template slide usage with 2-digit slide numbers
+        slide_num_str = f"{slide_data['slide_number']:02d}"
+        if template_slide_used:
+            if template_slide_used == "custom":
+                print(f"  Slide {slide_num_str}: Created from scratch")
+            else:
+                print(f"  Slide {slide_num_str}: Using template slide {template_slide_used}")
     
     # Save presentation
     prs.save(output_path)
-    print(f"Presentation saved to: {output_path}")
+    print(f"\nPresentation saved to: {output_path}")
 
 
 def main():
@@ -343,7 +428,8 @@ def main():
     parser.add_argument(
         '--template',
         type=str,
-        help='Path to an existing PowerPoint file to use as a style template'
+        default=None,
+        help='Path to an existing PowerPoint file to use as a style template (default: auto-detect template.pptx in script folder)'
     )
     parser.add_argument(
         '--output',
@@ -359,6 +445,15 @@ def main():
     )
     
     args = parser.parse_args()
+    
+    # Determine template path - auto-detect if not provided
+    if args.template:
+        template_path = args.template
+    else:
+        # Check if template.pptx exists in the same folder as this script
+        script_dir = Path(__file__).parent
+        default_template = script_dir / 'template.pptx'
+        template_path = str(default_template) if default_template.exists() else None
     
     # Determine output file path
     if args.output:
@@ -383,12 +478,13 @@ def main():
     
     print(f"Parsing slide content from: {markdown_path}")
     slides = parse_slide_content(str(markdown_path))
-    print(f"Found {len(slides)} slides")
+    print(f"Found {len(slides)} slides\n")
     
     for slide in slides:
-        print(f"  Slide {slide['slide_number']}: {slide['title']}")
+        print(f"  Slide {slide['slide_number']:02d}: {slide['title']}")
     
-    create_presentation(slides, args.template, output_path)
+    print("\nGenerating presentation...")
+    create_presentation(slides, template_path, output_path)
 
 
 if __name__ == '__main__':

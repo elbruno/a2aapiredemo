@@ -45,13 +45,43 @@ This will create `presentation.pptx` in the current directory.
 
 ### Using a Template
 
-To apply styling from an existing PowerPoint template:
+The script automatically detects and uses `template.pptx` if it exists in the same folder as the script:
+
+```bash
+python create_presentation.py
+```
+
+To use a custom template from a different location:
 
 ```bash
 python create_presentation.py --template path/to/your/template.pptx
 ```
 
 The script will use the template's styling (fonts, colors, layouts) while replacing the content with the generated slides.
+
+**Template Slide Mapping:**
+
+- **Template Slide 1** (Title slide): Used for the presentation title slide (Slide 1)
+- **Template Slide 3** (Content slide): Used for all content-based slides with title and bullet points
+- **Template Slide 4** (Demo slide): Used for demo/code slides
+
+### Slide Generation Output
+
+During generation, the script will output which template slide was used as a base for each generated slide:
+
+```text
+Generating presentation...
+Using template: D:\...\template.pptx
+  Generated Slide 1: Using template slide 1
+  Generated Slide 2: Using template slide 3
+  Generated Slide 3: Using template slide 3
+  Generated Slide 4: Using template slide 4
+  ...
+  Generated Slide 14: Created from scratch
+Presentation saved to: presentation-251204-095441.pptx
+```
+
+This output helps you verify that the correct template slides are being used for each slide type.
 
 ### Custom Output Path
 
