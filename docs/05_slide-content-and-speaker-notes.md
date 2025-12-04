@@ -191,18 +191,21 @@ else
     discount = 0m;
 ```
 
-**After** (Agentic Approach):
+**After** (Microsoft Agent Framework):
 ```csharp
-var messages = new List<ChatMessage>
-{
-    new(ChatRole.System, SystemPrompt),
-    new(ChatRole.User, $"Tier: {tier}, Subtotal: {subtotal}")
-};
-var response = await _chatClient.GetResponseAsync(messages);
+// Create AIAgent with instructions (system prompt)
+var discountAgent = _chatClient.CreateAIAgent(
+    instructions: AgentInstructions,
+    name: "DiscountAgent");
+
+// Run the agent with user message
+var response = await discountAgent.RunAsync(
+    $"Tier: {tier}, Subtotal: {subtotal}");
+var content = response.Text;
 ```
 
 ### Speaker Notes
-> Here's the fundamental difference. On the left, traditional if-else logic. When business rules change, you modify code. On the right, the agentic approach. When rules change, you update the system prompt. The AI adapts. Plus, the agent can explain its reasoning—try doing that with if-else chains!
+> Here's the fundamental difference. On the left, traditional if-else logic. When business rules change, you modify code. On the right, the Microsoft Agent Framework approach using `CreateAIAgent` and `RunAsync`. When rules change, you update the agent instructions. The AI adapts. Plus, the agent can explain its reasoning—try doing that with if-else chains!
 
 ---
 

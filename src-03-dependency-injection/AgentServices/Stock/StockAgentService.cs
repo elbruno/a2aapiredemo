@@ -1,5 +1,6 @@
 using AgentServices.Configuration;
 using AgentServices.Models;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -7,7 +8,7 @@ namespace AgentServices.Stock;
 
 /// <summary>
 /// DEMO: Stock Agent Service
-/// Validates stock availability and generates human-friendly summaries.
+/// Uses Microsoft Agent Framework to validate stock availability and generate human-friendly summaries.
 /// For demo purposes, stock is always available (deterministic), but uses AI for friendly messages.
 /// </summary>
 public class StockAgentService : IStockAgentService
@@ -16,8 +17,11 @@ public class StockAgentService : IStockAgentService
     private readonly ILogger<StockAgentService> _logger;
     private readonly AgentSettings _settings;
 
-    // DEMO: System prompt for stock agent message generation
-    private const string SystemPrompt = """
+    // DEMO: Agent name for identification in logs and debugging
+    private const string AgentName = "StockAgent";
+
+    // DEMO: Agent instructions (system prompt) for stock agent message generation
+    private const string AgentInstructions = """
         You are a friendly e-commerce stock checker assistant.
         Given a list of items and their stock status, generate a brief, friendly summary message.
         Be concise and positive. If all items are available, say something like "Great news! All items are in stock and ready to ship."
@@ -36,12 +40,12 @@ public class StockAgentService : IStockAgentService
     }
 
     /// <summary>
-    /// DEMO: Check stock availability for cart items.
+    /// DEMO: Check stock availability for cart items using Microsoft Agent Framework.
     /// For demo purposes, all items are considered in stock.
     /// </summary>
     public async Task<StockCheckResult> CheckStockAsync(StockCheckRequest request)
     {
-        _logger.LogInformation("DEMO: StockAgent starting - Checking {ItemCount} items", request.Items.Count);
+        _logger.LogInformation("DEMO: {AgentName} starting - Checking {ItemCount} items", AgentName, request.Items.Count);
 
         // DEMO: For demo purposes, all items are in stock
         // In a real scenario, this would query the Products API or database
@@ -52,11 +56,11 @@ public class StockAgentService : IStockAgentService
             Success = true
         };
 
-        // Generate a friendly summary message
+        // Generate a friendly summary message using the Agent Framework
         result.SummaryMessage = await GenerateSummaryMessage(request, result);
         
-        _logger.LogInformation("DEMO: StockAgent completed - HasIssues: {HasIssues}, Message: {Message}", 
-            result.HasStockIssues, result.SummaryMessage);
+        _logger.LogInformation("DEMO: {AgentName} completed - HasIssues: {HasIssues}, Message: {Message}", 
+            AgentName, result.HasStockIssues, result.SummaryMessage);
 
         return result;
     }
@@ -74,6 +78,12 @@ public class StockAgentService : IStockAgentService
 
         try
         {
+            // DEMO: Create an AIAgent using Microsoft Agent Framework
+            // The agent encapsulates the instructions and provides a clean abstraction
+            var stockAgent = _chatClient.CreateAIAgent(
+                instructions: AgentInstructions,
+                name: AgentName);
+
             var itemsList = string.Join("\n", request.Items.Select(i => $"- {i.Name} (Qty: {i.Quantity}): In Stock"));
             var userMessage = $"""
                 Items to check:
@@ -82,14 +92,11 @@ public class StockAgentService : IStockAgentService
                 All items are available. Generate a brief, friendly confirmation message.
                 """;
 
-            var messages = new List<ChatMessage>
-            {
-                new(ChatRole.System, SystemPrompt),
-                new(ChatRole.User, userMessage)
-            };
-
-            _logger.LogDebug("DEMO: Sending request to StockAgent AI for summary");
-            var response = await _chatClient.GetResponseAsync(messages);
+            _logger.LogDebug("DEMO: Sending request to {AgentName} via Agent Framework for summary", AgentName);
+            
+            // DEMO: Use the Agent Framework's RunAsync method
+            // This encapsulates the message building and response handling
+            var response = await stockAgent.RunAsync(userMessage);
             var content = response.Text?.Trim() ?? "";
 
             if (!string.IsNullOrEmpty(content))
@@ -99,7 +106,7 @@ public class StockAgentService : IStockAgentService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "DEMO: StockAgent AI error, using fallback message");
+            _logger.LogWarning(ex, "DEMO: {AgentName} error, using fallback message", AgentName);
         }
 
         // Fallback

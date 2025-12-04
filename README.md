@@ -248,7 +248,8 @@ For more details, see [src-04-complete/eShopAppHost/next-steps.md](src-04-comple
 - **.NET Aspire** - Cloud-native app orchestration
 - **Blazor Server** - Interactive web UI
 - **Entity Framework Core** - Data access
-- **Microsoft.Extensions.AI** - AI abstractions
+- **Microsoft Agent Framework** - Building AI agents with `CreateAIAgent` and `RunAsync` patterns
+- **Microsoft.Extensions.AI** - AI abstractions (underlying infrastructure)
 - **Azure OpenAI** - AI models for search
 - **SQL Server** - Database storage
 - **Docker** - Containerization
@@ -263,7 +264,28 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## 🧠 Agentic Checkout Demo (Microsoft Agent Framework)
 
-This demo showcases an **AI-powered checkout experience** using intelligent agents for stock validation and membership-based discounts.
+This demo showcases an **AI-powered checkout experience** using the **Microsoft Agent Framework** for building intelligent agents for stock validation and membership-based discounts.
+
+### Microsoft Agent Framework Integration
+
+The demo uses the `Microsoft.Agents.AI.OpenAI` package to create AIAgents with the modern pattern:
+
+```csharp
+// Create an AIAgent with instructions
+var discountAgent = _chatClient.CreateAIAgent(
+    instructions: AgentInstructions,
+    name: "DiscountAgent");
+
+// Run the agent
+var response = await discountAgent.RunAsync(userMessage);
+var content = response.Text;
+```
+
+This pattern replaces the older ChatClient direct calls with a higher-level Agent abstraction that:
+- Encapsulates system prompts as agent instructions
+- Provides named agents for better logging and debugging
+- Returns structured `AgentRunResponse` with convenient `.Text` property
+- Supports conversation context management
 
 ### What the Agents Do
 
