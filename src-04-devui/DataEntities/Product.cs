@@ -11,6 +11,7 @@ public class Product
         Description = "not defined";
         Price = 0;
         ImageUrl = "not defined";
+        IsDefault = false;
     }
 
     [JsonPropertyName("id")]
@@ -27,6 +28,9 @@ public class Product
 
     [JsonPropertyName("imageUrl")]
     public virtual string ImageUrl { get; set; }
+
+    [JsonPropertyName("isDefault")]
+    public virtual bool IsDefault { get; set; }
 }
 
 

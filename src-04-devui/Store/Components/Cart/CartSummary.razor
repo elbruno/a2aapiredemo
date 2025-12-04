@@ -1,4 +1,5 @@
 @using CartEntities
+@inject IJSRuntime JS
 
 <div class="cart-summary">
     <div class="d-flex justify-content-between mb-2">
@@ -70,8 +71,57 @@
             }
         </div>
     }
+    
+    @* DEMO: Mermaid Workflow Viewer - collapsible section *@
+    @if (!string.IsNullOrEmpty(cart.WorkFlowMermaid))
+    {
+        <hr />
+        <div class="workflow-viewer mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">
+                    <i class="bi bi-diagram-3 me-1"></i>Workflow Diagram
+                </h6>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleWorkflow" type="button">
+                    <i class="bi @(isWorkflowExpanded ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                    @(isWorkflowExpanded ? "Hide" : "Show")
+                </button>
+            </div>
+            @if (isWorkflowExpanded)
+            {
+                <div class="mermaid-container p-2 bg-light rounded border" style="overflow-x: auto;">
+                    <div id="@mermaidElementId"></div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired] public Cart cart { get; set; } = new();
+    
+    private bool isWorkflowExpanded = false;
+    private string mermaidElementId = "mermaid-" + Guid.NewGuid().ToString("N");
+    
+    private async Task ToggleWorkflow()
+    {
+        isWorkflowExpanded = !isWorkflowExpanded;
+        if (isWorkflowExpanded && !string.IsNullOrEmpty(cart.WorkFlowMermaid))
+        {
+            // Wait for DOM to update, then render Mermaid
+            await Task.Delay(50);
+            await RenderMermaidAsync();
+        }
+    }
+    
+    private async Task RenderMermaidAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("renderMermaid", mermaidElementId, cart.WorkFlowMermaid);
+        }
+        catch
+        {
+            // Silently fail if Mermaid rendering fails
+        }
+    }
 }

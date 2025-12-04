@@ -48,6 +48,7 @@ public class CheckoutService : ICheckoutService
             cart.DiscountAmount = result.DiscountAmount;
             cart.DiscountReason = result.DiscountReason;
             cart.AgentSteps = result.AgentSteps;
+            cart.WorkFlowMermaid = result.WorkFlowMermaid;
 
             _logger.LogInformation("DEMO: Agentic checkout completed - Discount: {Discount:C}, Reason: {Reason}",
                 result.DiscountAmount, result.DiscountReason);
