@@ -11,6 +11,7 @@ namespace AgentServices.Stock;
 /// Stock Agent Service
 /// Uses Microsoft Agent Framework to validate stock availability and generate human-friendly summaries.
 /// For demo purposes, stock is always available (deterministic), but uses AI for friendly messages.
+/// Supports location-based stock queries when a LocationId is provided.
 /// </summary>
 public class StockAgentService
 {
@@ -26,6 +27,7 @@ public class StockAgentService
         Given a list of items and their stock status, generate a brief, friendly summary message.
         Be concise and positive. If all items are available, say something like "Great news! All items are in stock and ready to ship."
         If there are issues, mention them briefly.
+        If checking stock at a specific location, mention the location name in your response.
         Respond with just the summary message, no JSON or formatting.
         """;
 
@@ -40,10 +42,16 @@ public class StockAgentService
     /// <summary>
     /// Check stock availability for cart items using Microsoft Agent Framework.
     /// For demo purposes, all items are considered in stock.
+    /// Supports optional location-based queries.
     /// </summary>
     public async Task<StockCheckResult> CheckStockAsync(StockCheckRequest request)
     {
-        _logger.LogInformation("DEMO: {AgentName} starting - Checking {ItemCount} items", AgentName, request.Items.Count);
+        var locationInfo = request.LocationId.HasValue 
+            ? $" at location {request.LocationId}" 
+            : " (all locations)";
+        
+        _logger.LogInformation("DEMO: {AgentName} starting - Checking {ItemCount} items{LocationInfo}", 
+            AgentName, request.Items.Count, locationInfo);
 
         // DEMO: For demo purposes, all items are in stock
         // In a real scenario, this would query the Products API or database
@@ -51,7 +59,8 @@ public class StockAgentService
         {
             HasStockIssues = false,
             Issues = new List<StockIssue>(),
-            Success = true
+            Success = true,
+            CheckedLocationId = request.LocationId
         };
 
         // Generate a friendly summary message using the Agent Framework
@@ -63,23 +72,40 @@ public class StockAgentService
         return result;
     }
 
+    /// <summary>
+    /// Check stock availability at a specific location.
+    /// </summary>
+    public async Task<StockCheckResult> CheckStockAtLocationAsync(StockCheckRequest request, int locationId, string? locationName = null)
+    {
+        request.LocationId = locationId;
+        
+        var result = await CheckStockAsync(request);
+        result.CheckedLocationId = locationId;
+        result.CheckedLocationName = locationName;
+        
+        return result;
+    }
+
     private async Task<string> GenerateSummaryMessage(StockCheckRequest request, StockCheckResult result)
     {
         // If AI is not available, use fallback message
         if (_stockAgent == null)
         {
             _logger.LogDebug("AI not available, using fallback stock message");
-            return result.HasStockIssues 
-                ? "Some items have limited availability. Please review your cart."
-                : "All items are in stock and ready to ship!";
+            return GenerateFallbackMessage(request, result);
         }
 
         try
         {
             var itemsList = string.Join("\n", request.Items.Select(i => $"- {i.Name} (Qty: {i.Quantity}): In Stock"));
+            var locationContext = request.LocationId.HasValue 
+                ? $"\nLocation: {result.CheckedLocationName ?? $"Location #{request.LocationId}"}"
+                : "";
+            
             var userMessage = $"""
                 Items to check:
                 {itemsList}
+                {locationContext}
                 
                 All items are available. Generate a brief, friendly confirmation message.
                 """;
@@ -102,6 +128,19 @@ public class StockAgentService
         }
 
         // Fallback
-        return "All items are in stock and ready to ship!";
+        return GenerateFallbackMessage(request, result);
+    }
+
+    private static string GenerateFallbackMessage(StockCheckRequest request, StockCheckResult result)
+    {
+        var locationSuffix = request.LocationId.HasValue && !string.IsNullOrEmpty(result.CheckedLocationName)
+            ? $" at {result.CheckedLocationName}"
+            : request.LocationId.HasValue
+                ? $" at location #{request.LocationId}"
+                : "";
+
+        return result.HasStockIssues 
+            ? $"Some items have limited availability{locationSuffix}. Please review your cart."
+            : $"All items are in stock and ready to ship{locationSuffix}!";
     }
 }
