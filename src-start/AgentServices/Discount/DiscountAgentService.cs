@@ -1,7 +1,5 @@
-using System.Text.Json;
 using AgentServices.Configuration;
 using AgentServices.Models;
-using DataEntities;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +8,10 @@ namespace AgentServices.Discount;
 /// <summary>
 /// DEMO: Discount Agent Service
 /// Uses Microsoft Agent Framework with Azure OpenAI to compute membership-based discounts.
+/// 
+/// TODO: This is the starting point for the live demo.
+/// During the demo, you will implement the AI-powered discount calculation.
+/// See docs/04_speaker-demo-walkthrough.md for step-by-step instructions.
 /// </summary>
 public class DiscountAgentService : IDiscountAgentService
 {
@@ -17,26 +19,12 @@ public class DiscountAgentService : IDiscountAgentService
     private readonly ILogger<DiscountAgentService> _logger;
     private readonly AgentSettings _settings;
 
-    // DEMO: System prompt for the discount agent
-    private const string SystemPrompt = """
-        You are an e-commerce pricing assistant.
-        
-        Rules:
-        - If the customer is GOLD, apply 20% discount to the subtotal.
-        - If SILVER, apply 10% discount to the subtotal.
-        - For NORMAL (Regular) or any other tier, no discount.
-        - Never apply negative discounts.
-        - Calculate the discount amount based on the subtotal provided.
-        
-        Respond strictly with JSON in this format:
-        { "discountAmount": <number>, "reason": "<string>" }
-        
-        Example for GOLD with $100 subtotal:
-        { "discountAmount": 20.00, "reason": "Gold member 20% discount applied" }
-        
-        Example for NORMAL with $100 subtotal:
-        { "discountAmount": 0, "reason": "No discount - Standard membership" }
-        """;
+    // TODO: Step 1.1 - Add the System Prompt here
+    // The system prompt should define the discount rules:
+    // - GOLD: 20% discount
+    // - SILVER: 10% discount  
+    // - NORMAL: no discount
+    // See docs/04_speaker-demo-walkthrough.md#step-11-add-the-system-prompt
 
     public DiscountAgentService(
         IChatClient? chatClient,
@@ -49,137 +37,26 @@ public class DiscountAgentService : IDiscountAgentService
     }
 
     /// <summary>
-    /// DEMO: Compute discount using the AI agent.
+    /// TODO: Implement AI-powered discount calculation.
+    /// See docs/04_speaker-demo-walkthrough.md#step-12-replace-the-computediscountasync-method
     /// </summary>
-    public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
+    public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
     {
-        _logger.LogInformation("DEMO: DiscountAgent starting - Tier: {Tier}, Subtotal: {Subtotal:C}", 
-            request.Tier, request.Subtotal);
-
-        // If chat client is not available, use fallback deterministic logic
-        if (_chatClient == null || !_settings.AgentsEnabled)
+        _logger.LogInformation("TODO: DiscountAgent not implemented...");
+        
+        // Placeholder: No discount applied
+        var result = new DiscountResult
         {
-            _logger.LogWarning("DEMO: AI not available, using fallback discount logic");
-            return ComputeFallbackDiscount(request);
-        }
-
-        try
-        {
-            // DEMO: Build the user message with cart context
-            var itemsSummary = string.Join(", ", request.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
-            var userMessage = $"""
-                Customer membership tier: {request.Tier}
-                Cart subtotal: ${request.Subtotal:F2}
-                Items: {itemsSummary}
-                
-                Calculate the discount based on the membership tier rules.
-                """;
-
-            // DEMO: Call the AI agent
-            var messages = new List<ChatMessage>
-            {
-                new(ChatRole.System, SystemPrompt),
-                new(ChatRole.User, userMessage)
-            };
-
-            _logger.LogInformation("DEMO: Sending request to DiscountAgent AI");
-            var response = await _chatClient.GetResponseAsync(messages);
-            var content = response.Text ?? "";
-
-            _logger.LogInformation("DEMO: DiscountAgent AI response: {Response}", content);
-
-            // DEMO: Parse the JSON response
-            var result = ParseAgentResponse(content, request.Subtotal);
-            _logger.LogInformation("DEMO: DiscountAgent computed - Amount: {Amount:C}, Reason: {Reason}", 
-                result.DiscountAmount, result.DiscountReason);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "DEMO: DiscountAgent error, using fallback");
-            return ComputeFallbackDiscount(request);
-        }
-    }
-
-    private DiscountResult ParseAgentResponse(string content, decimal subtotal)
-    {
-        try
-        {
-            // Extract JSON from response (handle markdown code blocks if present)
-            var jsonContent = content.Trim();
-            if (jsonContent.Contains("```json"))
-            {
-                var start = jsonContent.IndexOf("```json") + 7;
-                var end = jsonContent.IndexOf("```", start);
-                if (end > start)
-                {
-                    jsonContent = jsonContent.Substring(start, end - start).Trim();
-                }
-            }
-            else if (jsonContent.Contains("```"))
-            {
-                var start = jsonContent.IndexOf("```") + 3;
-                var end = jsonContent.IndexOf("```", start);
-                if (end > start)
-                {
-                    jsonContent = jsonContent.Substring(start, end - start).Trim();
-                }
-            }
-
-            using var doc = JsonDocument.Parse(jsonContent);
-            var root = doc.RootElement;
-
-            var discountAmount = root.GetProperty("discountAmount").GetDecimal();
-            var reason = root.GetProperty("reason").GetString() ?? "Discount applied";
-
-            // Validate and clamp discount
-            if (discountAmount < 0) discountAmount = 0;
-            if (discountAmount > subtotal) discountAmount = subtotal;
-
-            return new DiscountResult
-            {
-                DiscountAmount = discountAmount,
-                DiscountReason = reason,
-                TotalAfterDiscount = subtotal - discountAmount,
-                Success = true
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "DEMO: Failed to parse agent response, extracting manually");
-            
-            // Simple fallback parsing
-            return new DiscountResult
-            {
-                DiscountAmount = 0,
-                DiscountReason = "Could not parse agent response",
-                TotalAfterDiscount = subtotal,
-                Success = false
-            };
-        }
-    }
-
-    /// <summary>
-    /// DEMO: Deterministic fallback when AI is unavailable.
-    /// </summary>
-    private DiscountResult ComputeFallbackDiscount(DiscountRequest request)
-    {
-        var (percentage, reason) = request.Tier switch
-        {
-            MembershipTier.Gold => (0.20m, "Gold member 20% discount applied"),
-            MembershipTier.Silver => (0.10m, "Silver member 10% discount applied"),
-            _ => (0m, "No discount - Standard membership")
-        };
-
-        var discountAmount = request.Subtotal * percentage;
-
-        return new DiscountResult
-        {
-            DiscountAmount = discountAmount,
-            DiscountReason = reason,
-            TotalAfterDiscount = request.Subtotal - discountAmount,
+            DiscountAmount = 0,
+            DiscountReason = "No discount applied - Agent not implemented",
+            TotalAfterDiscount = request.Subtotal,
             Success = true
         };
+        return Task.FromResult(result);
     }
+
+    // TODO: Step 1.3 - Add helper methods here
+    // - ParseAgentResponse: Parse the JSON response from the AI
+    // - ComputeFallbackDiscount: Deterministic fallback when AI is unavailable
+    // See docs/04_speaker-demo-walkthrough.md#step-13-add-helper-methods
 }
