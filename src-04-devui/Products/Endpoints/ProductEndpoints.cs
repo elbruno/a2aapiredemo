@@ -27,10 +27,6 @@ public static class ProductEndpoints
     /// - Retrieves a product by its ID.
     /// - Response: 200 OK with the product if found, 404 Not Found otherwise.
     ///
-    /// GET /api/Product/default
-    /// - Retrieves the default product.
-    /// - Response: 200 OK with the default product if found, 404 Not Found otherwise.
-    ///
     /// PUT /api/Product/{id}
     /// - Updates an existing product by its ID.
     /// - Response: 200 OK if the product is updated, 404 Not Found otherwise.
@@ -47,14 +43,6 @@ public static class ProductEndpoints
     /// - Searches for products by name.
     /// - Response: 200 OK with a list of matching products and search metadata.
     ///
-    /// GET /api/Product/bylocation/{locationId}
-    /// - Gets products available at a specific location.
-    /// - Response: 200 OK with list of products and quantities, 404 Not Found otherwise.
-    ///
-    /// GET /api/Product/{productId}/locations
-    /// - Gets all locations where a product is available.
-    /// - Response: 200 OK with list of locations and quantities, 404 Not Found otherwise.
-    ///
     /// GET /api/aisearch/{search}
     /// - Searches for products using AI-based search.
     /// - Response: 200 OK with the search results, 404 Not Found otherwise.
@@ -66,11 +54,6 @@ public static class ProductEndpoints
         group.MapGet("/", ProductApiActions.GetAllProducts)
             .WithName("GetAllProducts")
             .Produces<List<Product>>(StatusCodes.Status200OK);
-
-        group.MapGet("/default", ProductApiActions.GetDefaultProduct)
-            .WithName("GetDefaultProduct")
-            .Produces<Product>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet("/{id}", ProductApiActions.GetProductById)
             .WithName("GetProductById")
@@ -94,16 +77,6 @@ public static class ProductEndpoints
         group.MapGet("/search/{search}", ProductApiActions.SearchAllProducts)
             .WithName("SearchAllProducts")
             .Produces<List<Product>>(StatusCodes.Status200OK);
-
-        group.MapGet("/bylocation/{locationId}", ProductApiActions.GetProductsByLocation)
-            .WithName("GetProductsByLocation")
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
-
-        group.MapGet("/{productId}/locations", ProductApiActions.GetProductLocations)
-            .WithName("GetProductLocations")
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
 
         #region AI Search Endpoint
         routes.MapGet("/api/aisearch/{search}", ProductAiActions.AISearch)

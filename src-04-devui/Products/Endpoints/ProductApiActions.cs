@@ -3,6 +3,7 @@ using DataEntities;
 using Products.Models;
 using SearchEntities;
 using Microsoft.AspNetCore.Http;
+using Products.Models;
 
 namespace Products.Endpoints;
 
@@ -29,7 +30,6 @@ public static class ProductApiActions
         existing.Description = product.Description;
         existing.Price = product.Price;
         existing.ImageUrl = product.ImageUrl;
-        existing.IsDefault = product.IsDefault;
         await db.SaveChangesAsync();
         return Results.Ok();
     }
@@ -61,47 +61,5 @@ public static class ProductApiActions
             $"{products.Count} Products found for [{search}]" :
             $"No products found for [{search}]";
         return Results.Ok(response);
-    }
-
-    public static async Task<IResult> GetDefaultProduct(Products.Models.Context db)
-    {
-        var model = await db.Product.AsNoTracking().FirstOrDefaultAsync(m => m.IsDefault);
-        return model is not null ? Results.Ok(model) : Results.NotFound();
-    }
-
-    public static async Task<IResult> GetProductsByLocation(int locationId, Products.Models.Context db)
-    {
-        var productsAtLocation = await db.ProductsByLocation
-            .Where(pl => pl.LocationId == locationId)
-            .Include(pl => pl.Product)
-            .Select(pl => new 
-            {
-                Product = pl.Product,
-                Quantity = pl.Quantity
-            })
-            .ToListAsync();
-
-        if (!productsAtLocation.Any())
-            return Results.NotFound($"No products found at location {locationId}");
-
-        return Results.Ok(productsAtLocation);
-    }
-
-    public static async Task<IResult> GetProductLocations(int productId, Products.Models.Context db)
-    {
-        var locations = await db.ProductsByLocation
-            .Where(pl => pl.ProductId == productId)
-            .Include(pl => pl.Location)
-            .Select(pl => new 
-            {
-                Location = pl.Location,
-                Quantity = pl.Quantity
-            })
-            .ToListAsync();
-
-        if (!locations.Any())
-            return Results.NotFound($"No locations found for product {productId}");
-
-        return Results.Ok(locations);
     }
 }

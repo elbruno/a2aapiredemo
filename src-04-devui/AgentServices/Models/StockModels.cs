@@ -12,12 +12,6 @@ public class StockCheckRequest
     /// Cart items to check stock for.
     /// </summary>
     public IReadOnlyList<CartItem> Items { get; set; } = new List<CartItem>();
-
-    /// <summary>
-    /// Optional location ID to check stock at a specific location.
-    /// If null, checks general availability across all locations.
-    /// </summary>
-    public int? LocationId { get; set; }
 }
 
 /// <summary>
@@ -45,16 +39,6 @@ public class StockCheckResult
     /// Whether the stock check was successful.
     /// </summary>
     public bool Success { get; set; } = true;
-
-    /// <summary>
-    /// The location ID where stock was checked (if applicable).
-    /// </summary>
-    public int? CheckedLocationId { get; set; }
-
-    /// <summary>
-    /// The location name where stock was checked (if applicable).
-    /// </summary>
-    public string? CheckedLocationName { get; set; }
 }
 
 /// <summary>
@@ -67,5 +51,4 @@ public class StockIssue
     public int RequestedQuantity { get; set; }
     public int AvailableQuantity { get; set; }
     public string Message { get; set; } = string.Empty;
-    public int? LocationId { get; set; }
 }
