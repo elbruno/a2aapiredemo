@@ -150,8 +150,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Initial load - this will be empty during server-side rendering
-        await LoadCart();
+        // No cart loading here; only set initial state if needed
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
