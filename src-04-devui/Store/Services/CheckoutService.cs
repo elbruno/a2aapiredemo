@@ -9,14 +9,14 @@ namespace Store.Services;
 public class CheckoutService : ICheckoutService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
-    private readonly IAgentCheckoutOrchestrator _agentOrchestrator;
+    private readonly AgentCheckoutOrchestrator _agentOrchestrator;
     private readonly ICustomerService _customerService;
     private readonly ILogger<CheckoutService> _logger;
     private const string OrderSessionKey = "orders";
 
     public CheckoutService(
         ProtectedSessionStorage sessionStorage,
-        IAgentCheckoutOrchestrator agentOrchestrator,
+        AgentCheckoutOrchestrator agentOrchestrator,
         ICustomerService customerService,
         ILogger<CheckoutService> logger)
     {
