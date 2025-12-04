@@ -1,21 +1,22 @@
 # Speaker Demo Walkthrough — Code Implementation Guide
 
 ### Step-by-Step Instructions for Live Coding During the Session
-### From `/src-start` (Baseline) to `/src-complete` (Agentic Solution)
+### From `/src-start` (Baseline) to Fully Agentic Solution
 
 ---
 
 ## 📋 Overview
 
-This document provides **detailed, step-by-step instructions** for the speaker to follow during the live demo session. It covers the exact code changes needed to transform the baseline eShop Lite application (`/src-start`) into the fully agentic solution (`/src-complete`).
+This document provides **detailed, step-by-step instructions** for the speaker to follow during the live demo session. The demo is structured with pre-built components to make the live coding simpler and more reliable.
 
-### What You'll Implement
+### Demo Structure
 
-| Step | Component | What You'll Add |
-|------|-----------|-----------------|
-| 1 | DiscountAgentService | AI-powered membership discount calculation |
-| 2 | StockAgentService | AI-generated friendly stock status messages |
-| 3 | AgentCheckoutOrchestrator | Multi-agent checkout workflow |
+| Step | Folder | What You'll Do |
+|------|--------|----------------|
+| 0 | `/src-start` | Show baseline app (no coding) |
+| 1 | `/src-start` | Live code: Replace `ComputeDiscountAsync` only (helpers pre-built) |
+| 2 | `/src-step2` | Open and explain pre-built multi-agent workflow |
+| 3 | `/src-step3` | Open and explain DI registration + DevUI |
 
 ### Prerequisites
 
@@ -24,11 +25,22 @@ Before starting the live demo:
 1. ✅ Open `/src-start` in your IDE
 2. ✅ Verify the baseline app builds and runs: `dotnet run` from `eShopAppHost`
 3. ✅ Have Azure OpenAI / Microsoft Foundry connection configured
-4. ✅ Open `/src-complete` in a separate window for reference (if needed)
+4. ✅ Have `/src-step2` and `/src-step3` ready to open for quick transitions
+5. ✅ Open `/src-complete` in a separate window for reference (if needed)
 
 ---
 
 ## 🎯 Demo 1: Implement the DiscountAgent (5 minutes)
+
+### What's Already Pre-Built
+
+The `/src-start` version now includes:
+- ✅ System prompt with discount rules
+- ✅ `ParseAgentResponse` helper method  
+- ✅ `ComputeFallbackDiscount` helper method
+- ✅ All required using statements
+
+This allows you to focus on **just the AI integration code** during the live demo.
 
 ### File to Edit
 
@@ -36,9 +48,9 @@ Before starting the live demo:
 src-start/AgentServices/Discount/DiscountAgentService.cs
 ```
 
-### Current State (TODO Stub)
+### Current State (Placeholder)
 
-The file currently contains a placeholder that returns no discount:
+The file has the placeholder method you'll replace:
 
 ```csharp
 public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
@@ -46,6 +58,7 @@ public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
     _logger.LogInformation("TODO: DiscountAgent not implemented...");
     
     // Placeholder: No discount applied
+    // DEMO: Replace this with AI-powered discount calculation
     var result = new DiscountResult
     {
         DiscountAmount = 0,
@@ -57,34 +70,7 @@ public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
 }
 ```
 
-### Step 1.1: Add the System Prompt
-
-Add the following constant at the top of the class (after the field declarations):
-
-```csharp
-// DEMO: System prompt for the discount agent
-private const string SystemPrompt = """
-    You are an e-commerce pricing assistant.
-    
-    Rules:
-    - If the customer is GOLD, apply 20% discount to the subtotal.
-    - If SILVER, apply 10% discount to the subtotal.
-    - For NORMAL (Regular) or any other tier, no discount.
-    - Never apply negative discounts.
-    - Calculate the discount amount based on the subtotal provided.
-    
-    Respond strictly with JSON in this format:
-    { "discountAmount": <number>, "reason": "<string>" }
-    
-    Example for GOLD with $100 subtotal:
-    { "discountAmount": 20.00, "reason": "Gold member 20% discount applied" }
-    
-    Example for NORMAL with $100 subtotal:
-    { "discountAmount": 0, "reason": "No discount - Standard membership" }
-    """;
-```
-
-### Step 1.2: Replace the ComputeDiscountAsync Method
+### Live Coding: Replace the ComputeDiscountAsync Method
 
 Replace the entire `ComputeDiscountAsync` method with:
 
@@ -144,100 +130,6 @@ public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
 }
 ```
 
-### Step 1.3: Add Helper Methods
-
-Add these helper methods at the end of the class:
-
-```csharp
-private DiscountResult ParseAgentResponse(string content, decimal subtotal)
-{
-    try
-    {
-        // Extract JSON from response (handle markdown code blocks if present)
-        var jsonContent = content.Trim();
-        if (jsonContent.Contains("```json"))
-        {
-            var start = jsonContent.IndexOf("```json") + 7;
-            var end = jsonContent.IndexOf("```", start);
-            jsonContent = jsonContent.Substring(start, end - start).Trim();
-        }
-        else if (jsonContent.Contains("```"))
-        {
-            var start = jsonContent.IndexOf("```") + 3;
-            var end = jsonContent.IndexOf("```", start);
-            jsonContent = jsonContent.Substring(start, end - start).Trim();
-        }
-
-        using var doc = JsonDocument.Parse(jsonContent);
-        var root = doc.RootElement;
-
-        var discountAmount = root.GetProperty("discountAmount").GetDecimal();
-        var reason = root.GetProperty("reason").GetString() ?? "Discount applied";
-
-        // Validate and clamp discount
-        if (discountAmount < 0) discountAmount = 0;
-        if (discountAmount > subtotal) discountAmount = subtotal;
-
-        return new DiscountResult
-        {
-            DiscountAmount = discountAmount,
-            DiscountReason = reason,
-            TotalAfterDiscount = subtotal - discountAmount,
-            Success = true
-        };
-    }
-    catch (Exception ex)
-    {
-        _logger.LogWarning(ex, "DEMO: Failed to parse agent response, extracting manually");
-        
-        // Simple fallback parsing
-        return new DiscountResult
-        {
-            DiscountAmount = 0,
-            DiscountReason = "Could not parse agent response",
-            TotalAfterDiscount = subtotal,
-            Success = false
-        };
-    }
-}
-
-/// <summary>
-/// DEMO: Deterministic fallback when AI is unavailable.
-/// </summary>
-private DiscountResult ComputeFallbackDiscount(DiscountRequest request)
-{
-    var (percentage, reason) = request.Tier switch
-    {
-        MembershipTier.Gold => (0.20m, "Gold member 20% discount applied"),
-        MembershipTier.Silver => (0.10m, "Silver member 10% discount applied"),
-        _ => (0m, "No discount - Standard membership")
-    };
-
-    var discountAmount = request.Subtotal * percentage;
-
-    return new DiscountResult
-    {
-        DiscountAmount = discountAmount,
-        DiscountReason = reason,
-        TotalAfterDiscount = request.Subtotal - discountAmount,
-        Success = true
-    };
-}
-```
-
-### Step 1.4: Add Required Using Statements
-
-Ensure these using statements are at the top of the file:
-
-```csharp
-using System.Text.Json;
-using AgentServices.Configuration;
-using AgentServices.Models;
-using DataEntities;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
-```
-
 ### Expected Outcome After Demo 1
 
 - The "Apply AI Discount" button in the cart now calculates discounts
@@ -248,44 +140,23 @@ using Microsoft.Extensions.Logging;
 
 ### 💬 Key Messages to Say
 
+> "Notice that the system prompt and helper methods were already defined. This lets us focus on the AI integration."
+
 > "We didn't write if-else logic. We only described intent — the agent produced the business rule."
 
 > "Notice the fallback logic — if AI is unavailable, the app still works with deterministic rules."
 
 ---
 
-## 🎯 Demo 2: Implement the StockAgent (3 minutes)
+## 🎯 Demo 2: Show Multi-Agent Workflow (Pre-Built)
 
-### File to Edit
+### What to Do
 
-```
-src-start/AgentServices/Stock/StockAgentService.cs
-```
+Instead of live coding, **open the `/src-step2` folder** and walk through the pre-built implementation.
 
-### Current State (TODO Stub)
+### Files to Show
 
-The file returns a static message without AI:
-
-```csharp
-public Task<StockCheckResult> CheckStockAsync(StockCheckRequest request)
-{
-    _logger.LogInformation("TODO: StockAgent not implemented...");
-    
-    var result = new StockCheckResult
-    {
-        HasStockIssues = false,
-        Issues = new List<StockIssue>(),
-        SummaryMessage = "Stock check completed - Agent not implemented",
-        Success = true
-    };
-    return Task.FromResult(result);
-}
-```
-
-### Step 2.1: Add the System Prompt
-
-Add this constant at the top of the class:
-
+**StockAgentService** (`src-step2/AgentServices/Stock/StockAgentService.cs`):
 ```csharp
 // DEMO: System prompt for stock agent message generation
 private const string SystemPrompt = """
@@ -297,300 +168,30 @@ private const string SystemPrompt = """
     """;
 ```
 
-### Step 2.2: Replace the CheckStockAsync Method
-
-Replace the entire `CheckStockAsync` method with:
-
+**AgentCheckoutOrchestrator** (`src-step2/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`):
 ```csharp
-/// <summary>
-/// DEMO: Check stock availability for cart items.
-/// For demo purposes, all items are considered in stock.
-/// </summary>
-public async Task<StockCheckResult> CheckStockAsync(StockCheckRequest request)
+// DEMO: Execute the multi-agent checkout workflow
+public async Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
 {
-    _logger.LogInformation("DEMO: StockAgent starting - Checking {ItemCount} items", request.Items.Count);
+    // Step 1 - Stock Agent
+    var stockStep = await RunStockAgent(request);
+    result.AgentSteps.Add(stockStep);
 
-    // DEMO: For demo purposes, all items are in stock
-    // In a real scenario, this would query the Products API or database
-    var result = new StockCheckResult
-    {
-        HasStockIssues = false,
-        Issues = new List<StockIssue>(),
-        Success = true
-    };
-
-    // Generate a friendly summary message
-    result.SummaryMessage = await GenerateSummaryMessage(request, result);
+    // Step 2 - Discount Agent
+    var discountStep = await RunDiscountAgent(request, result);
+    result.AgentSteps.Add(discountStep);
     
-    _logger.LogInformation("DEMO: StockAgent completed - HasIssues: {HasIssues}, Message: {Message}", 
-        result.HasStockIssues, result.SummaryMessage);
-
     return result;
-}
-```
-
-### Step 2.3: Add the GenerateSummaryMessage Method
-
-Add this helper method:
-
-```csharp
-private async Task<string> GenerateSummaryMessage(StockCheckRequest request, StockCheckResult result)
-{
-    // If AI is not available, use fallback message
-    if (_chatClient == null || !_settings.AgentsEnabled)
-    {
-        _logger.LogDebug("DEMO: AI not available, using fallback stock message");
-        return result.HasStockIssues 
-            ? "Some items have limited availability. Please review your cart."
-            : "All items are in stock and ready to ship!";
-    }
-
-    try
-    {
-        var itemsList = string.Join("\n", request.Items.Select(i => $"- {i.Name} (Qty: {i.Quantity}): In Stock"));
-        var userMessage = $"""
-            Items to check:
-            {itemsList}
-            
-            All items are available. Generate a brief, friendly confirmation message.
-            """;
-
-        var messages = new List<ChatMessage>
-        {
-            new(ChatRole.System, SystemPrompt),
-            new(ChatRole.User, userMessage)
-        };
-
-        _logger.LogDebug("DEMO: Sending request to StockAgent AI for summary");
-        var response = await _chatClient.GetResponseAsync(messages);
-        var content = response.Text?.Trim() ?? "";
-
-        if (!string.IsNullOrEmpty(content))
-        {
-            return content;
-        }
-    }
-    catch (Exception ex)
-    {
-        _logger.LogWarning(ex, "DEMO: StockAgent AI error, using fallback message");
-    }
-
-    // Fallback
-    return "All items are in stock and ready to ship!";
 }
 ```
 
 ### Expected Outcome After Demo 2
 
-- The StockAgent generates friendly, AI-powered confirmation messages
-- Messages are personalized based on the cart contents
-- Fallback to static message if AI is unavailable
-
-### 💬 Key Messages to Say
-
-> "The StockAgent uses AI for user-friendly messages, not for stock validation."
-
-> "This pattern — deterministic logic + AI explanation — is great for production reliability."
-
----
-
-## 🎯 Demo 3: Implement the AgentCheckoutOrchestrator (4 minutes)
-
-### File to Edit
-
-```
-src-start/AgentServices/Checkout/AgentCheckoutOrchestrator.cs
-```
-
-### Current State (TODO Stub)
-
-The orchestrator returns a basic result without running any agents:
-
-```csharp
-public Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
-{
-    _logger.LogInformation("TODO: Agent checkout orchestrator not implemented");
-    
-    var result = new AgentCheckoutResult
-    {
-        Subtotal = request.Cart.Subtotal,
-        DiscountAmount = 0,
-        DiscountReason = "Agent checkout not implemented",
-        TotalAfterDiscount = request.Cart.Subtotal,
-        AgentSteps = new List<AgentStep> { ... },
-        Success = true
-    };
-    return Task.FromResult(result);
-}
-```
-
-### Step 3.1: Replace the ProcessCheckoutAsync Method
-
-Replace the entire `ProcessCheckoutAsync` method with:
-
-```csharp
-/// <summary>
-/// DEMO: Execute the multi-agent checkout workflow.
-/// </summary>
-public async Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
-{
-    _logger.LogInformation("DEMO: Starting agentic checkout pipeline");
-    _logger.LogInformation("DEMO: Membership tier: {Tier}, Cart subtotal: {Subtotal:C}", 
-        request.MembershipTier, request.Cart.Subtotal);
-
-    var result = new AgentCheckoutResult
-    {
-        Subtotal = request.Cart.Subtotal,
-        AgentSteps = new List<AgentStep>()
-    };
-
-    try
-    {
-        // DEMO: Step 1 - Stock Agent
-        _logger.LogInformation("DEMO: Step 1 - Running StockAgent");
-        var stockStep = await RunStockAgent(request);
-        result.AgentSteps.Add(stockStep);
-
-        if (stockStep.Status == "Error")
-        {
-            result.Success = false;
-            result.ErrorMessage = stockStep.Message;
-            return result;
-        }
-
-        // DEMO: Step 2 - Discount Agent
-        _logger.LogInformation("DEMO: Step 2 - Running DiscountAgent");
-        var discountStep = await RunDiscountAgent(request, result);
-        result.AgentSteps.Add(discountStep);
-
-        // Finalize result
-        result.Success = true;
-        _logger.LogInformation("DEMO: Agentic checkout completed successfully");
-        _logger.LogInformation("DEMO: Final - Subtotal: {Subtotal:C}, Discount: {Discount:C}, Total: {Total:C}",
-            result.Subtotal, result.DiscountAmount, result.TotalAfterDiscount);
-
-        return result;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "DEMO: Agentic checkout pipeline failed");
-        
-        result.AgentSteps.Add(new AgentStep
-        {
-            Name = "Orchestrator",
-            Status = "Error",
-            Message = $"Checkout failed: {ex.Message}",
-            Timestamp = DateTime.UtcNow
-        });
-
-        // Fallback to no discount
-        result.DiscountAmount = 0;
-        result.DiscountReason = "Checkout running in standard mode (agent unavailable)";
-        result.TotalAfterDiscount = result.Subtotal;
-        result.Success = false;
-        result.ErrorMessage = ex.Message;
-
-        return result;
-    }
-}
-```
-
-### Step 3.2: Add the RunStockAgent Method
-
-Add this helper method:
-
-```csharp
-private async Task<AgentStep> RunStockAgent(AgentCheckoutRequest request)
-{
-    var step = new AgentStep
-    {
-        Name = "StockAgent",
-        Timestamp = DateTime.UtcNow
-    };
-
-    try
-    {
-        var stockRequest = new StockCheckRequest
-        {
-            Items = request.Cart.Items
-        };
-
-        var stockResult = await _stockAgent.CheckStockAsync(stockRequest);
-
-        step.Status = stockResult.HasStockIssues ? "Warning" : "Success";
-        step.Message = stockResult.SummaryMessage;
-
-        _logger.LogInformation("DEMO: StockAgent completed - Status: {Status}", step.Status);
-    }
-    catch (Exception ex)
-    {
-        step.Status = "Error";
-        step.Message = $"Stock check failed: {ex.Message}";
-        _logger.LogError(ex, "DEMO: StockAgent failed");
-    }
-
-    return step;
-}
-```
-
-### Step 3.3: Add the RunDiscountAgent Method
-
-Add this helper method:
-
-```csharp
-private async Task<AgentStep> RunDiscountAgent(AgentCheckoutRequest request, AgentCheckoutResult result)
-{
-    var step = new AgentStep
-    {
-        Name = "DiscountAgent",
-        Timestamp = DateTime.UtcNow
-    };
-
-    try
-    {
-        var discountRequest = new DiscountRequest
-        {
-            Tier = request.MembershipTier,
-            Items = request.Cart.Items,
-            Subtotal = result.Subtotal
-        };
-
-        var discountResult = await _discountAgent.ComputeDiscountAsync(discountRequest);
-
-        result.DiscountAmount = discountResult.DiscountAmount;
-        result.DiscountReason = discountResult.DiscountReason;
-        result.TotalAfterDiscount = discountResult.TotalAfterDiscount;
-
-        step.Status = discountResult.Success ? "Success" : "Warning";
-        step.Message = discountResult.DiscountReason;
-
-        _logger.LogInformation("DEMO: DiscountAgent completed - Discount: {Discount:C}", 
-            discountResult.DiscountAmount);
-    }
-    catch (Exception ex)
-    {
-        step.Status = "Error";
-        step.Message = $"Discount calculation failed: {ex.Message}";
-        
-        // Fallback
-        result.DiscountAmount = 0;
-        result.DiscountReason = "No discount applied (agent unavailable)";
-        result.TotalAfterDiscount = result.Subtotal;
-
-        _logger.LogError(ex, "DEMO: DiscountAgent failed");
-    }
-
-    return step;
-}
-```
-
-### Expected Outcome After Demo 3
-
-- Clicking "Apply AI Discount" runs the full agent pipeline
 - Agent steps are displayed in the cart summary:
   - ✅ StockAgent: "Great news! All items are in stock..."
   - ✅ DiscountAgent: "Gold member 20% discount applied"
 - The discount is calculated and applied to the total
+- The multi-agent workflow completes successfully
 
 ### 💬 Key Messages to Say
 
@@ -598,38 +199,103 @@ private async Task<AgentStep> RunDiscountAgent(AgentCheckoutRequest request, Age
 
 > "The orchestrator coordinates the workflow — Stock first, then Discount."
 
+> "The StockAgent uses AI for user-friendly messages, not for stock validation."
+
 ---
 
-## 🔍 Summary: Files Changed
+## 🎯 Demo 3: DI Registration + Observability (4 minutes)
 
-| File | Changes Made |
-|------|--------------|
-| `AgentServices/Discount/DiscountAgentService.cs` | Added AI-powered discount computation with system prompt |
-| `AgentServices/Stock/StockAgentService.cs` | Added AI-powered friendly message generation |
-| `AgentServices/Checkout/AgentCheckoutOrchestrator.cs` | Implemented multi-agent checkout workflow |
+### What to Do
+
+Open the `/src-step3` folder and show the advanced patterns for production-ready agent applications.
+
+### Key Features to Highlight
+
+**1. Enhanced DI Registration** (`src-step3/AgentServices/AgentServicesExtensions.cs`):
+
+```csharp
+// DEMO Step 3: Register agent services with scoped lifetime
+// Scoped lifetime ensures:
+// - Each HTTP request gets its own agent instance
+// - Agent state is isolated between requests
+// - Proper disposal of resources
+services.AddScoped<IStockAgentService, StockAgentService>();
+services.AddScoped<IDiscountAgentService, DiscountAgentService>();
+services.AddScoped<IAgentCheckoutOrchestrator, AgentCheckoutOrchestrator>();
+```
+
+**2. Enhanced Logging** (`src-step3/Store/Program.cs`):
+
+```csharp
+// DEMO Step 3: Add enhanced logging for agent debugging in development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Debug);
+}
+
+// ...
+
+app.Logger.LogInformation("DEMO Step 3: Agent services registered via DI with scoped lifetime");
+```
+
+### Benefits to Demonstrate
+
+- **Proper Lifecycle**: Scoped services ensure request isolation
+- **Testability**: Easy to mock agents in unit tests
+- **Configuration**: Centralized settings via `AgentSettings`
+- **Observability**: OpenTelemetry integration for tracing
+
+### 💬 Key Messages to Say
+
+> "Registering agents in DI gives you proper lifecycle management and testability."
+
+> "Scoped lifetime means each request gets its own agent instances."
+
+> "This pattern is essential for production-grade agent applications."
+
+### Note on DevUI (Optional)
+
+For more advanced debugging, the Microsoft Agent Framework provides DevUI (`Microsoft.Agents.AI.DevUI`), which offers:
+- Visual interface for agent debugging
+- Inspect agent reasoning and message flows
+- Test agent responses interactively
+
+See the [Agent Framework documentation](https://github.com/microsoft/agent-framework) for DevUI setup details.
+
+---
+
+## 🔍 Summary: Folder Structure
+
+| Folder | Contents |
+|--------|----------|
+| `/src-start` | Baseline with pre-built system prompts and helpers for easy live coding |
+| `/src-step2` | Complete StockAgent + AgentCheckoutOrchestrator implementation |
+| `/src-step3` | Full solution with DI registration and observability patterns |
+| `/src-complete` | Reference implementation with all features |
 
 ---
 
 ## 📊 Complete Code Reference
 
-For the complete implementation of each file, refer to the `/src-complete` folder:
+For the complete implementation of each file, refer to:
 
-- `src-complete/AgentServices/Discount/DiscountAgentService.cs`
-- `src-complete/AgentServices/Stock/StockAgentService.cs`
-- `src-complete/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
+- `/src-step2` for multi-agent workflow
+- `/src-step3` for DI + observability patterns
+- `/src-complete` for full reference implementation
 
 ---
 
 ## ⏱️ Timing Guide
 
-| Demo Step | Duration | Cumulative |
-|-----------|----------|------------|
-| Demo 1: DiscountAgent | 5 min | 5 min |
-| Demo 2: StockAgent | 3 min | 8 min |
-| Demo 3: Orchestrator | 4 min | 12 min |
-| **Total Coding Time** | **~12 min** | |
+| Demo Step | Duration | What You Do |
+|-----------|----------|-------------|
+| Demo 0: Baseline | 3 min | Show app running (no coding) |
+| Demo 1: DiscountAgent | 5 min | Live code ComputeDiscountAsync only |
+| Demo 2: Multi-Agent | 4 min | Open `/src-step2`, walk through code |
+| Demo 3: DI + DevUI | 4 min | Open `/src-step3`, show DevUI |
+| **Total Coding Time** | **5 min** | Only Demo 1 requires live coding |
 
-> **Tip**: Practice the demo several times to ensure smooth transitions between steps.
+> **Tip**: Practice the demo several times to ensure smooth transitions between folders.
 
 ---
 
@@ -653,15 +319,22 @@ For the complete implementation of each file, refer to the `/src-complete` folde
 - Check for missing closing braces `}`
 - Verify method signatures match the interfaces
 
+### DevUI not accessible
+
+- Ensure you're running in Development environment
+- Check that the DevUI packages are installed in `/src-step3`
+- Verify the endpoint is mapped: `app.MapDevUI()`
+
 ---
 
 ## 🏁 End of Walkthrough
 
-After completing all three demos, the application should match the `/src-complete` implementation with:
+After completing all demos, the audience will have seen:
 
-✅ AI-powered membership discounts  
-✅ Friendly stock status messages  
-✅ Multi-agent checkout workflow  
-✅ Agent steps visible in the UI  
+✅ AI-powered membership discounts (live coded)  
+✅ Friendly stock status messages (pre-built)  
+✅ Multi-agent checkout workflow (pre-built)  
+✅ DI registration patterns (pre-built)  
+✅ DevUI for agent debugging (pre-built)  
 
 **Next**: Return to the session to explain optional Azure AI Foundry integration and wrap up with key lessons.

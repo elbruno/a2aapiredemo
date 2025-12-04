@@ -33,6 +33,16 @@ The application for the demo is the repo:
 
 👉 **https://github.com/elbruno/a2aapiredemo**
 
+### Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| `/src-start` | Baseline app with system prompt and helpers pre-defined (for Step 0 and Step 1) |
+| `/src-step2` | Complete implementation of StockAgent + Multi-Agent Workflow |
+| `/src-step3` | Full solution with DI registration and DevUI debugging support |
+| `/src-complete` | Reference implementation with all features |
+| `/src-slides` | Python script for generating PowerPoint presentation |
+
 ### Baseline Features (Before Modernization)
 - Blazor Server Store front-end  
 - Products API  
@@ -46,6 +56,7 @@ The application for the demo is the repo:
 - **Agent-based stock validation** (StockAgent)  
 - **Agent steps log visualized in UI**  
 - **Multi-agent checkout orchestrator**  
+- **DI-registered agents with DevUI debugging**
 - **Optional cloud‑based workflow using Azure AI Foundry**
 
 ---
@@ -64,12 +75,12 @@ The transformation is incremental:
 
 1. **Start with a normal, modern Aspire app**
    - Great architecture, no AI agents yet.
-2. **Introduce a simple agent**  
+2. **Introduce a simple agent (Live Coding)**  
    - Apply user-tier based discounts.
-3. **Move to multi-agent workflows**  
+3. **Move to multi-agent workflows (Pre-built)**  
    - Stock validation → discount → cart summary.
-4. **Show how the same workflow can run in the cloud**  
-   - Azure AI Foundry + Microsoft Agent Framework.
+4. **Add DevUI for debugging (Pre-built)**
+   - Register agents for DI and use DevUI to debug.
 5. **Wrap up with benefits**
    - Flexibility  
    - Lower maintenance  
@@ -83,11 +94,12 @@ The transformation is incremental:
 | Segment | Duration | Description | Demo Code Reference |
 |--------|----------|-------------|---------------------|
 | Intro: Modernization landscape | 2 min | Why apps need intelligent behavior; what agentic modernization solves | - |
-| Demo 1: Baseline eShop Lite | 3 min | Show app working today: browse, search, cart, checkout | [Prerequisites](03_speaker-demo-walkthrough.md#prerequisites) |
+| Demo 0: Baseline eShop Lite | 3 min | Show app working today: browse, search, cart, checkout | `/src-start` |
 | Concepts: What are agents? | 2 min | Agent reasoning, tools, workflows, and why they simplify business logic | - |
-| Demo 2: Add DiscountAgent | 5 min | First live-coded feature: tier-based discounts | [Demo 1: Implement the DiscountAgent](03_speaker-demo-walkthrough.md#-demo-1-implement-the-discountagent-5-minutes) |
-| Concepts: Multi-agent orchestration | 3 min | Stock agent, discount agent, cart agent | - |
-| Demo 3: Multi-agent checkout workflow | 4 min | Show agent steps, final totals, collaboration | [Demo 2: Implement the StockAgent](03_speaker-demo-walkthrough.md#-demo-2-implement-the-stockagent-3-minutes) and [Demo 3: Implement the AgentCheckoutOrchestrator](03_speaker-demo-walkthrough.md#-demo-3-implement-the-agentcheckoutorchestrator-4-minutes) |
+| Demo 1: Add DiscountAgent (Live) | 5 min | Live-code the ComputeDiscountAsync method | `/src-start` |
+| Concepts: Multi-agent orchestration | 2 min | Stock agent, discount agent, orchestrator | - |
+| Demo 2: Multi-agent workflow | 4 min | Open `/src-step2`, show pre-built implementation | `/src-step2` |
+| Demo 3: DI + DevUI | 4 min | Open `/src-step3`, show DI registration and DevUI debugging | `/src-step3` |
 | Cloud: Foundry + Agent Framework | 2–3 min | Explain optional production architecture | - |
 | Closing: Key lessons + call to action | 2 min | Summarize benefits + encourage adoption | - |
 
@@ -105,7 +117,7 @@ Total: **25–30 minutes**
 - Add product to cart  
 - Checkout → simple subtotal only  
 
-📖 **Code Implementation Guide**: See [Prerequisites](03_speaker-demo-walkthrough.md#prerequisites) for setup instructions.
+📖 **Code Implementation Guide**: See [Prerequisites](04_speaker-demo-walkthrough.md#prerequisites) for setup instructions.
 
 ### Key Messages
 - "This is where most .NET apps are today."
@@ -114,66 +126,94 @@ Total: **25–30 minutes**
 
 ---
 
-## 🤖 Step 1 — Add DiscountAgent (Live)
+## 🤖 Step 1 — Add DiscountAgent (Live Coding)
 
-You or Copilot will add:
-- Discount agent service  
-- Logic to apply Gold (20%) or Silver (10%) discount  
-- Update checkout UI with:
-  - DiscountAmount  
-  - DiscountReason  
+The system prompt and helper methods are **already defined** in `/src-start` to make the demo easier to follow.
 
-📖 **Code Implementation Guide**: Follow the step-by-step instructions in [Demo 1: Implement the DiscountAgent](03_speaker-demo-walkthrough.md#-demo-1-implement-the-discountagent-5-minutes).
+During the live demo, you only need to implement:
+- The `ComputeDiscountAsync` method body
 
-**Steps to follow during demo**:
-1. [Add the System Prompt](03_speaker-demo-walkthrough.md#step-11-add-the-system-prompt)
-2. [Replace the ComputeDiscountAsync Method](03_speaker-demo-walkthrough.md#step-12-replace-the-computediscountasync-method)
-3. [Add Helper Methods](03_speaker-demo-walkthrough.md#step-13-add-helper-methods)
-4. [Add Required Using Statements](03_speaker-demo-walkthrough.md#step-14-add-required-using-statements)
+📖 **Code Implementation Guide**: Follow the step-by-step instructions in [Demo 1: Implement the DiscountAgent](04_speaker-demo-walkthrough.md#-demo-1-implement-the-discountagent-5-minutes).
+
+**What's Pre-Built in `/src-start`**:
+- ✅ System prompt with discount rules (Gold: 20%, Silver: 10%, Normal: 0%)
+- ✅ `ParseAgentResponse` helper method
+- ✅ `ComputeFallbackDiscount` helper method
+- ✅ All required using statements
+
+**Live Code During Demo**:
+1. Replace the placeholder `ComputeDiscountAsync` method with AI-powered logic
+2. Build and run to show the discount being applied
 
 ### Key Messages
 - "We didn't write if-else logic."
 - "We only described intent — the agent produced the business rule."
+- "The system prompt and helpers were already defined to keep the demo focused."
 
 ---
 
-## 🧩 Step 2 — Add StockAgent + Multi-Agent Workflow
+## 🧩 Step 2 — Show Multi-Agent Workflow (Pre-Built)
 
-Implement:
-- StockAgent for availability checks  
-- AgentCheckoutOrchestrator that runs:
-  - StockAgent  
-  - DiscountAgent  
-  - Summary agent logic  
+Instead of live coding Step 2, **open the `/src-step2` folder** which has the complete implementation.
 
-Update UI to display:
-- Agent steps log  
-- Validation messages  
-- Calculated totals  
+Walk through the code and explain:
+- **StockAgentService**: AI-generated friendly stock status messages
+- **AgentCheckoutOrchestrator**: Coordinates StockAgent → DiscountAgent workflow
+- **Agent steps log**: Shows each agent's contribution in the UI
 
-📖 **Code Implementation Guide**: 
-- Follow [Demo 2: Implement the StockAgent](03_speaker-demo-walkthrough.md#-demo-2-implement-the-stockagent-3-minutes) for the StockAgent implementation.
-- Follow [Demo 3: Implement the AgentCheckoutOrchestrator](03_speaker-demo-walkthrough.md#-demo-3-implement-the-agentcheckoutorchestrator-4-minutes) for the orchestrator implementation.
-
-**Steps to follow during demo**:
-
-**StockAgent**:
-1. [Add the System Prompt](03_speaker-demo-walkthrough.md#step-21-add-the-system-prompt)
-2. [Replace the CheckStockAsync Method](03_speaker-demo-walkthrough.md#step-22-replace-the-checkstockasync-method)
-3. [Add the GenerateSummaryMessage Method](03_speaker-demo-walkthrough.md#step-23-add-the-generatesummarymessage-method)
-
-**AgentCheckoutOrchestrator**:
-1. [Replace the ProcessCheckoutAsync Method](03_speaker-demo-walkthrough.md#step-31-replace-the-processcheckoutasync-method)
-2. [Add the RunStockAgent Method](03_speaker-demo-walkthrough.md#step-32-add-the-runstockagent-method)
-3. [Add the RunDiscountAgent Method](03_speaker-demo-walkthrough.md#step-33-add-the-rundiscountagent-method)
+📖 **Code Reference**: 
+- `src-step2/AgentServices/Stock/StockAgentService.cs`
+- `src-step2/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
 
 ### Key Messages
 - "Each agent does one job."
 - "This architecture is maintainable and easily replaced."
+- "The orchestrator coordinates the workflow — Stock first, then Discount."
 
 ---
 
-## ☁ Step 3 — Connect to Azure AI Foundry (Optional)
+## 🔧 Step 3 — DI Registration + Observability (Pre-Built)
+
+Open the `/src-step3` folder to show advanced agent patterns:
+
+### Features in Step 3:
+
+1. **Proper DI Registration**
+   - Agents registered with scoped lifetime
+   - Centralized configuration via `AgentSettings`
+   - Easy unit testing through interface injection
+
+2. **Enhanced Observability**
+   - Debug-level logging for agent operations
+   - OpenTelemetry integration for tracing
+   - Detailed request/response logging
+
+📖 **Code Reference**: 
+- `src-step3/Store/Program.cs` - Enhanced logging setup
+- `src-step3/AgentServices/AgentServicesExtensions.cs` - DI patterns
+
+### Key Messages
+- "Registering agents in DI gives you proper lifecycle management."
+- "Scoped lifetime means each request gets isolated agent instances."
+- "This is essential for production-grade agent applications."
+
+### DI Benefits to Highlight:
+- **Testability**: Easy to mock agents in unit tests
+- **Lifecycle**: Proper disposal of resources
+- **Configuration**: Centralized settings management
+- **Observability**: Built-in OpenTelemetry support
+
+### Note on DevUI
+For more advanced debugging, the Microsoft Agent Framework provides DevUI, which offers:
+- Visual interface for agent debugging
+- Inspect agent reasoning and message flows
+- Test agent responses interactively
+
+DevUI requires additional packages (`Microsoft.Agents.AI.DevUI`) and setup. See the [Agent Framework documentation](https://github.com/microsoft/agent-framework) for details.
+
+---
+
+## ☁ Step 4 — Connect to Azure AI Foundry (Optional)
 
 Explain the cloud-deployed version:
 - Persistent agents  
@@ -191,7 +231,7 @@ Explain the cloud-deployed version:
 - Blazor + API interactions  
 - Understanding of agentic concepts: tools, reasoning, workflows  
 
-📖 **Additional Resources**: See [Complete Code Reference](03_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-complete`.
+📖 **Additional Resources**: See [Complete Code Reference](04_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-complete`.
 
 ---
 
@@ -200,9 +240,10 @@ Explain the cloud-deployed version:
 - Switch tiers during demo to show changes  
 - Use small, clear sample products  
 - Reinforce incremental modernization  
+- Have `/src-step2` and `/src-step3` ready to open for quick transitions
 - Keep Foundry section optional  
 
-📖 **Troubleshooting**: If you encounter issues during the demo, refer to the [Troubleshooting](03_speaker-demo-walkthrough.md#-troubleshooting) section.
+📖 **Troubleshooting**: If you encounter issues during the demo, refer to the [Troubleshooting](04_speaker-demo-walkthrough.md#-troubleshooting) section.
 
 ---
 
