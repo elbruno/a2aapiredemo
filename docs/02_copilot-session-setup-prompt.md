@@ -4,7 +4,7 @@
 ## 🎯 GOAL
 Restructure this repository into **two parallel source folders** for a 30-minute agentic modernization live session:
 
-### 1. `/src-start`
+### 1. `/src-01-start`
 A **minimal**, fully building, fully running version of the app **without any agents implemented yet**, containing:
 - eShop Lite baseline features  
 - Vector search  
@@ -12,7 +12,7 @@ A **minimal**, fully building, fully running version of the app **without any ag
 - Membership tier selector (non-functional)  
 - All agent logic removed and replaced with **clear TODO instructions**
 
-### 2. `/src-complete`
+### 2. `/src-04-complete`
 A **fully implemented agentic solution** (the current codebase), including:
 - DiscountAgent  
 - StockAgent  

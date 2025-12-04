@@ -37,10 +37,10 @@ The application for the demo is the repo:
 
 | Folder | Purpose |
 |--------|---------|
-| `/src-start` | Baseline app with system prompt and helpers pre-defined (for Step 0 and Step 1) |
-| `/src-step2` | Complete implementation of StockAgent + Multi-Agent Workflow |
-| `/src-step3` | Full solution with DI registration and DevUI debugging support |
-| `/src-complete` | Reference implementation with all features |
+| `/src-01-start` | Baseline app with system prompt and helpers pre-defined (for Step 0 and Step 1) |
+| `/src-02-multiagent` | Complete implementation of StockAgent + Multi-Agent Workflow |
+| `/src-03-dependency-injection` | Full solution with DI registration and DevUI debugging support |
+| `/src-04-complete` | Reference implementation with all features |
 | `/src-slides` | Python script for generating PowerPoint presentation |
 
 ### Baseline Features (Before Modernization)
@@ -94,12 +94,12 @@ The transformation is incremental:
 | Segment | Duration | Description | Demo Code Reference |
 |--------|----------|-------------|---------------------|
 | Intro: Modernization landscape | 2 min | Why apps need intelligent behavior; what agentic modernization solves | - |
-| Demo 0: Baseline eShop Lite | 3 min | Show app working today: browse, search, cart, checkout | `/src-start` |
+| Demo 0: Baseline eShop Lite | 3 min | Show app working today: browse, search, cart, checkout | `/src-01-start` |
 | Concepts: What are agents? | 2 min | Agent reasoning, tools, workflows, and why they simplify business logic | - |
-| Demo 1: Add DiscountAgent (Live) | 5 min | Live-code the ComputeDiscountAsync method | `/src-start` |
+| Demo 1: Add DiscountAgent (Live) | 5 min | Live-code the ComputeDiscountAsync method | `/src-01-start` |
 | Concepts: Multi-agent orchestration | 2 min | Stock agent, discount agent, orchestrator | - |
-| Demo 2: Multi-agent workflow | 4 min | Open `/src-step2`, show pre-built implementation | `/src-step2` |
-| Demo 3: DI + DevUI | 4 min | Open `/src-step3`, show DI registration and DevUI debugging | `/src-step3` |
+| Demo 2: Multi-agent workflow | 4 min | Open `/src-02-multiagent`, show pre-built implementation | `/src-02-multiagent` |
+| Demo 3: DI + DevUI | 4 min | Open `/src-03-dependency-injection`, show DI registration and DevUI debugging | `/src-03-dependency-injection` |
 | Cloud: Foundry + Agent Framework | 2–3 min | Explain optional production architecture | - |
 | Closing: Key lessons + call to action | 2 min | Summarize benefits + encourage adoption | - |
 
@@ -110,7 +110,7 @@ Total: **25–30 minutes**
 # 🧠 5. Detailed Demo Flow
 
 ## 🚀 Step 0 — Show the app in baseline mode
-- Open `/src-start` version  
+- Open `/src-01-start` version  
 - Run Aspire  
 - Navigate Store front-end  
 - Perform semantic search  
@@ -128,14 +128,14 @@ Total: **25–30 minutes**
 
 ## 🤖 Step 1 — Add DiscountAgent (Live Coding)
 
-The system prompt and helper methods are **already defined** in `/src-start` to make the demo easier to follow.
+The system prompt and helper methods are **already defined** in `/src-01-start` to make the demo easier to follow.
 
 During the live demo, you only need to implement:
 - The `ComputeDiscountAsync` method body
 
 📖 **Code Implementation Guide**: Follow the step-by-step instructions in [Demo 1: Implement the DiscountAgent](04_speaker-demo-walkthrough.md#-demo-1-implement-the-discountagent-5-minutes).
 
-**What's Pre-Built in `/src-start`**:
+**What's Pre-Built in `/src-01-start`**:
 - ✅ System prompt with discount rules (Gold: 20%, Silver: 10%, Normal: 0%)
 - ✅ `ParseAgentResponse` helper method
 - ✅ `ComputeFallbackDiscount` helper method
@@ -154,7 +154,7 @@ During the live demo, you only need to implement:
 
 ## 🧩 Step 2 — Show Multi-Agent Workflow (Pre-Built)
 
-Instead of live coding Step 2, **open the `/src-step2` folder** which has the complete implementation.
+Instead of live coding Step 2, **open the `/src-02-multiagent` folder** which has the complete implementation.
 
 Walk through the code and explain:
 - **StockAgentService**: AI-generated friendly stock status messages
@@ -162,8 +162,8 @@ Walk through the code and explain:
 - **Agent steps log**: Shows each agent's contribution in the UI
 
 📖 **Code Reference**: 
-- `src-step2/AgentServices/Stock/StockAgentService.cs`
-- `src-step2/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
+- `src-02-multiagent/AgentServices/Stock/StockAgentService.cs`
+- `src-02-multiagent/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`
 
 ### Key Messages
 - "Each agent does one job."
@@ -174,7 +174,7 @@ Walk through the code and explain:
 
 ## 🔧 Step 3 — DI Registration + Observability (Pre-Built)
 
-Open the `/src-step3` folder to show advanced agent patterns:
+Open the `/src-03-dependency-injection` folder to show advanced agent patterns:
 
 ### Features in Step 3:
 
@@ -189,8 +189,8 @@ Open the `/src-step3` folder to show advanced agent patterns:
    - Detailed request/response logging
 
 📖 **Code Reference**: 
-- `src-step3/Store/Program.cs` - Enhanced logging setup
-- `src-step3/AgentServices/AgentServicesExtensions.cs` - DI patterns
+- `src-03-dependency-injection/Store/Program.cs` - Enhanced logging setup
+- `src-03-dependency-injection/AgentServices/AgentServicesExtensions.cs` - DI patterns
 
 ### Key Messages
 - "Registering agents in DI gives you proper lifecycle management."
@@ -231,7 +231,7 @@ Explain the cloud-deployed version:
 - Blazor + API interactions  
 - Understanding of agentic concepts: tools, reasoning, workflows  
 
-📖 **Additional Resources**: See [Complete Code Reference](04_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-complete`.
+📖 **Additional Resources**: See [Complete Code Reference](04_speaker-demo-walkthrough.md#-complete-code-reference) for the full implementation details in `/src-04-complete`.
 
 ---
 
@@ -240,7 +240,7 @@ Explain the cloud-deployed version:
 - Switch tiers during demo to show changes  
 - Use small, clear sample products  
 - Reinforce incremental modernization  
-- Have `/src-step2` and `/src-step3` ready to open for quick transitions
+- Have `/src-02-multiagent` and `/src-03-dependency-injection` ready to open for quick transitions
 - Keep Foundry section optional  
 
 📖 **Troubleshooting**: If you encounter issues during the demo, refer to the [Troubleshooting](04_speaker-demo-walkthrough.md#-troubleshooting) section.

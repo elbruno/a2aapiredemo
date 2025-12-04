@@ -30,16 +30,16 @@ You are working in the repo: `https://github.com/elbruno/a2aapiredemo`
 
 From the README and structure:
 
-- Solution: `src-start/eShopLite-Aspire-Modernization.slnx` (or `src-complete/`)
+- Solution: `src-01-start/eShopLite-Aspire-Modernization.slnx` (or `src-04-complete/`)
 - Key projects:
-  - `src-start/eShopAppHost`        → .NET Aspire host
-  - `src-start/eShopServiceDefaults`→ shared service configuration
-  - `src-start/Products`            → ASP.NET Core API with AI search
-  - `src-start/Store`               → Blazor Server front-end
-  - `src-start/CartEntities`        → cart/order models
-  - `src-start/DataEntities`        → product & customer models
-  - `src-start/SearchEntities`      → AI search DTOs
-  - `src-start/VectorEntities`      → embeddings models
+  - `src-01-start/eShopAppHost`        → .NET Aspire host
+  - `src-01-start/eShopServiceDefaults`→ shared service configuration
+  - `src-01-start/Products`            → ASP.NET Core API with AI search
+  - `src-01-start/Store`               → Blazor Server front-end
+  - `src-01-start/CartEntities`        → cart/order models
+  - `src-01-start/DataEntities`        → product & customer models
+  - `src-01-start/SearchEntities`      → AI search DTOs
+  - `src-01-start/VectorEntities`      → embeddings models
 - Features already in place:
   - Blazor Store with product browsing, cart, checkout.
   - AI-powered semantic search using Azure OpenAI / Foundry and embeddings.
@@ -115,9 +115,9 @@ If some of these packages are already referenced, reuse them rather than duplica
 ### 1. Analyze Current Cart, Customer, and Store
 
 1. Inspect:
-   - `src-start/CartEntities` (cart & order models).
-   - `src-start/DataEntities` (customer & membership tier definitions).
-   - `src-start/Store`:
+   - `src-01-start/CartEntities` (cart & order models).
+   - `src-01-start/DataEntities` (customer & membership tier definitions).
+   - `src-01-start/Store`:
      - Components under `Components/Pages`, `Components/Cart`.
      - Services under `Services`.
 
@@ -142,7 +142,7 @@ Goal: Have a **simple demo-only “current customer context”** with membership
      - `Silver`
      - `Gold`
 
-2. In `src-start/Store/Services`, create a `CurrentCustomerContext` service (or extend an existing Customer service) that:
+2. In `src-01-start/Store/Services`, create a `CurrentCustomerContext` service (or extend an existing Customer service) that:
    - Exposes a `MembershipTier CurrentTier` property.
    - Allows setting the tier at runtime (e.g., `SetTier(MembershipTier tier)`).
    - Optionally models a simple “CurrentCustomerId” if needed, but **no full auth** is required for the demo.
@@ -162,7 +162,7 @@ Goal: Have a **simple demo-only “current customer context”** with membership
 
 ### 3. Extend Cart Models for Discounts
 
-1. In the cart entity models (`src-start/CartEntities` or equivalent):
+1. In the cart entity models (`src-01-start/CartEntities` or equivalent):
    - Add fields for:
      - `decimal Subtotal`
      - `decimal DiscountAmount`
@@ -189,9 +189,9 @@ Goal: Have a **simple demo-only “current customer context”** with membership
 
 ### 4. Create an Agents Library for Discount & Workflow Logic
 
-Create a new project under `src-start`:
+Create a new project under `src-01-start`:
 
-- Name suggestion: `src-start/AgentServices` (a C# class library).
+- Name suggestion: `src-01-start/AgentServices` (a C# class library).
 
 1. Add this project to the solution and reference it from:
    - `Store`
@@ -433,7 +433,7 @@ Content should include:
 
 The repo is considered **ready for the 30-minute demo** when:
 
-1. The solution builds and runs with `dotnet run` from `src-start/eShopAppHost` (or `src-complete/eShopAppHost`) without errors.
+1. The solution builds and runs with `dotnet run` from `src-01-start/eShopAppHost` (or `src-04-complete/eShopAppHost`) without errors.
 2. From the Store UI, the presenter can:
    - Select membership tier (Regular/Silver/Gold).
    - Add items to cart.

@@ -1,7 +1,7 @@
 # Speaker Demo Walkthrough — Code Implementation Guide
 
 ### Step-by-Step Instructions for Live Coding During the Session
-### From `/src-start` (Baseline) to Fully Agentic Solution
+### From `/src-01-start` (Baseline) to Fully Agentic Solution
 
 ---
 
@@ -13,20 +13,20 @@ This document provides **detailed, step-by-step instructions** for the speaker t
 
 | Step | Folder | What You'll Do |
 |------|--------|----------------|
-| 0 | `/src-start` | Show baseline app (no coding) |
-| 1 | `/src-start` | Live code: Replace `ComputeDiscountAsync` only (helpers pre-built) |
-| 2 | `/src-step2` | Open and explain pre-built multi-agent workflow |
-| 3 | `/src-step3` | Open and explain DI registration + DevUI |
+| 0 | `/src-01-start` | Show baseline app (no coding) |
+| 1 | `/src-01-start` | Live code: Replace `ComputeDiscountAsync` only (helpers pre-built) |
+| 2 | `/src-02-multiagent` | Open and explain pre-built multi-agent workflow |
+| 3 | `/src-03-dependency-injection` | Open and explain DI registration + DevUI |
 
 ### Prerequisites
 
 Before starting the live demo:
 
-1. ✅ Open `/src-start` in your IDE
+1. ✅ Open `/src-01-start` in your IDE
 2. ✅ Verify the baseline app builds and runs: `dotnet run` from `eShopAppHost`
 3. ✅ Have Azure OpenAI / Microsoft Foundry connection configured
-4. ✅ Have `/src-step2` and `/src-step3` ready to open for quick transitions
-5. ✅ Open `/src-complete` in a separate window for reference (if needed)
+4. ✅ Have `/src-02-multiagent` and `/src-03-dependency-injection` ready to open for quick transitions
+5. ✅ Open `/src-04-complete` in a separate window for reference (if needed)
 
 ---
 
@@ -34,7 +34,7 @@ Before starting the live demo:
 
 ### What's Already Pre-Built
 
-The `/src-start` version now includes:
+The `/src-01-start` version now includes:
 - ✅ System prompt with discount rules
 - ✅ `ParseAgentResponse` helper method  
 - ✅ `ComputeFallbackDiscount` helper method
@@ -45,7 +45,7 @@ This allows you to focus on **just the AI integration code** during the live dem
 ### File to Edit
 
 ```
-src-start/AgentServices/Discount/DiscountAgentService.cs
+src-01-start/AgentServices/Discount/DiscountAgentService.cs
 ```
 
 ### Current State (Placeholder)
@@ -152,11 +152,11 @@ public async Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
 
 ### What to Do
 
-Instead of live coding, **open the `/src-step2` folder** and walk through the pre-built implementation.
+Instead of live coding, **open the `/src-02-multiagent` folder** and walk through the pre-built implementation.
 
 ### Files to Show
 
-**StockAgentService** (`src-step2/AgentServices/Stock/StockAgentService.cs`):
+**StockAgentService** (`src-02-multiagent/AgentServices/Stock/StockAgentService.cs`):
 ```csharp
 // DEMO: System prompt for stock agent message generation
 private const string SystemPrompt = """
@@ -168,7 +168,7 @@ private const string SystemPrompt = """
     """;
 ```
 
-**AgentCheckoutOrchestrator** (`src-step2/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`):
+**AgentCheckoutOrchestrator** (`src-02-multiagent/AgentServices/Checkout/AgentCheckoutOrchestrator.cs`):
 ```csharp
 // DEMO: Execute the multi-agent checkout workflow
 public async Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
@@ -207,11 +207,11 @@ public async Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest
 
 ### What to Do
 
-Open the `/src-step3` folder and show the advanced patterns for production-ready agent applications.
+Open the `/src-03-dependency-injection` folder and show the advanced patterns for production-ready agent applications.
 
 ### Key Features to Highlight
 
-**1. Enhanced DI Registration** (`src-step3/AgentServices/AgentServicesExtensions.cs`):
+**1. Enhanced DI Registration** (`src-03-dependency-injection/AgentServices/AgentServicesExtensions.cs`):
 
 ```csharp
 // DEMO Step 3: Register agent services with scoped lifetime
@@ -224,7 +224,7 @@ services.AddScoped<IDiscountAgentService, DiscountAgentService>();
 services.AddScoped<IAgentCheckoutOrchestrator, AgentCheckoutOrchestrator>();
 ```
 
-**2. Enhanced Logging** (`src-step3/Store/Program.cs`):
+**2. Enhanced Logging** (`src-03-dependency-injection/Store/Program.cs`):
 
 ```csharp
 // DEMO Step 3: Add enhanced logging for agent debugging in development
@@ -268,10 +268,10 @@ See the [Agent Framework documentation](https://github.com/microsoft/agent-frame
 
 | Folder | Contents |
 |--------|----------|
-| `/src-start` | Baseline with pre-built system prompts and helpers for easy live coding |
-| `/src-step2` | Complete StockAgent + AgentCheckoutOrchestrator implementation |
-| `/src-step3` | Full solution with DI registration and observability patterns |
-| `/src-complete` | Reference implementation with all features |
+| `/src-01-start` | Baseline with pre-built system prompts and helpers for easy live coding |
+| `/src-02-multiagent` | Complete StockAgent + AgentCheckoutOrchestrator implementation |
+| `/src-03-dependency-injection` | Full solution with DI registration and observability patterns |
+| `/src-04-complete` | Reference implementation with all features |
 
 ---
 
@@ -279,9 +279,9 @@ See the [Agent Framework documentation](https://github.com/microsoft/agent-frame
 
 For the complete implementation of each file, refer to:
 
-- `/src-step2` for multi-agent workflow
-- `/src-step3` for DI + observability patterns
-- `/src-complete` for full reference implementation
+- `/src-02-multiagent` for multi-agent workflow
+- `/src-03-dependency-injection` for DI + observability patterns
+- `/src-04-complete` for full reference implementation
 
 ---
 
@@ -291,8 +291,8 @@ For the complete implementation of each file, refer to:
 |-----------|----------|-------------|
 | Demo 0: Baseline | 3 min | Show app running (no coding) |
 | Demo 1: DiscountAgent | 5 min | Live code ComputeDiscountAsync only |
-| Demo 2: Multi-Agent | 4 min | Open `/src-step2`, walk through code |
-| Demo 3: DI + DevUI | 4 min | Open `/src-step3`, show DevUI |
+| Demo 2: Multi-Agent | 4 min | Open `/src-02-multiagent`, walk through code |
+| Demo 3: DI + DevUI | 4 min | Open `/src-03-dependency-injection`, show DevUI |
 | **Total Coding Time** | **5 min** | Only Demo 1 requires live coding |
 
 > **Tip**: Practice the demo several times to ensure smooth transitions between folders.
@@ -322,7 +322,7 @@ For the complete implementation of each file, refer to:
 ### DevUI not accessible
 
 - Ensure you're running in Development environment
-- Check that the DevUI packages are installed in `/src-step3`
+- Check that the DevUI packages are installed in `/src-03-dependency-injection`
 - Verify the endpoint is mapped: `app.MapDevUI()`
 
 ---
