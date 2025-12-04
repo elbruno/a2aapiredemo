@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace AgentServices.Checkout;
 
 /// <summary>
-/// DEMO: Agent Checkout Orchestrator using Microsoft Agent Framework Workflows Orchestrations - Sequential
+/// Agent Checkout Orchestrator using Microsoft Agent Framework Workflows Orchestrations - Sequential
 /// Coordinates the multi-agent checkout workflow using AgentWorkflowBuilder.BuildSequential:
 /// 1. StockAgent → validates availability
 /// 2. DiscountAgent → applies tier-based discount
@@ -25,28 +25,29 @@ namespace AgentServices.Checkout;
 /// </summary>
 public class AgentCheckoutOrchestrator
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly AgentSettings _settings;
     private readonly ILogger<AgentCheckoutOrchestrator> _logger;
+
+    private readonly AIAgent _stockAgent;
+    private readonly AIAgent _discountAgent;
 
     public AgentCheckoutOrchestrator(
         IServiceProvider serviceProvider,
         AgentSettings settings,
         ILogger<AgentCheckoutOrchestrator> logger)
     {
-        _serviceProvider = serviceProvider;
-        _settings = settings;
         _logger = logger;
+        _stockAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
+        _discountAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
     }
 
     /// <summary>
-    /// DEMO: Execute the multi-agent checkout workflow using Microsoft Agent Framework Sequential Orchestration.
+    /// Execute the multi-agent checkout workflow using Microsoft Agent Framework Sequential Orchestration.
     /// Uses AgentWorkflowBuilder.BuildSequential to chain the StockAgent and DiscountAgent.
     /// </summary>
     public async Task<AgentCheckoutResult> ProcessCheckoutAsync(AgentCheckoutRequest request)
     {
-        _logger.LogInformation("DEMO: Starting agentic checkout pipeline using Sequential Workflow Orchestration");
-        _logger.LogInformation("DEMO: Membership tier: {Tier}, Cart subtotal: {Subtotal:C}", 
+        _logger.LogInformation("Starting agentic checkout pipeline using Sequential Workflow Orchestration");
+        _logger.LogInformation("Membership tier: {Tier}, Cart subtotal: {Subtotal:C}",
             request.MembershipTier, request.Cart.Subtotal);
 
         var result = new AgentCheckoutResult
@@ -57,19 +58,15 @@ public class AgentCheckoutOrchestrator
 
         try
         {
-            // DEMO: Get the registered AIAgents from the ServiceProvider
-            var stockAgent = _serviceProvider.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
-            var discountAgent = _serviceProvider.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
+            _logger.LogInformation("Building Sequential Workflow with StockAgent → DiscountAgent");
 
-            _logger.LogInformation("DEMO: Building Sequential Workflow with StockAgent → DiscountAgent");
-
-            // DEMO: Build the sequential workflow using AgentWorkflowBuilder
+            // Build the sequential workflow using AgentWorkflowBuilder
             // The output of StockAgent flows into DiscountAgent
             var workflow = AgentWorkflowBuilder.BuildSequential(
                 workflowName: "CheckoutWorkflow",
-                agents: [stockAgent, discountAgent]);
+                agents: [_stockAgent, _discountAgent]);
 
-            // DEMO: Build the input message for the workflow
+            // Build the input message for the workflow
             var itemsSummary = string.Join(", ", request.Cart.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
             var inputMessage = $$"""
                 Customer checkout request:
@@ -86,22 +83,22 @@ public class AgentCheckoutOrchestrator
                 Respond with JSON: { "discountAmount": <number>, "reason": "<string>" }
                 """;
 
-            _logger.LogInformation("DEMO: Executing Sequential Workflow");
+            _logger.LogInformation("Executing Sequential Workflow");
 
-            // DEMO: Execute the workflow using InProcessExecution
+            // Execute the workflow using InProcessExecution
             var messages = new List<ChatMessage> { new(ChatRole.User, inputMessage) };
             var run = await InProcessExecution.RunAsync(workflow, messages);
 
-            // DEMO: Process all workflow events from both agents
+            // Process all workflow events from both agents
             var workflowEvents = run.OutgoingEvents
                 .OfType<AgentRunResponseEvent>()
                 .ToList();
 
-            // DEMO: Record StockAgent step from workflow events
-            var stockEvent = workflowEvents.FirstOrDefault(e => 
+            // Record StockAgent step from workflow events
+            var stockEvent = workflowEvents.FirstOrDefault(e =>
                 e.Response.Text?.Contains("stock", StringComparison.OrdinalIgnoreCase) == true ||
                 e.Response.Text?.Contains("ship", StringComparison.OrdinalIgnoreCase) == true);
-            
+
             var stockStep = new AgentStep
             {
                 Name = StockAgentService.AgentName,
@@ -110,9 +107,9 @@ public class AgentCheckoutOrchestrator
                 Message = stockEvent?.Response.Text?.Trim() ?? "All items are in stock and ready to ship!"
             };
             result.AgentSteps.Add(stockStep);
-            _logger.LogInformation("DEMO: StockAgent completed - Status: {Status}", stockStep.Status);
+            _logger.LogInformation("StockAgent completed - Status: {Status}", stockStep.Status);
 
-            // DEMO: Record DiscountAgent step from workflow events (last event is typically from the last agent)
+            // Record DiscountAgent step from workflow events (last event is typically from the last agent)
             var discountEvent = workflowEvents.LastOrDefault();
 
             var discountStep = new AgentStep
@@ -123,28 +120,28 @@ public class AgentCheckoutOrchestrator
 
             if (discountEvent?.Response.Text != null)
             {
-                _logger.LogInformation("DEMO: Sequential Workflow completed. Parsing response...");
+                _logger.LogInformation("Sequential Workflow completed. Parsing response...");
                 var discountResult = ParseDiscountResponse(discountEvent.Response.Text, request.Cart.Subtotal, request.MembershipTier);
-                
+
                 result.DiscountAmount = discountResult.DiscountAmount;
                 result.DiscountReason = discountResult.DiscountReason;
                 result.TotalAfterDiscount = discountResult.TotalAfterDiscount;
-                
+
                 discountStep.Status = discountResult.Success ? "Success" : "Warning";
                 discountStep.Message = discountResult.DiscountReason;
 
-                _logger.LogInformation("DEMO: DiscountAgent completed - Discount: {Discount:C}", 
+                _logger.LogInformation("DiscountAgent completed - Discount: {Discount:C}",
                     discountResult.DiscountAmount);
             }
             else
             {
-                _logger.LogWarning("DEMO: No response from workflow, using fallback discount calculation");
+                _logger.LogWarning("No response from workflow, using fallback discount calculation");
                 var fallbackResult = ComputeFallbackDiscount(request.MembershipTier, request.Cart.Subtotal);
-                
+
                 result.DiscountAmount = fallbackResult.DiscountAmount;
                 result.DiscountReason = fallbackResult.DiscountReason;
                 result.TotalAfterDiscount = fallbackResult.TotalAfterDiscount;
-                
+
                 discountStep.Status = "Warning";
                 discountStep.Message = fallbackResult.DiscountReason;
             }
@@ -153,16 +150,19 @@ public class AgentCheckoutOrchestrator
 
             // Finalize result
             result.Success = true;
-            _logger.LogInformation("DEMO: Sequential Workflow Orchestration completed successfully");
-            _logger.LogInformation("DEMO: Final - Subtotal: {Subtotal:C}, Discount: {Discount:C}, Total: {Total:C}",
+            _logger.LogInformation("Sequential Workflow Orchestration completed successfully");
+            _logger.LogInformation("Final - Subtotal: {Subtotal:C}, Discount: {Discount:C}, Total: {Total:C}",
                 result.Subtotal, result.DiscountAmount, result.TotalAfterDiscount);
+
+            // save the mermaid diagram for the workflow execution for debugging and visualization
+            result.WorkFlowMermaid = workflow.ToMermaidString();
 
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "DEMO: Sequential Workflow Orchestration failed");
-            
+            _logger.LogError(ex, "Sequential Workflow Orchestration failed");
+
             result.AgentSteps.Add(new AgentStep
             {
                 Name = "Orchestrator",
@@ -231,13 +231,13 @@ public class AgentCheckoutOrchestrator
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "DEMO: Failed to parse workflow response, using fallback");
+            _logger.LogWarning(ex, "Failed to parse workflow response, using fallback");
             return ComputeFallbackDiscount(tier, subtotal);
         }
     }
 
     /// <summary>
-    /// DEMO: Deterministic fallback when workflow or AI is unavailable.
+    /// Deterministic fallback when workflow or AI is unavailable.
     /// </summary>
     private static DiscountResult ComputeFallbackDiscount(MembershipTier tier, decimal subtotal)
     {

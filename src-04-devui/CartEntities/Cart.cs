@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace CartEntities;
 
 public class Cart
@@ -17,13 +15,7 @@ public class Cart
 
     // DEMO: Agent steps log for visibility during demo
     public List<AgentStep> AgentSteps { get; set; } = new();
-}
 
-// DEMO: Represents a step in the agentic checkout pipeline
-public class AgentStep
-{
-    public string Name { get; set; } = string.Empty;
-    public string Status { get; set; } = "Pending"; // Pending, Success, Warning, Error
-    public string Message { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    // Represents the workflow in Mermaid syntax for visualization in the demo.
+    public string? WorkFlowMermaid { get; set; }
 }

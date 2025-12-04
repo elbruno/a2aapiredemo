@@ -60,4 +60,9 @@ public class AgentCheckoutResult
     /// Error message if the checkout failed.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Represents the workflow in Mermaid syntax for visualization in the demo.
+    /// </summary>
+    public string? WorkFlowMermaid { get; set; }
 }
