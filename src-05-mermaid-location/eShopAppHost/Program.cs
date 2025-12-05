@@ -10,12 +10,14 @@ var productsDb = sql
     .AddDatabase("productsDb");
 
 IResourceBuilder<IResourceWithConnectionString>? microsoftfoundry;
+IResourceBuilder<IResourceWithConnectionString>? microsoftfoundryproject;
 var chatDeploymentName = "gpt-5-mini";
 var embeddingsDeploymentName = "text-embedding-3-small";
 
 var products = builder.AddProject<Projects.Products>("products")
     .WithReference(productsDb)
-    .WaitFor(productsDb);
+    .WaitFor(productsDb)
+    .WithExternalHttpEndpoints();
 
 var store = builder.AddProject<Projects.Store>("store")
     .WithReference(products)
@@ -39,22 +41,24 @@ if (builder.ExecutionContext.IsPublishMode)
     embeddingsDeployment.Resource.SkuName = "GlobalStandard";
 
     products.WithReference(appInsights);
-
-    store.WithReference(appInsights)
-        .WithExternalHttpEndpoints();
+    store.WithReference(appInsights);
 
     microsoftfoundry = aoai;
 }
 else
 {
-    microsoftfoundry = builder.AddConnectionString("microsoftfoundry");
+    microsoftfoundry = builder.AddConnectionString("microsoftfoundry");    
 }
 
+microsoftfoundryproject = builder.AddConnectionString("microsoftfoundryproject");
+
 products.WithReference(microsoftfoundry)
+    .WithReference(microsoftfoundryproject)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 
 store.WithReference(microsoftfoundry)
+    .WithReference(microsoftfoundryproject)
     .WithEnvironment("AI_ChatDeploymentName", chatDeploymentName)
     .WithEnvironment("AI_embeddingsDeploymentName", embeddingsDeploymentName);
 

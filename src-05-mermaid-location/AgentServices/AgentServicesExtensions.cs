@@ -13,14 +13,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using OpenAI.Chat;
 
 namespace AgentServices;
 
 /// <summary>
-/// DEMO Step 4: Extension methods to register Agent Services in DI.
+/// Step 4: Extension methods to register Agent Services in DI.
 /// 
 /// This approach follows the pattern from the Agent Framework's AgentWebChat sample:
 /// https://github.com/microsoft/agent-framework/blob/main/dotnet/samples/AgentWebChat/AgentWebChat.AgentHost/Program.cs
@@ -43,6 +40,11 @@ public static class AgentServicesExtensions
         if (string.IsNullOrEmpty(settings.MicrosoftFoundryConnectionString))
         {
             settings.MicrosoftFoundryConnectionString = builder.Configuration.GetConnectionString("microsoftfoundry");
+        }
+
+        if (string.IsNullOrEmpty(settings.MicrosoftFoundryProjectEndpoint))
+        {
+            settings.MicrosoftFoundryProjectEndpoint = builder.Configuration.GetConnectionString("microsoftfoundryproject");
         }
 
         // Get deployment name from configuration
@@ -90,12 +92,12 @@ public static class AgentServicesExtensions
         {
             // create agent
             var chatClient = sp.GetRequiredService<IChatClient>();
-            
+
             // Get the StockSearchTool if registered via AddStockSearchTool().
             // The tool is intentionally optional - if not registered, the agent 
             // will work without the external stock search capability.
             var stockSearchTool = sp.GetService<StockSearchTool>();
-            
+
             // Create the agent with the stock search tool if available
             if (stockSearchTool != null)
             {
@@ -129,36 +131,34 @@ public static class AgentServicesExtensions
 
     public static WebApplicationBuilder AddeShopLiteFoundryAgents(this WebApplicationBuilder builder)
     {
-        var microsoftFoundryProjectEndpoint = "https://bruno-netdayagentmodernization-r.services.ai.azure.com/api/projects/bruno-netdayagentmodernization";
+        var serviceProvider = builder.Services.BuildServiceProvider();
+        var settings = serviceProvider.GetRequiredService<AgentSettings>();
 
-        AIAgent stockAgent = null;
-        AIAgent discountAgent = null;
+        var microsoftFoundryProjectEndpoint = settings.MicrosoftFoundryProjectEndpoint;
 
         AIProjectClient projectClient = new(
             endpoint: new Uri(microsoftFoundryProjectEndpoint),
             tokenProvider: new DefaultAzureCredential());
 
-
-        // add Discount Agent
+        // add Discount Agent from Microsoft Foundry
         builder.AddAIAgent(DiscountAgentService.AgentName, (sp, key) =>
         {
-            // create agent
-            discountAgent = projectClient.GetAIAgent(DiscountAgentService.AgentName);
-            return discountAgent;
+            return projectClient.GetAIAgent(DiscountAgentService.AgentName);
         });
 
-        // add Stock Agent with external stock search tool
+        // add Stock Agent from Microsoft Foundry
         builder.AddAIAgent(StockAgentService.AgentName, (sp, key) =>
         {
-            // create agent
-            stockAgent = projectClient.GetAIAgent(StockAgentService.AgentName);
-            return stockAgent;
+            return projectClient.GetAIAgent(StockAgentService.AgentName);
         });
 
         builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowName, (sp, key) =>
         {
+            var stockAgent = sp.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
+            var discountAgent = sp.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
+
             var workflow = AgentWorkflowBuilder.BuildSequential(
-                workflowName: "AgentCheckoutOrchestrator.WorkflowName",
+                workflowName: AgentCheckoutOrchestrator.WorkflowName,
                 agents: [stockAgent, discountAgent]);
 
             return workflow;

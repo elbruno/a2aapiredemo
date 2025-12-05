@@ -30,7 +30,7 @@ public class AgentSettings
     /// <summary>
     /// Azure AI Foundry project endpoint (only used when UseFoundryAgents is true).
     /// </summary>
-    public string? FoundryProjectEndpoint { get; set; }
+    public string? MicrosoftFoundryProjectEndpoint { get; set; }
 
     /// <summary>
     /// Azure AI Foundry model ID (only used when UseFoundryAgents is true).
