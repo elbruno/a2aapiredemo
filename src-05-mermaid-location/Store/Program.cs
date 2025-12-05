@@ -1,5 +1,6 @@
 using AgentServices;
 using AgentServices.Checkout;
+using AgentServices.Stock.Tools;
 using Azure.Identity;
 using Microsoft.Agents.AI.DevUI;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -24,7 +25,14 @@ builder.Services.AddSingleton<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ProtectedSessionStorage>();
 
 builder.Services.AddHttpClient<IProductService, ProductService>(
-    static client => client.BaseAddress = new("http://products"));
+    static client => client.BaseAddress = new("http+https://products"));
+
+builder.Services.AddScoped<StockSearchTool>();
+builder.Services.AddHttpClient<StockSearchTool>(client =>
+{
+    client.BaseAddress = new Uri("http+https://products");
+});
+
 
 // Configure Azure OpenAI for agentic checkout
 var microsoftFoundryConnectionName = "microsoftfoundry";
