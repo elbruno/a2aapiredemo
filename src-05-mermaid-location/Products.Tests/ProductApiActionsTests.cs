@@ -148,5 +148,76 @@ namespace Products.Tests
                 Assert.IsTrue(okNoResult.Value.Response.Contains("No products found"));
             }
         }
+
+        [TestMethod]
+        public async Task SearchProductStock_ReturnsStockInfoForMatchingProducts()
+        {
+            // Arrange - Add products and stock information
+            using (var context = new Context(_dbOptions))
+            {
+                context.Product.AddRange(new List<Product>
+                {
+                    new Product { Id = 60, Name = "Hiking Boots", Description = "Desc", Price = 600, ImageUrl = "img60" },
+                    new Product { Id = 61, Name = "Hiking Backpack", Description = "Desc", Price = 610, ImageUrl = "img61" },
+                    new Product { Id = 62, Name = "Camping Gear", Description = "Desc", Price = 620, ImageUrl = "img62" }
+                });
+                
+                context.Location.AddRange(new List<Location>
+                {
+                    new Location { Id = 1, Name = "Warehouse A" },
+                    new Location { Id = 2, Name = "Warehouse B" }
+                });
+                
+                context.ProductsByLocation.AddRange(new List<ProductsByLocation>
+                {
+                    new ProductsByLocation { Id = 1, ProductId = 60, LocationId = 1, Quantity = 10 },
+                    new ProductsByLocation { Id = 2, ProductId = 60, LocationId = 2, Quantity = 5 },
+                    new ProductsByLocation { Id = 3, ProductId = 61, LocationId = 1, Quantity = 20 }
+                });
+                
+                context.SaveChanges();
+            }
+            
+            // Act - Search for "Hiking"
+            using (var context = new Context(_dbOptions))
+            {
+                var result = await ProductApiActions.SearchProductStock("Hiking", context);
+                var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<StockSearchResponse>;
+                
+                // Assert
+                Assert.IsNotNull(okResult, "Result should be Ok with stock search response");
+                Assert.AreEqual(2, okResult.Value.Products.Count, "Should find 2 hiking products");
+                Assert.IsTrue(okResult.Value.Message.Contains("2 product(s)"), "Message should indicate 2 products found");
+                
+                // Verify Hiking Boots has stock from 2 locations
+                var boots = okResult.Value.Products.FirstOrDefault(p => p.ProductName == "Hiking Boots");
+                Assert.IsNotNull(boots);
+                Assert.AreEqual(15, boots.TotalQuantity, "Total quantity should be 15 (10 + 5)");
+                Assert.AreEqual(2, boots.LocationCount, "Should have stock in 2 locations");
+            }
+        }
+
+        [TestMethod]
+        public async Task SearchProductStock_ReturnsEmptyListWhenNoMatch()
+        {
+            // Arrange
+            using (var context = new Context(_dbOptions))
+            {
+                context.Product.Add(new Product { Id = 70, Name = "Tent", Description = "Desc", Price = 700, ImageUrl = "img70" });
+                context.SaveChanges();
+            }
+            
+            // Act - Search for non-existent product
+            using (var context = new Context(_dbOptions))
+            {
+                var result = await ProductApiActions.SearchProductStock("NonexistentProduct", context);
+                var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<StockSearchResponse>;
+                
+                // Assert
+                Assert.IsNotNull(okResult, "Result should be Ok with stock search response");
+                Assert.AreEqual(0, okResult.Value.Products.Count, "Should return empty list");
+                Assert.IsTrue(okResult.Value.Message.Contains("No products found"), "Message should indicate no products found");
+            }
+        }
     }
 }

@@ -104,4 +104,100 @@ public static class ProductApiActions
 
         return Results.Ok(locations);
     }
+
+    /// <summary>
+    /// Searches for product stock by name, returning products with their available quantities across all locations.
+    /// </summary>
+    public static async Task<IResult> SearchProductStock(string search, Products.Models.Context db)
+    {
+        const string UnknownLocation = "Unknown";
+
+        // Search for products matching the name
+        var matchingProducts = await db.Product
+            .Where(p => EF.Functions.Like(p.Name, $"%{search}%"))
+            .ToListAsync();
+
+        if (!matchingProducts.Any())
+        {
+            return Results.Ok(new StockSearchResponse
+            {
+                Products = new List<ProductStockInfo>(),
+                Message = $"No products found matching '{search}'"
+            });
+        }
+
+        // Get stock information for matching products
+        var productIds = matchingProducts.Select(p => p.Id).ToList();
+        var stockByProduct = await db.ProductsByLocation
+            .Where(pl => productIds.Contains(pl.ProductId))
+            .Include(pl => pl.Product)
+            .Include(pl => pl.Location)
+            .GroupBy(pl => pl.ProductId)
+            .Select(g => new ProductStockInfo
+            {
+                ProductId = g.Key,
+                ProductName = g.First().Product!.Name,
+                TotalQuantity = g.Sum(pl => pl.Quantity),
+                LocationCount = g.Count(),
+                Locations = g.Select(pl => new LocationStockInfo
+                {
+                    LocationId = pl.LocationId,
+                    LocationName = pl.Location != null ? pl.Location.Name : UnknownLocation,
+                    Quantity = pl.Quantity
+                }).ToList()
+            })
+            .ToListAsync();
+
+        // Add products with no stock info (not in any location)
+        // Use HashSet for O(1) lookup instead of O(n) Any() check
+        var productIdsWithStock = new HashSet<int>(stockByProduct.Select(s => s.ProductId));
+        foreach (var product in matchingProducts.Where(p => !productIdsWithStock.Contains(p.Id)))
+        {
+            stockByProduct.Add(new ProductStockInfo
+            {
+                ProductId = product.Id,
+                ProductName = product.Name,
+                TotalQuantity = 0,
+                LocationCount = 0,
+                Locations = new List<LocationStockInfo>()
+            });
+        }
+
+        return Results.Ok(new StockSearchResponse
+        {
+            Products = stockByProduct,
+            Message = $"Found {stockByProduct.Count} product(s) matching '{search}'"
+        });
+    }
+}
+
+/// <summary>
+/// Response model for stock search results.
+/// </summary>
+public class StockSearchResponse
+{
+    public List<ProductStockInfo> Products { get; set; } = new();
+    public string Message { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Stock information for a single product.
+/// </summary>
+public class ProductStockInfo
+{
+    public int ProductId { get; set; }
+    public string ProductName { get; set; } = string.Empty;
+    public int TotalQuantity { get; set; }
+    public int LocationCount { get; set; }
+    public List<LocationStockInfo> Locations { get; set; } = new();
+}
+
+/// <summary>
+/// Stock information for a product at a specific location.
+/// </summary>
+public class LocationStockInfo
+{
+    public int LocationId { get; set; }
+    public string LocationName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
 }
