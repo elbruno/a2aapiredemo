@@ -29,6 +29,10 @@ public class AgentCheckoutOrchestrator
 
     private readonly AIAgent _stockAgent;
     private readonly AIAgent _discountAgent;
+    private Workflow _workflow;
+
+    // Workflow name for identification in logs and debugging
+    public const string WorkflowName = "CheckoutWorkflow";
 
     public AgentCheckoutOrchestrator(
         IServiceProvider serviceProvider,
@@ -38,6 +42,7 @@ public class AgentCheckoutOrchestrator
         _logger = logger;
         _stockAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
         _discountAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
+        _workflow = serviceProvider.GetRequiredKeyedService<Workflow>(WorkflowName); ;
     }
 
     /// <summary>
@@ -62,9 +67,13 @@ public class AgentCheckoutOrchestrator
 
             // Build the sequential workflow using AgentWorkflowBuilder
             // The output of StockAgent flows into DiscountAgent
-            var workflow = AgentWorkflowBuilder.BuildSequential(
-                workflowName: "CheckoutWorkflow",
-                agents: [_stockAgent, _discountAgent]);
+            if(_workflow == null)
+            {
+                _workflow = AgentWorkflowBuilder.BuildSequential(
+                    workflowName: WorkflowName,
+                    agents: [_stockAgent, _discountAgent]);
+            }
+            
 
             // Build the input message for the workflow
             var itemsSummary = string.Join(", ", request.Cart.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));
@@ -87,7 +96,7 @@ public class AgentCheckoutOrchestrator
 
             // Execute the workflow using InProcessExecution
             var messages = new List<ChatMessage> { new(ChatRole.User, inputMessage) };
-            var run = await InProcessExecution.RunAsync(workflow, messages);
+            var run = await InProcessExecution.RunAsync(_workflow, messages);
 
             // Process all workflow events from both agents
             var workflowEvents = run.OutgoingEvents
@@ -155,7 +164,7 @@ public class AgentCheckoutOrchestrator
                 result.Subtotal, result.DiscountAmount, result.TotalAfterDiscount);
 
             // save the mermaid diagram for the workflow execution for debugging and visualization
-            result.WorkFlowMermaid = workflow.ToMermaidString();
+            result.WorkFlowMermaid = _workflow.ToMermaidString();
 
             return result;
         }

@@ -54,10 +54,10 @@ openai.AddChatClient(chatDeploymentName)
 // Add Agent settings and agents
 builder.AddAgentSettings();
 builder.AddeShopLiteAIAgents();
+//builder.AddeShopLiteFoundryAgents();
 
 // Add the orchestrator that uses the registered AIAgents directly
 builder.Services.AddScoped<AgentCheckoutOrchestrator>();
-
 
 // Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();

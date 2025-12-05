@@ -1,10 +1,14 @@
+using System;
 using AgentServices.Checkout;
 using AgentServices.Configuration;
 using AgentServices.Discount;
 using AgentServices.Stock;
 using AgentServices.Stock.Tools;
+using Azure.AI.Projects;
+using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -105,6 +109,59 @@ public static class AgentServicesExtensions
             return chatClient.CreateAIAgent(
                 name: StockAgentService.AgentName,
                 instructions: StockAgentService.AgentInstructions);
+        });
+
+        builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowName, (sp, key) =>
+        {
+            var stockAgent = sp.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
+            var discountAgent = sp.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
+
+            var workflow = AgentWorkflowBuilder.BuildSequential(
+                workflowName: AgentCheckoutOrchestrator.WorkflowName,
+                agents: [stockAgent, discountAgent]);
+
+            return workflow;
+        });
+
+        return builder;
+    }
+
+
+    public static WebApplicationBuilder AddeShopLiteFoundryAgents(this WebApplicationBuilder builder)
+    {
+        var microsoftFoundryProjectEndpoint = "https://bruno-netdayagentmodernization-r.services.ai.azure.com/api/projects/bruno-netdayagentmodernization";
+
+        AIAgent stockAgent = null;
+        AIAgent discountAgent = null;
+
+        AIProjectClient projectClient = new(
+            endpoint: new Uri(microsoftFoundryProjectEndpoint),
+            tokenProvider: new DefaultAzureCredential());
+
+
+        // add Discount Agent
+        builder.AddAIAgent(DiscountAgentService.AgentName, (sp, key) =>
+        {
+            // create agent
+            discountAgent = projectClient.GetAIAgent(DiscountAgentService.AgentName);
+            return discountAgent;
+        });
+
+        // add Stock Agent with external stock search tool
+        builder.AddAIAgent(StockAgentService.AgentName, (sp, key) =>
+        {
+            // create agent
+            stockAgent = projectClient.GetAIAgent(StockAgentService.AgentName);
+            return stockAgent;
+        });
+
+        builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowName, (sp, key) =>
+        {
+            var workflow = AgentWorkflowBuilder.BuildSequential(
+                workflowName: "AgentCheckoutOrchestrator.WorkflowName",
+                agents: [stockAgent, discountAgent]);
+
+            return workflow;
         });
 
         return builder;
