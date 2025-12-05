@@ -2,6 +2,7 @@ using AgentServices.Checkout;
 using AgentServices.Configuration;
 using AgentServices.Discount;
 using AgentServices.Stock;
+using AgentServices.Stock.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -53,6 +54,20 @@ public static class AgentServicesExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers the StockSearchTool as a scoped service with an HttpClient configured 
+    /// to call the Products API.
+    /// </summary>
+    public static WebApplicationBuilder AddStockSearchTool(this WebApplicationBuilder builder, string productsApiBaseUrl)
+    {
+        builder.Services.AddHttpClient<StockSearchTool>(client =>
+        {
+            client.BaseAddress = new Uri(productsApiBaseUrl);
+        });
+
+        return builder;
+    }
+
     public static WebApplicationBuilder AddeShopLiteAIAgents(this WebApplicationBuilder builder)
     {
         // add Discount Agent
@@ -66,12 +81,25 @@ public static class AgentServicesExtensions
                 instructions: DiscountAgentService.AgentInstructions);
         });
 
-        // add Stock Agent
+        // add Stock Agent with external stock search tool
         builder.AddAIAgent(StockAgentService.AgentName, (sp, key) =>
         {
             // create agent
             var chatClient = sp.GetRequiredService<IChatClient>();
+            
+            // Get the StockSearchTool if registered
+            var stockSearchTool = sp.GetService<StockSearchTool>();
+            
+            // Create the agent with the stock search tool if available
+            if (stockSearchTool != null)
+            {
+                return chatClient.CreateAIAgent(
+                    name: StockAgentService.AgentName,
+                    instructions: StockAgentService.AgentInstructions,
+                    tools: [AIFunctionFactory.Create(stockSearchTool.SearchProductStockAsync)]);
+            }
 
+            // Fallback: Create agent without tools
             return chatClient.CreateAIAgent(
                 name: StockAgentService.AgentName,
                 instructions: StockAgentService.AgentInstructions);

@@ -55,6 +55,10 @@ public static class ProductEndpoints
     /// - Gets all locations where a product is available.
     /// - Response: 200 OK with list of locations and quantities, 404 Not Found otherwise.
     ///
+    /// GET /api/Product/stock/search/{search}
+    /// - Searches for product stock by name.
+    /// - Response: 200 OK with matching products and their stock information across all locations.
+    ///
     /// GET /api/aisearch/{search}
     /// - Searches for products using AI-based search.
     /// - Response: 200 OK with the search results, 404 Not Found otherwise.
@@ -104,6 +108,10 @@ public static class ProductEndpoints
             .WithName("GetProductLocations")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/stock/search/{search}", ProductApiActions.SearchProductStock)
+            .WithName("SearchProductStock")
+            .Produces<StockSearchResponse>(StatusCodes.Status200OK);
 
         #region AI Search Endpoint
         routes.MapGet("/api/aisearch/{search}", ProductAiActions.AISearch)
