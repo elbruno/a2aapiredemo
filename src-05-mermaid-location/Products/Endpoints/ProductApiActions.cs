@@ -110,6 +110,8 @@ public static class ProductApiActions
     /// </summary>
     public static async Task<IResult> SearchProductStock(string search, Products.Models.Context db)
     {
+        const string UnknownLocation = "Unknown";
+
         // Search for products matching the name
         var matchingProducts = await db.Product
             .Where(p => EF.Functions.Like(p.Name, $"%{search}%"))
@@ -140,14 +142,16 @@ public static class ProductApiActions
                 Locations = g.Select(pl => new LocationStockInfo
                 {
                     LocationId = pl.LocationId,
-                    LocationName = pl.Location != null ? pl.Location.Name : "Unknown",
+                    LocationName = pl.Location != null ? pl.Location.Name : UnknownLocation,
                     Quantity = pl.Quantity
                 }).ToList()
             })
             .ToListAsync();
 
         // Add products with no stock info (not in any location)
-        foreach (var product in matchingProducts.Where(p => !stockByProduct.Any(s => s.ProductId == p.Id)))
+        // Use HashSet for O(1) lookup instead of O(n) Any() check
+        var productIdsWithStock = new HashSet<int>(stockByProduct.Select(s => s.ProductId));
+        foreach (var product in matchingProducts.Where(p => !productIdsWithStock.Contains(p.Id)))
         {
             stockByProduct.Add(new ProductStockInfo
             {

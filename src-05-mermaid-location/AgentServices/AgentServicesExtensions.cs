@@ -87,7 +87,9 @@ public static class AgentServicesExtensions
             // create agent
             var chatClient = sp.GetRequiredService<IChatClient>();
             
-            // Get the StockSearchTool if registered
+            // Get the StockSearchTool if registered via AddStockSearchTool().
+            // The tool is intentionally optional - if not registered, the agent 
+            // will work without the external stock search capability.
             var stockSearchTool = sp.GetService<StockSearchTool>();
             
             // Create the agent with the stock search tool if available
