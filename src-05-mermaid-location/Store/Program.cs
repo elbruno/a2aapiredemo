@@ -16,15 +16,15 @@ builder.AddServiceDefaults();
 // extra console logging to help diagnose startup issues
 builder.Logging.AddConsole();
 
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<ICheckoutService, CheckoutService>();
-builder.Services.AddSingleton<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<CheckoutService>();
+builder.Services.AddSingleton<CustomerService>();
 
 // Register protected session storage used by CartService
 builder.Services.AddScoped<ProtectedSessionStorage>();
 
-builder.Services.AddHttpClient<IProductService, ProductService>(
+builder.Services.AddHttpClient<ProductService>(
     static client => client.BaseAddress = new("http+https://products"));
 
 builder.Services.AddScoped<StockSearchTool>();

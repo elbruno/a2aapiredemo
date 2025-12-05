@@ -6,14 +6,14 @@ using System.Text.Json;
 
 namespace Store.Services;
 
-public class CartService : ICartService
+public class CartService
 {
-    private readonly IProductService _productService;
+    private readonly ProductService _productService;
     private readonly ProtectedSessionStorage _sessionStorage;
     private readonly ILogger<CartService> _logger;
     private const string CartSessionKey = "cart";
 
-    public CartService(IProductService productService, ProtectedSessionStorage sessionStorage, ILogger<CartService> logger)
+    public CartService(ProductService productService, ProtectedSessionStorage sessionStorage, ILogger<CartService> logger)
     {
         _productService = productService;
         _sessionStorage = sessionStorage;
@@ -188,11 +188,4 @@ public class CartService : ICartService
             _logger.LogError(ex, "Error saving cart to session storage");
         }
     }
-}
-
-// Create interface for existing ProductService to use with dependency injection
-public interface IProductService
-{
-    Task<List<Product>> GetProducts();
-    Task<SearchResponse?> Search(string searchTerm, bool semanticSearch = false);
 }

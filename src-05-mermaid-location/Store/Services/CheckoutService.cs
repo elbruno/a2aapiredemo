@@ -6,18 +6,18 @@ using System.Text.Json;
 
 namespace Store.Services;
 
-public class CheckoutService : ICheckoutService
+public class CheckoutService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
     private readonly AgentCheckoutOrchestrator _agentOrchestrator;
-    private readonly ICustomerService _customerService;
+    private readonly CustomerService _customerService;
     private readonly ILogger<CheckoutService> _logger;
     private const string OrderSessionKey = "orders";
 
     public CheckoutService(
         ProtectedSessionStorage sessionStorage,
         AgentCheckoutOrchestrator agentOrchestrator,
-        ICustomerService customerService,
+        CustomerService customerService,
         ILogger<CheckoutService> logger)
     {
         _sessionStorage = sessionStorage;

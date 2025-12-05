@@ -2,7 +2,7 @@ using DataEntities;
 
 namespace Store.Services;
 
-public class CustomerService : ICustomerService
+public class CustomerService
 {
     private readonly ILogger<CustomerService> _logger;
     private int _currentCustomerId = 1; // Default to first customer
