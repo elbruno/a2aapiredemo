@@ -23,12 +23,10 @@ public class DiscountAgentService : IDiscountAgentService
     private readonly ILogger<DiscountAgentService> _logger;
     private readonly AgentSettings _settings;
 
-    // DEMO: Agent name for identification in logs and debugging
+    // Agent name for identification in logs and debugging
     private const string AgentName = "DiscountAgent";
 
-    // DEMO: Agent instructions for the discount agent
-    // This defines the discount rules that the AI agent will follow
-    // Used with Microsoft Agent Framework's CreateAIAgent method
+    // Agent instructions for the discount agent
     private const string AgentInstructions = """
         You are an e-commerce pricing assistant.
         
@@ -59,23 +57,12 @@ public class DiscountAgentService : IDiscountAgentService
         _logger = logger;
     }
 
-    /// <summary>
-    /// TODO: Implement AI-powered discount calculation during the live demo using Microsoft Agent Framework.
-    /// Replace this placeholder method with AIAgent-powered discount logic.
-    /// 
-    /// Example pattern using Agent Framework:
-    /// 1. Create agent: var agent = _chatClient.CreateAIAgent(instructions: AgentInstructions, name: AgentName);
-    /// 2. Run agent: var response = await agent.RunAsync(userMessage);
-    /// 3. Parse response: var result = ParseAgentResponse(response.Text, subtotal);
-    /// 
-    /// See docs/04_speaker-demo-walkthrough.md#step-12-replace-the-computediscountasync-method
-    /// </summary>
     public Task<DiscountResult> ComputeDiscountAsync(DiscountRequest request)
     {
         _logger.LogInformation("TODO: {AgentName} not implemented...", AgentName);
         
         // Placeholder: No discount applied
-        // DEMO: Replace this with Microsoft Agent Framework AIAgent-powered discount calculation
+        // Replace this with Microsoft Agent Framework AIAgent-powered discount calculation
         var result = new DiscountResult
         {
             DiscountAmount = 0,

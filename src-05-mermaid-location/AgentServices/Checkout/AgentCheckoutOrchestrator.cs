@@ -3,6 +3,7 @@ using AgentServices.Configuration;
 using AgentServices.Discount;
 using AgentServices.Models;
 using AgentServices.Stock;
+using AgentServices.Triage;
 using CartEntities;
 using DataEntities;
 using Microsoft.Agents.AI;
@@ -29,10 +30,12 @@ public class AgentCheckoutOrchestrator
 
     private readonly AIAgent _stockAgent;
     private readonly AIAgent _discountAgent;
+    private readonly AIAgent _triageAgent;
     private Workflow _workflow;
 
     // Workflow name for identification in logs and debugging
-    public const string WorkflowName = "CheckoutWorkflow";
+    public const string WorkflowNameSequential = "CheckoutWorkflowSequential";
+    public const string WorkflowNameHandOff = "CheckoutWorkflowHandOff";
 
     public AgentCheckoutOrchestrator(
         IServiceProvider serviceProvider,
@@ -42,7 +45,8 @@ public class AgentCheckoutOrchestrator
         _logger = logger;
         _stockAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
         _discountAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
-        _workflow = serviceProvider.GetRequiredKeyedService<Workflow>(WorkflowName); ;
+        _triageAgent = serviceProvider.GetRequiredKeyedService<AIAgent>(TriageAgentService.AgentName);
+        _workflow = serviceProvider.GetKeyedService<Workflow>(WorkflowNameSequential);
     }
 
     /// <summary>
@@ -65,15 +69,17 @@ public class AgentCheckoutOrchestrator
         {
             _logger.LogInformation("Building Sequential Workflow with StockAgent → DiscountAgent");
 
-            // Build the sequential workflow using AgentWorkflowBuilder
-            // The output of StockAgent flows into DiscountAgent
-            if(_workflow == null)
+            // Build a handoff workflow using AgentWorkflowBuilder
+            if(_workflow == null && _triageAgent != null)
             {
-                _workflow = AgentWorkflowBuilder.BuildSequential(
-                    workflowName: WorkflowName,
-                    agents: [_stockAgent, _discountAgent]);
+                var handoffWorkflow = AgentWorkflowBuilder.CreateHandoffBuilderWith(_triageAgent)
+                    .WithHandoffs(_triageAgent, [_stockAgent, _discountAgent]) // Triage routes to specialists
+                    .WithHandoff(_stockAgent, _triageAgent)                    // Stock can return to triage
+                    .WithHandoff(_discountAgent, _triageAgent)                 // Discount can return to triage
+                    .Build();
+                _workflow = handoffWorkflow;
             }
-            
+
 
             // Build the input message for the workflow
             var itemsSummary = string.Join(", ", request.Cart.Items.Select(i => $"{i.Name} (${i.Price:F2} x {i.Quantity})"));

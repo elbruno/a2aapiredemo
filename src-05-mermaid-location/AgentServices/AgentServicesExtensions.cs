@@ -1,9 +1,9 @@
-using System;
 using AgentServices.Checkout;
 using AgentServices.Configuration;
 using AgentServices.Discount;
 using AgentServices.Stock;
 using AgentServices.Stock.Tools;
+using AgentServices.Triage;
 using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
@@ -17,17 +17,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AgentServices;
 
 /// <summary>
-/// Step 4: Extension methods to register Agent Services in DI.
+/// Extension methods to register Agent Services in DI.
 /// 
 /// This approach follows the pattern from the Agent Framework's AgentWebChat sample:
 /// https://github.com/microsoft/agent-framework/blob/main/dotnet/samples/AgentWebChat/AgentWebChat.AgentHost/Program.cs
-/// 
-/// Benefits of registering agents through DI:
-/// 1. Proper lifecycle management (scoped services per request)
-/// 2. Easier unit testing through interface injection
-/// 3. Centralized configuration via AgentSettings
-/// 4. Support for OpenTelemetry tracing and logging
-/// 5. Integration with DevUI for debugging
 /// </summary>
 public static class AgentServicesExtensions
 {
@@ -81,7 +74,6 @@ public static class AgentServicesExtensions
         {
             // create agent
             var chatClient = sp.GetRequiredService<IChatClient>();
-
             return chatClient.CreateAIAgent(
                 name: DiscountAgentService.AgentName,
                 instructions: DiscountAgentService.AgentInstructions);
@@ -90,15 +82,9 @@ public static class AgentServicesExtensions
         // add Stock Agent with external stock search tool
         builder.AddAIAgent(StockAgentService.AgentName, (sp, key) =>
         {
-            // create agent
+            // create agent and add tool
             var chatClient = sp.GetRequiredService<IChatClient>();
-
-            // Get the StockSearchTool if registered via AddStockSearchTool().
-            // The tool is intentionally optional - if not registered, the agent 
-            // will work without the external stock search capability.
             var stockSearchTool = sp.GetService<StockSearchTool>();
-
-            // Create the agent with the stock search tool if available
             if (stockSearchTool != null)
             {
                 return chatClient.CreateAIAgent(
@@ -113,16 +99,24 @@ public static class AgentServicesExtensions
                 instructions: StockAgentService.AgentInstructions);
         });
 
-        builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowName, (sp, key) =>
+        // add Triage Agent
+        builder.AddAIAgent(TriageAgentService.AgentName, (sp, key) =>
+        {
+            var chatClient = sp.GetRequiredService<IChatClient>();
+            return chatClient.CreateAIAgent(
+                name: TriageAgentService.AgentName,
+                instructions: TriageAgentService.AgentInstructions);
+        });
+
+        builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowNameSequential, (sp, key) =>
         {
             var stockAgent = sp.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
             var discountAgent = sp.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
 
-            var workflow = AgentWorkflowBuilder.BuildSequential(
-                workflowName: AgentCheckoutOrchestrator.WorkflowName,
+            // Build a sequential workflow that first checks stock and then computes discount
+            return AgentWorkflowBuilder.BuildSequential(
+                workflowName: AgentCheckoutOrchestrator.WorkflowNameSequential,
                 agents: [stockAgent, discountAgent]);
-
-            return workflow;
         });
 
         return builder;
@@ -152,13 +146,19 @@ public static class AgentServicesExtensions
             return projectClient.GetAIAgent(StockAgentService.AgentName);
         });
 
-        builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowName, (sp, key) =>
+        // add Triage Agent from Microsoft Foundry
+        builder.AddAIAgent(TriageAgentService.AgentName, (sp, key) =>
+        {
+            return projectClient.GetAIAgent(TriageAgentService.AgentName);
+        });
+
+        builder.AddWorkflow(AgentCheckoutOrchestrator.WorkflowNameSequential, (sp, key) =>
         {
             var stockAgent = sp.GetRequiredKeyedService<AIAgent>(StockAgentService.AgentName);
             var discountAgent = sp.GetRequiredKeyedService<AIAgent>(DiscountAgentService.AgentName);
 
             var workflow = AgentWorkflowBuilder.BuildSequential(
-                workflowName: AgentCheckoutOrchestrator.WorkflowName,
+                workflowName: AgentCheckoutOrchestrator.WorkflowNameSequential,
                 agents: [stockAgent, discountAgent]);
 
             return workflow;
